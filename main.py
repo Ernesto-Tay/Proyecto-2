@@ -92,9 +92,16 @@ class User:
 
 
 class Admin(User):
-    def __init__(self,user_id:str, name:str, phone:int):
+    def __init__(self,user_id:str, name:str, phone:int, position:str):
         User.__init__(self,user_id,name,phone)
+        self.__position = position
         self.type = "admin"
+    @property
+    def position(self):
+        return self.__position
+    @position.setter
+    def position(self,new_position):
+        pass
 
     def products(self, root):
         pass
