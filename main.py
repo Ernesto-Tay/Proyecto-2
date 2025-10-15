@@ -14,12 +14,13 @@ class DataBase:
     @staticmethod
     def create_tables():
         with DataBase._conn() as conn:
-            conn.executescript(""""+
+            conn.executescript(""""
             CREATE TABLE IF NOT EXISTS users (
                 id_user TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 phone TEXT NOT NULL,
                 type TEXT NOT NULL,
+                position TEXT NOT NULL,
             );
             
             CREATE TABLE IF NOT EXISTS clients (
