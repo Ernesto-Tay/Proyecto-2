@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
+import random
 
 class User:
-    def __init__(self,user_id, name, phone):
+    def __init__(self,user_id:str, name:str, phone:int):
         self.__id = user_id
         self._name = name
         self._phone = phone
@@ -35,10 +36,12 @@ class User:
 
     def mostrar_datos(self):
         pass
+    def guardar(self):
+        pass
 
 
 class Admin(User):
-    def __init__(self,user_id, name, phone):
+    def __init__(self,user_id:str, name:str, phone:int):
         User.__init__(self,user_id,name,phone)
         self.type = "admin"
 
@@ -54,10 +57,12 @@ class Admin(User):
         pass
     def show_sales(self, root):
         pass
+    def guardar(self):
+        pass
 
 
 class Collaborator(User):
-    def __init__(self,user_id, name, phone, position):
+    def __init__(self,user_id:str, name:str, phone:int, position:str):
         User.__init__(self,user_id,name,phone)
         self.position = position
         self.type = "collaborator"
@@ -72,9 +77,12 @@ class Collaborator(User):
     def show_sales(self, root):
         pass
 
+    def guardar(self):
+        pass
+
 
 class provider(User):
-    def __init__(self,user_id, name, phone):
+    def __init__(self,user_id:str, name:str, phone:int):
         User.__init__(self,user_id,name,phone)
         self.products = []
         self.type = "provider"
@@ -95,7 +103,7 @@ class provider(User):
             raise ValueError("El producto no fué encontrado")
 
 class Client(User):
-    def __init__(self,user_id, name, phone):
+    def __init__(self,user_id:str, name:str, phone:int):
         User.__init__(self,user_id,name,phone)
         self.sales = []
         self.type = "client"
@@ -113,9 +121,12 @@ class Client(User):
         else:
             raise ValueError("La venta no está en la lista")
 
+    def guardar(self):
+        pass
+
 
 class Product:
-    def __init__(self,prod_id, name, type, desc, raw_p, sale_p):
+    def __init__(self,prod_id:str, name:str, type:str, desc:str, raw_p:float, sale_p:float):
         self.__id = prod_id
         self.__name = name
         self._type = type
@@ -178,9 +189,15 @@ class Product:
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
 
+    def guardar(self):
+        pass
+
 class Sales:
-    def __init__(self,sale_id,id_client):
+    def __init__(self,sale_id:str,id_client:str):
         self.__id = sale_id
         self._id_client = id_client
         self.products = {} #ID_producto[cantidad_productos, subtotal (cantidad*precio_unitario)]
         self.total = 0
+
+    def guardar(self):
+        pass
