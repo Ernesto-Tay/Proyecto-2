@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 import random
+from typing import Optional
 
 class User:
     def __init__(self,user_id:str, name:str, phone:int):
@@ -126,11 +127,11 @@ class Client(User):
 
 
 class Product:
-    def __init__(self,prod_id:str, name:str, type:str, desc:str, raw_p:float, sale_p:float):
+    def __init__(self,prod_id:str, name:str, types:str,  desc:str, raw_p:float, sale_p:float, providers: Optional[list[str]] = None):
         self.__id = prod_id
         self.__name = name
-        self._type = type
-        self._providers = []
+        self._type = types
+        self._providers = providers
         self.description = desc
         self._raw_p = raw_p
         self._sale_p = sale_p
@@ -193,10 +194,10 @@ class Product:
         pass
 
 class Sales:
-    def __init__(self,sale_id:str,id_client:str):
+    def __init__(self,sale_id:str,id_client:str, products: Optional[list[str]] = None):
         self.__id = sale_id
         self._id_client = id_client
-        self.products = {} #ID_producto[cantidad_productos, subtotal (cantidad*precio_unitario)]
+        self.products = products
         self.total = 0
 
     def guardar(self):
