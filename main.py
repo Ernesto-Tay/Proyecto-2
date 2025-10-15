@@ -21,6 +21,7 @@ class DataBase:
                 phone TEXT NOT NULL,
                 type TEXT NOT NULL,
                 position TEXT NOT NULL,
+                
             );
             
             CREATE TABLE IF NOT EXISTS clients (
