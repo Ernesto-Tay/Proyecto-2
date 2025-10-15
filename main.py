@@ -36,6 +36,20 @@ class DataBase:
                 raw_price TEXT NOT NULL,
                 sale_price TEXT NOT NULL,
             );
+            
+            CREATE TABLE IF NOT EXISTS providers (
+                id_provider TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                phone TEXT NOT NULL,
+            );
+            
+            CREATE TABLE IF NOT EXISTS sales (
+                id_sale TEXT PRIMARY KEY,
+                id_client TEXT,
+                total REAL,
+                FOREIGN KEY (id_client) REFERENCES clients(id_client)
+            );
+            
             """)
 
 class User:
