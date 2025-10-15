@@ -2,6 +2,56 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 
+DB_NAME = "bawiz.db"
+
+class DataBase:
+    @staticmethod
+    def _conn():
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    @staticmethod
+    def create_tables():
+        with DataBase._conn() as conn:
+            conn.executescript(""""+
+            CREATE TABLE IF NOT EXISTS users (
+                id_user TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                phone TEXT NOT NULL,
+                type TEXT NOT NULL,
+            );
+            
+            CREATE TABLE IF NOT EXISTS clients (
+                id_client TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                phone TEXT NOT NULL,
+            );
+            
+            CREATE TABLE IF NOT EXISTS products (
+                id_product TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                description TEXT NOT NULL,
+                raw_price TEXT NOT NULL,
+                sale_price TEXT NOT NULL,
+            );
+            
+            CREATE TABLE IF NOT EXISTS providers (
+                id_provider TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                phone TEXT NOT NULL,
+            );
+            
+            CREATE TABLE IF NOT EXISTS sales (
+                id_sale TEXT PRIMARY KEY,
+                id_client TEXT,
+                total REAL,
+                FOREIGN KEY (id_client) REFERENCES clients(id_client)
+            );
+            
+            """)
+
 class User:
     def __init__(self,user_id, name, phone):
         self.__id = user_id
