@@ -39,37 +39,37 @@ class DataBase:
         with get_conn() as conn:
             conn.executescript(""""+
             CREATE TABLE IF NOT EXISTS users (
-                id_user TEXT PRIMARY KEY,
+                user_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 phone REAL NOT NULL,
             );
             
             CREATE TABLE IF NOT EXISTS admins (
-                id_admin TEXT PRIMARY KEY,
-                id_user TEXT NOT NULL,
+                admin_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
                 position TEXT NOT NULL,
                 type TEXT DEFAULT 'admin',
-                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
             );
             
             CREATE TABLE IF NOT EXISTS collaborators (
-                id_admin TEXT PRIMARY KEY,
-                id_user TEXT NOT NULL,
+                collab_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
                 position TEXT NOT NULL,
                 type TEXT DEFAULT 'collaborator',
-                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
             
             CREATE TABLE IF NOT EXISTS clients (
-                id_client TEXT PRIMARY KEY,
-                id_user TEXT NOT NULL,
+                client_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
                 sales TEXT NOT NULL,
                 type TEXT DEFAULT 'client',
-                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
             
             CREATE TABLE IF NOT EXISTS products (
-                id_product TEXT PRIMARY KEY,
+                product_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 type TEXT DEFAULT 'product',
                 description TEXT NOT NULL,
@@ -79,18 +79,18 @@ class DataBase:
             );
             
             CREATE TABLE IF NOT EXISTS providers (
-                id_provider TEXT PRIMARY KEY,
-                id_user TEXT NOT NULL,
+                provider_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
                 products TEXT NOT NULL,
                 type TEXT DEFAULT 'provider',
-                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
             
             CREATE TABLE IF NOT EXISTS sales (
-                id_sale TEXT PRIMARY KEY,
-                id_client TEXT,
+                sale_id TEXT PRIMARY KEY,
+                client_id TEXT,
                 total REAL,
-                FOREIGN KEY (id_client) REFERENCES clients(id_client) ON DELETE CASCADE
+                FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
             );
             
             """)
@@ -176,7 +176,24 @@ class Admin(User):
     def show_sales(self, root):
         pass
     def guardar(self):
-        pass
+        with get_conn() as c:
+            super().guardar()
+            existing = c.execute("SELECT admin_id FROM admins WHERE admin_id = ?", (self.admin_id,)).fetchone()
+            if existing:
+                c.execute("UPDATE admins SET user_id = ?, position = ?, type = ? WHERE admin_id = ?",(self.user_id, self.position, self.type))
+            else:
+                c.execute("INSERT INTO admins (admin_id, position, type) VALUES (?, ?, ?)",(self.admin_id,self.position,self.type))
+            c.commit()
+
+    @staticmethod
+    def load(admin_id:str) ->Optional["Admin"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM admins WHERE admin_id = ?", (admin_id,)).fetchone()
+            if r:
+                user = User.load(r["user_id"])
+                return Admin(name = user.name, phone = user.phone,position = r["position"], user_id = user.user_id)
+            return None
+
 
 
 class Collaborator(User):
