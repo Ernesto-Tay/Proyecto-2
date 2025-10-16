@@ -81,7 +81,7 @@ class DataBase:
 
 class User:
     def __init__(self, name:str, phone:int ,user_id = None):
-        self.__id = user_id
+        self.__id = user_id or id_generate("usr")
         self._name = name
         self._phone = phone
 
@@ -116,10 +116,11 @@ class User:
 
 
 class Admin(User):
-    def __init__(self, name:str, phone:int, position:str,user_id=None):
-        User.__init__(self,name,phone, user_id)
+    def __init__(self, name:str, phone:int, position:str,user_id=None, admin_id:str = None):
+        self.__admin_id = admin_id or id_generate("adm")
         self.__position = position
         self.type = "admin"
+        User.__init__(self, name, phone, user_id)
     @property
     def position(self):
         return self.__position
@@ -143,10 +144,11 @@ class Admin(User):
 
 
 class Collaborator(User):
-    def __init__(self, name:str, phone:int, position:str,user_id = None):
-        User.__init__(self,name,phone,user_id)
+    def __init__(self, name:str, phone:int, position:str,user_id:str = None, collab_id:str = None):
+        self.__collab_id = collab_id or id_generate("col")
         self.position = position
         self.type = "collaborator"
+        User.__init__(self, name, phone, user_id)
 
     def mostrar_datos(self):
         pass
@@ -162,11 +164,12 @@ class Collaborator(User):
         pass
 
 
-class provider(User):
-    def __init__(self, name:str, phone:int,user_id = None):
-        User.__init__(self,name,phone,user_id)
+class Provider(User):
+    def __init__(self, name:str, phone:int,user_id:str = None, provider_id:str = None):
+        self.__provider_id = provider_id or id_generate("prd")
         self.products = []
         self.type = "provider"
+        User.__init__(self, name, phone, user_id)
 
     def mostrar_datos(self):
         pass
@@ -184,10 +187,11 @@ class provider(User):
             raise ValueError("El producto no fué encontrado")
 
 class Client(User):
-    def __init__(self, name:str, phone:int,user_id = None):
-        User.__init__(self,name,phone,user_id)
+    def __init__(self, name:str, phone:int,user_id:str = None, client_id:str = None):
+        self.__client_id = client_id or id_generate("clt")
         self.sales = []
         self.type = "client"
+        User.__init__(self, name, phone, user_id)
 
     def mostrar_datos(self):
         pass
@@ -207,8 +211,8 @@ class Client(User):
 
 
 class Product:
-    def __init__(self,prod_id:str, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[list[str]] = None):
-        self.__id = prod_id
+    def __init__(self, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[list[str]] = None,prod_id:str = None):
+        self.__id = prod_id or id_generate("prd")
         self.__name = name
         self._type = types
         self._providers = providers
