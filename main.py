@@ -48,7 +48,7 @@ class DataBase:
                 id_user TEXT NOT NULL,
                 position TEXT NOT NULL,
                 type TEXT DEFAULT 'admin',
-                FOREIGN KEY (id_user) REFERENCES users(id_user)
+                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
             );
             
             CREATE TABLE IF NOT EXISTS collaborators (
@@ -56,15 +56,15 @@ class DataBase:
                 id_user TEXT NOT NULL,
                 position TEXT NOT NULL,
                 type TEXT DEFAULT 'collaborator',
-                FOREIGN KEY (id_user) REFERENCES users(id_user)
+                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
             );
             
             CREATE TABLE IF NOT EXISTS clients (
                 id_client TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                phone REAL NOT NULL,
+                id_user TEXT NOT NULL,
                 sales TEXT NOT NULL,
                 type TEXT DEFAULT 'client',
+                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
             );
             
             CREATE TABLE IF NOT EXISTS products (
@@ -79,17 +79,17 @@ class DataBase:
             
             CREATE TABLE IF NOT EXISTS providers (
                 id_provider TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                phone TEXT NOT NULL,
+                id_user TEXT NOT NULL,
                 products TEXT NOT NULL,
                 type TEXT DEFAULT 'provider',
+                FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
             );
             
             CREATE TABLE IF NOT EXISTS sales (
                 id_sale TEXT PRIMARY KEY,
                 id_client TEXT,
                 total REAL,
-                FOREIGN KEY (id_client) REFERENCES clients(id_client)
+                FOREIGN KEY (id_client) REFERENCES clients(id_client) ON DELETE CASCADE
             );
             
             """)
