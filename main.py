@@ -219,8 +219,23 @@ class Collaborator(User):
         pass
 
     def guardar(self):
-        pass
+        with get_conn() as c:
+            super().guardar()
+            existing = c.execute("SELECT collab_id FROM collaborators WHERE collab_id = ?", (self.collab_id,)).fetchone()
+            if existing:
+                c.execute("UPDATE collaborators SET user_id = ?, position = ?, type = ? WHERE collab_id = ?",(self.user_id, self.position, self.type, self.collab_id))
+            else:
+                c.execute("INSERT INTO collaborators (collab_id, user_id, position, type) VALUES (?,?,?,?)",(self.collab_id, self.user_id, self.position, self.type))
+            c.commit()
 
+    @staticmethod
+    def load(collab_id:str) ->Optional["Collaborator"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM collaborators WHERE collab_id = ?", (collab_id,)).fetchone()
+            if r:
+                user = User.load(r["user_id"])
+                return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
+            return None
 
 class Provider(User):
     def __init__(self, name:str, phone:int,user_id:str = None, provider_id:str = None):
