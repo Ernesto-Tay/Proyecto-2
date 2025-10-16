@@ -41,7 +41,22 @@ class DataBase:
                 id_user TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 phone REAL NOT NULL,
-                type TEXT NOT NULL,
+            );
+            
+            CREATE TABLE IF NOT EXISTS admins (
+                id_admin TEXT PRIMARY KEY,
+                id_user TEXT NOT NULL,
+                position TEXT NOT NULL,
+                type TEXT DEFAULT 'admin',
+                FOREIGN KEY (id_user) REFERENCES users(id_user)
+            );
+            
+            CREATE TABLE IF NOT EXISTS collaborators (
+                id_admin TEXT PRIMARY KEY,
+                id_user TEXT NOT NULL,
+                position TEXT NOT NULL,
+                type TEXT DEFAULT 'collaborator',
+                FOREIGN KEY (id_user) REFERENCES users(id_user)
             );
             
             CREATE TABLE IF NOT EXISTS clients (
@@ -122,6 +137,12 @@ class Admin(User):
         self.type = "admin"
         User.__init__(self, name, phone, user_id)
     @property
+    def admin_id(self):
+        return self.__admin_id
+    @admin_id.setter
+    def admin_id(self,new_id):
+        pass
+    @property
     def position(self):
         return self.__position
     @position.setter
@@ -149,7 +170,12 @@ class Collaborator(User):
         self.position = position
         self.type = "collaborator"
         User.__init__(self, name, phone, user_id)
-
+    @property
+    def collab_id(self):
+        return self.__collab_id
+    @collab_id.setter
+    def collab_id(self,new_id):
+        pass
     def mostrar_datos(self):
         pass
 
@@ -170,7 +196,12 @@ class Provider(User):
         self.products = []
         self.type = "provider"
         User.__init__(self, name, phone, user_id)
-
+    @property
+    def provider_id(self):
+        return self.__provider_id
+    @provider_id.setter
+    def provider_id(self,new_id):
+        pass
     def mostrar_datos(self):
         pass
 
@@ -192,6 +223,12 @@ class Client(User):
         self.sales = []
         self.type = "client"
         User.__init__(self, name, phone, user_id)
+    @property
+    def client_id(self):
+        return self.__client_id
+    @client_id.setter
+    def client_id(self,new_id):
+        pass
 
     def mostrar_datos(self):
         pass
@@ -279,11 +316,17 @@ class Product:
         pass
 
 class Sales:
-    def __init__(self,sale_id:str,id_client:str, products: Optional[list[str]] = None):
-        self.__id = sale_id
+    def __init__(self,id_client:str, products: Optional[list[str]] = None, sale_id = None):
+        self.__sale_id = sale_id or id_generate("sal")
         self._id_client = id_client
         self.products = products
         self.total = 0
+    @property
+    def sale_id(self):
+        return self.__sale_id
+    @sale_id.setter
+    def sale_id(self,new_id):
+        pass
 
     def guardar(self):
         pass
