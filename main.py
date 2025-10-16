@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
+import json
 import sqlite3
 import random
-from typing import Optional
+from typing import Optional, Dict, Any, List
 
 DB_NAME = "bawiz.db"
 
@@ -89,6 +90,7 @@ class DataBase:
             CREATE TABLE IF NOT EXISTS sales (
                 sale_id TEXT PRIMARY KEY,
                 client_id TEXT,
+                products TEXT,
                 total REAL,
                 FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
             );
@@ -127,7 +129,7 @@ class User:
 
     def mostrar_datos(self):
         pass
-    def guardar(self):
+    def save(self):
         with get_conn() as c:
             existing = c.execute("SELECT user_id FROM users WHERE id_user = ?", (self.user_id,)).fetchone()
             if existing:
@@ -175,9 +177,9 @@ class Admin(User):
         pass
     def show_sales(self, root):
         pass
-    def guardar(self):
+    def save(self):
         with get_conn() as c:
-            super().guardar()
+            super().save()
             existing = c.execute("SELECT admin_id FROM admins WHERE admin_id = ?", (self.admin_id,)).fetchone()
             if existing:
                 c.execute("UPDATE admins SET user_id = ?, position = ?, type = ? WHERE admin_id = ?",(self.user_id, self.position, self.type))
@@ -218,9 +220,9 @@ class Collaborator(User):
     def show_sales(self, root):
         pass
 
-    def guardar(self):
+    def save(self):
         with get_conn() as c:
-            super().guardar()
+            super().save()
             existing = c.execute("SELECT collab_id FROM collaborators WHERE collab_id = ?", (self.collab_id,)).fetchone()
             if existing:
                 c.execute("UPDATE collaborators SET user_id = ?, position = ?, type = ? WHERE collab_id = ?",(self.user_id, self.position, self.type, self.collab_id))
@@ -264,10 +266,13 @@ class Provider(User):
         else:
             raise ValueError("El producto no fué encontrado")
 
+    def save(self):
+        pass
+
 class Client(User):
-    def __init__(self, name:str, phone:int,user_id:str = None, client_id:str = None):
+    def __init__(self, name:str, phone:int,user_id:str = None, client_id:str = None, sales: List[str] = None):
         self.__client_id = client_id or id_generate("clt")
-        self.sales = []
+        self.sales : List[str] = sales or []
         self.type = "client"
         User.__init__(self, name, phone, user_id)
     @property
@@ -290,16 +295,16 @@ class Client(User):
         else:
             raise ValueError("La venta no está en la lista")
 
-    def guardar(self):
+    def save(self):
         pass
 
 
 class Product:
-    def __init__(self, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[list[str]] = None,prod_id:str = None):
+    def __init__(self, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[List[str]] = None,prod_id:str = None):
         self.__id = prod_id or id_generate("prd")
         self.__name = name
         self._type = types
-        self._providers = providers
+        self._providers : List[str] = providers or []
         self.description = desc
         self._raw_p = raw_p
         self._sale_p = sale_p
@@ -359,15 +364,15 @@ class Product:
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
 
-    def guardar(self):
+    def save(self):
         pass
 
 class Sales:
-    def __init__(self,id_client:str, products: Optional[list[str]] = None, sale_id = None):
+    def __init__(self,client_id:str, products: Optional[Dict[str, Dict[str, Any]]] = None, sale_id = None, total:int = None):
         self.__sale_id = sale_id or id_generate("sal")
-        self._id_client = id_client
-        self.products = products
-        self.total = 0
+        self._client_id = client_id
+        self.products : Dict[str, Dict[str, Any]] = products or {}
+        self.total = total
     @property
     def sale_id(self):
         return self.__sale_id
@@ -375,5 +380,33 @@ class Sales:
     def sale_id(self,new_id):
         pass
 
-    def guardar(self):
-        pass
+    def save(self):
+        with get_conn() as c:
+            prod_json = json.dumps(self.products, ensure_ascii=False)
+            exists = c.execute("SELECT 1 FROM sales WHERE sale_id = ?", self.sale_id).fetchone()
+            if exists:
+                c.execute("UPDATE sales SET client_id = ?, products = ?, total = ? WHERE sale_id = ?",(self._client_id, prod_json, self.total, self.sale_id))
+            else:
+                c.execute("INSER INTO sales (sale_id, client_id, products, total) VALUES(?, ?, ?, ?)",(self.sale_id,self._client_id, prod_json, self.total))
+            c.commit()
+
+    @staticmethod
+    def load(sale_id:str) -> Optional["Sales"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM sales WHERE sale_id = ?", sale_id).fetchone()
+            if r:
+                prods = {}
+                if r["products"]:
+                    try:
+                        prods = json.loads(r["products"])
+                    except json.JSONDecodeError:
+                        prods = {}
+                return Sales(client_id=r["client_id"], products=prods, sale_id=r["sale_id"], total = r["total"])
+            else:
+                return None
+
+
+    def delete(self):
+        with get_conn() as c:
+            c.execute("DELETE FROM sales WHERE sales_id = ?",(self.sale_id,))
+            c.commit()
