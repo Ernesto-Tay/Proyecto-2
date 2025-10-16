@@ -6,6 +6,26 @@ from typing import Optional
 
 DB_NAME = "bawiz.db"
 
+def id_generate(id_type):
+    val1 = str(random.randint(1, 999))
+    val2 = str(random.randint(1, 999))
+    new_id = False
+    if id_type.lower() == "usr":
+        new_id = "USR" + val1 + val2
+    elif id_type.lower() == "adm":
+        new_id = "ADM" + val1 + val2
+    elif id_type.lower() == "col":
+        new_id = "COL" + val1 + val2
+    elif id_type.lower() == "prv":
+        new_id = "PRV" + val1 + val2
+    elif id_type.lower() == "clt":
+        new_id = "CLT" + val1 + val2
+    elif id_type.lower() == "prd":
+        new_id = "PRD" + val1 + val2
+    elif id_type.lower() == "vnt":
+        new_id = "VNT" + val1 + val2
+    return new_id
+
 class DataBase:
     @staticmethod
     def _conn():
@@ -20,29 +40,34 @@ class DataBase:
             CREATE TABLE IF NOT EXISTS users (
                 id_user TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
-                phone TEXT NOT NULL,
+                phone REAL NOT NULL,
                 type TEXT NOT NULL,
             );
             
             CREATE TABLE IF NOT EXISTS clients (
                 id_client TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
-                phone TEXT NOT NULL,
+                phone REAL NOT NULL,
+                sales TEXT NOT NULL,
+                type TEXT DEFAULT 'client',
             );
             
             CREATE TABLE IF NOT EXISTS products (
                 id_product TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
-                type TEXT NOT NULL,
+                type TEXT DEFAULT 'product',
                 description TEXT NOT NULL,
-                raw_price TEXT NOT NULL,
-                sale_price TEXT NOT NULL,
+                raw_price REAL NOT NULL,
+                sale_price REAL NOT NULL,
+                stock INTEGER NOT NULL,
             );
             
             CREATE TABLE IF NOT EXISTS providers (
                 id_provider TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 phone TEXT NOT NULL,
+                products TEXT NOT NULL,
+                type TEXT DEFAULT 'provider',
             );
             
             CREATE TABLE IF NOT EXISTS sales (
@@ -55,7 +80,7 @@ class DataBase:
             """)
 
 class User:
-    def __init__(self,user_id:str, name:str, phone:int):
+    def __init__(self, name:str, phone:int ,user_id = None):
         self.__id = user_id
         self._name = name
         self._phone = phone
@@ -66,7 +91,6 @@ class User:
     @id.setter
     def id(self,new_id):
         pass
-
     @property
     def name(self):
         return self._name
@@ -92,8 +116,8 @@ class User:
 
 
 class Admin(User):
-    def __init__(self,user_id:str, name:str, phone:int, position:str):
-        User.__init__(self,user_id,name,phone)
+    def __init__(self, name:str, phone:int, position:str,user_id=None):
+        User.__init__(self,name,phone, user_id)
         self.__position = position
         self.type = "admin"
     @property
@@ -102,7 +126,6 @@ class Admin(User):
     @position.setter
     def position(self,new_position):
         pass
-
     def products(self, root):
         pass
     def sales(self, root):
@@ -120,8 +143,8 @@ class Admin(User):
 
 
 class Collaborator(User):
-    def __init__(self,user_id:str, name:str, phone:int, position:str):
-        User.__init__(self,user_id,name,phone)
+    def __init__(self, name:str, phone:int, position:str,user_id = None):
+        User.__init__(self,name,phone,user_id)
         self.position = position
         self.type = "collaborator"
 
@@ -140,8 +163,8 @@ class Collaborator(User):
 
 
 class provider(User):
-    def __init__(self,user_id:str, name:str, phone:int):
-        User.__init__(self,user_id,name,phone)
+    def __init__(self, name:str, phone:int,user_id = None):
+        User.__init__(self,name,phone,user_id)
         self.products = []
         self.type = "provider"
 
@@ -161,8 +184,8 @@ class provider(User):
             raise ValueError("El producto no fué encontrado")
 
 class Client(User):
-    def __init__(self,user_id:str, name:str, phone:int):
-        User.__init__(self,user_id,name,phone)
+    def __init__(self, name:str, phone:int,user_id = None):
+        User.__init__(self,name,phone,user_id)
         self.sales = []
         self.type = "client"
 
@@ -184,7 +207,7 @@ class Client(User):
 
 
 class Product:
-    def __init__(self,prod_id:str, name:str, types:str,  desc:str, raw_p:float, sale_p:float, providers: Optional[list[str]] = None):
+    def __init__(self,prod_id:str, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[list[str]] = None):
         self.__id = prod_id
         self.__name = name
         self._type = types
@@ -192,6 +215,7 @@ class Product:
         self.description = desc
         self._raw_p = raw_p
         self._sale_p = sale_p
+        self.stock = stock
 
     @property
     def id(self):
