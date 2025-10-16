@@ -26,16 +26,17 @@ def id_generate(id_type):
         new_id = "VNT" + val1 + val2
     return new_id
 
+def get_conn():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON;")
+    return conn
+
 class DataBase:
-    @staticmethod
-    def _conn():
-        conn = sqlite3.connect(DB_NAME)
-        conn.row_factory = sqlite3.Row
-        return conn
 
     @staticmethod
     def create_tables():
-        with DataBase._conn() as conn:
+        with get_conn() as conn:
             conn.executescript(""""+
             CREATE TABLE IF NOT EXISTS users (
                 id_user TEXT PRIMARY KEY,
@@ -96,15 +97,15 @@ class DataBase:
 
 class User:
     def __init__(self, name:str, phone:int ,user_id = None):
-        self.__id = user_id or id_generate("usr")
+        self.__user_id = user_id or id_generate("usr")
         self._name = name
         self._phone = phone
 
     @property
-    def id(self):
-        return self.__id
-    @id.setter
-    def id(self,new_id):
+    def user_id(self):
+        return self.__user_id
+    @user_id.setter
+    def user_id(self,new_id):
         pass
     @property
     def name(self):
@@ -127,7 +128,21 @@ class User:
     def mostrar_datos(self):
         pass
     def guardar(self):
-        pass
+        with get_conn() as c:
+            existing = c.execute("SELECT user_id FROM users WHERE id_user = ?", (self.user_id,)).fetchone()
+            if existing:
+                c.execute("UPDATE users SET name=?, phone=? WHERE user_id=?",(self.name, self.phone, self.user_id))
+            else:
+                c.execute("INSERT INTO users (user_id, name, phone) VALUES (?, ?, ?)",(self.user_id, self.name, self.phone))
+            c.commit()
+
+    @staticmethod
+    def load(user_id:str)-> Optional["User"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
+            if r:
+                return User(r["name"], r["phone"], user_id=r["user_id"])
+            return None
 
 
 class Admin(User):
