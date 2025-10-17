@@ -329,20 +329,20 @@ class Client(User):
 
 class Product:
     def __init__(self, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[List[str]] = None,prod_id:str = None):
-        self.__id = prod_id or id_generate("prd")
+        self.__product_id = prod_id or id_generate("prd")
         self.__name = name
         self._type = types
-        self._providers : List[str] = providers or []
+        self.providers : List[str] = providers or []
         self.description = desc
         self._raw_p = raw_p
         self._sale_p = sale_p
         self.stock = stock
 
     @property
-    def id(self):
-        return self.__id
-    @id.setter
-    def id(self,new_id):
+    def product_id(self):
+        return self.__product_id
+    @product_id.setter
+    def product_id(self,new_id):
         pass
     @property
     def name(self):
@@ -379,18 +379,35 @@ class Product:
             raise ValueError("El valor debe ser mayor a 0 y al precio de compra")
         self._sale_p = new_p
     def add_provider(self,provider):
-        if provider not in self._providers:
-            self._providers.append(provider)
+        if provider not in self.providers:
+            self.providers.append(provider)
         else:
             raise ValueError("El proveedor ya está en la lista")
 
     def del_provider(self,provider):
-        if provider in self._providers:
-            self._providers.remove(provider)
+        if provider in self.providers:
+            self.providers.remove(provider)
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
     def save(self):
-        pass
+        providers = "|".join(self.providers)
+        with get_conn() as c:
+            exists = c.execute("SELECT product_id FROM products WHERE product_id = ?", (self.product_id,)).fetchone()
+            if exists:
+                c.execute("UPDATE products SET name = ?, type = ?, providers = ?, description = ?, raw_price = ?, sale_price = ?, stock = ?", (self.name, self.type, providers, self.description, self.raw_p, self.sale_p, self.stock))
+            else:
+                c.execute("INSERT INTO products (name, type, providers, description, raw_price, sale_price, stock) VALUES (?,?,?,?,?,?,?)",(self.name, self.type, providers, self.description, self.raw_p, self.sale_p, self.stock))
+            c.commit()
+
+    @staticmethod
+    def load(product_id:str) -> Optional["Product"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM products WHERE product_id = ?", (product_id,)).fetchone()
+            if r:
+                providers = r["providers"].split("|")
+                return Product(name = r["name"], types = r["type"], desc = r["description"], raw_p = r["raw_price"], sale_p = r["sale_price"], stock = r["stock"],providers = providers)
+            return None
+
 
 class Sales:
     def __init__(self,client_id:str, products: Optional[Dict[str, Dict[str, Any]]] = None, sale_id = None, total:int = None):
