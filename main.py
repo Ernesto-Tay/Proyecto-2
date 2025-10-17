@@ -92,7 +92,7 @@ class DataBase:
                 client_id TEXT,
                 products TEXT,
                 total REAL,
-                FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
+                FOREIGN KEY (client_id) REFERENCES clients(client_id)
             );
             
             """)
@@ -117,7 +117,6 @@ class User:
         if len(name) == 0 or not name.isalpha():
             raise ValueError("El nombre debe ser solo letras")
         self._name = name
-
     @property
     def phone(self):
         return self._phone
@@ -186,7 +185,6 @@ class Admin(User):
             else:
                 c.execute("INSERT INTO admins (admin_id, position, type) VALUES (?, ?, ?)",(self.admin_id,self.position,self.type))
             c.commit()
-
     @staticmethod
     def load(admin_id:str) ->Optional["Admin"]:
         with get_conn() as c:
@@ -212,7 +210,6 @@ class Collaborator(User):
         pass
     def mostrar_datos(self):
         pass
-
     def sales(self, root):
         pass
     def clients(self, root):
@@ -229,7 +226,6 @@ class Collaborator(User):
             else:
                 c.execute("INSERT INTO collaborators (collab_id, user_id, position, type) VALUES (?,?,?,?)",(self.collab_id, self.user_id, self.position, self.type))
             c.commit()
-
     @staticmethod
     def load(collab_id:str) ->Optional["Collaborator"]:
         with get_conn() as c:
@@ -239,10 +235,11 @@ class Collaborator(User):
                 return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
             return None
 
+
 class Provider(User):
-    def __init__(self, name:str, phone:int,user_id:str = None, provider_id:str = None):
+    def __init__(self, name:str, phone:int,products : List[str] = None,user_id:str = None, provider_id:str = None):
         self.__provider_id = provider_id or id_generate("prd")
-        self.products = []
+        self.products : List[str] = products or []
         self.type = "provider"
         User.__init__(self, name, phone, user_id)
     @property
@@ -253,13 +250,11 @@ class Provider(User):
         pass
     def mostrar_datos(self):
         pass
-
     def add_product(self, product):
         if product not in self.products:
             self.products.append(product)
         else:
             raise ValueError("El producto ya está en la lista")
-
     def del_product(self, product):
         if product in self.products:
             self.products.remove(product)
@@ -267,7 +262,25 @@ class Provider(User):
             raise ValueError("El producto no fué encontrado")
 
     def save(self):
-        pass
+        products = "|".join(self.products)
+        with get_conn() as c:
+            exists = c.execute("SELECT provider_id FROM providers WHERE provider_id = ?", (self.provider_id,)).fetchone()
+            if exists:
+                c.execute("UPDATE providers SET products = ? WHERE provider_id = ?",(products,self.provider_id))
+            else:
+                c.execute("INSERT INTO providers (provider_id, products) VALUES (?,?)",(self.provider_id,products))
+            c.commit()
+
+    @staticmethod
+    def load(provider_id:str) ->Optional["Provider"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM providers WHERE provider_id = ?", (provider_id,)).fetchone()
+            if r:
+                user = User.load(r["provider_id"])
+                products = r["products"].split("|")
+                return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
+            return None
+
 
 class Client(User):
     def __init__(self, name:str, phone:int,user_id:str = None, client_id:str = None, sales: List[str] = None):
@@ -281,7 +294,6 @@ class Client(User):
     @client_id.setter
     def client_id(self,new_id):
         pass
-
     def mostrar_datos(self):
         pass
     def add_sale(self, sale):
@@ -294,9 +306,25 @@ class Client(User):
             self.sales.remove(sale)
         else:
             raise ValueError("La venta no está en la lista")
-
     def save(self):
-        pass
+        new_sales = "|".join(self.sales)
+        with get_conn() as c:
+            exists = c.execute("SELECT client_id FROM clients WHERE client_id = ?", (self.client_id,)).fetchone()
+            if exists:
+                c.execute("UPDATE clients SET sales = ?, type = ? WHERE client_id = ?", (new_sales, self.type, self.client_id))
+            else:
+                c.execute("INSERT INTO clients (client_id, sales, type) VALUES (?,?,?)",(self.client_id, self.sales, self.type))
+            c.commit()
+
+    @staticmethod
+    def load(client_id:str) -> Optional["Client"]:
+        with get_conn() as c:
+            r = c.execute("SELECT * FROM clients WHERE client_id = ?", (client_id,)).fetchone()
+            if r:
+                user = User.load(r["client_id"])
+                sales = r["sales"].split("|")
+                return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
+            return None
 
 
 class Product:
@@ -330,7 +358,6 @@ class Product:
         if len(new_type) == 0:
             raise ValueError("El tipo debe ser solo letras")
         self._type = new_type
-
     @property
     def raw_p(self):
         return self._raw_p
@@ -351,7 +378,6 @@ class Product:
         if new_p < 0 or new_p < self._raw_p:
             raise ValueError("El valor debe ser mayor a 0 y al precio de compra")
         self._sale_p = new_p
-
     def add_provider(self,provider):
         if provider not in self._providers:
             self._providers.append(provider)
@@ -363,7 +389,6 @@ class Product:
             self._providers.remove(provider)
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
-
     def save(self):
         pass
 
@@ -379,7 +404,6 @@ class Sales:
     @sale_id.setter
     def sale_id(self,new_id):
         pass
-
     def save(self):
         with get_conn() as c:
             prod_json = json.dumps(self.products, ensure_ascii=False)
@@ -389,7 +413,6 @@ class Sales:
             else:
                 c.execute("INSER INTO sales (sale_id, client_id, products, total) VALUES(?, ?, ?, ?)",(self.sale_id,self._client_id, prod_json, self.total))
             c.commit()
-
     @staticmethod
     def load(sale_id:str) -> Optional["Sales"]:
         with get_conn() as c:
@@ -404,7 +427,6 @@ class Sales:
                 return Sales(client_id=r["client_id"], products=prods, sale_id=r["sale_id"], total = r["total"])
             else:
                 return None
-
 
     def delete(self):
         with get_conn() as c:
