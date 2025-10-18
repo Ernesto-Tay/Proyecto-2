@@ -3,6 +3,8 @@ from tkinter import ttk
 import json
 import sqlite3
 import random
+import datetime
+from datetime import datetime, date
 from typing import Optional, Dict, Any, List
 
 DB_NAME = "bawiz.db"
@@ -89,9 +91,11 @@ class DataBase:
             
             CREATE TABLE IF NOT EXISTS sales (
                 sale_id TEXT PRIMARY KEY,
-                client_id TEXT,
-                products TEXT,
-                total REAL,
+                client_id TEXT NOT NULL,
+                date TEXT NOT NULL,
+                time TEXT NOT NULL, 
+                products TEXT NOT NULL,
+                total REAL NOT NULL,
                 FOREIGN KEY (client_id) REFERENCES clients(client_id)
             );
             
@@ -410,8 +414,10 @@ class Product:
 
 
 class Sales:
-    def __init__(self,client_id:str, products: Optional[Dict[str, Dict[str, Any]]] = None, sale_id = None, total:int = None):
+    def __init__(self,client_id:str, products: Optional[Dict[str, Dict[str, Any]]] = None, sale_id = None, total:int = None, date_:str = None, time_:str = None):
         self.__sale_id = sale_id or id_generate("sal")
+        self.__date = datetime.strptime(date_, "%d/%m/%Y").date() or date.today().strftime("%d/%m/%Y")
+        self.__time = datetime.strptime(time_, "%H:%M").time() or datetime.now().strftime("%H:%M")
         self._client_id = client_id
         self.products : Dict[str, Dict[str, Any]] = products or {}
         self.total = total
@@ -421,14 +427,27 @@ class Sales:
     @sale_id.setter
     def sale_id(self,new_id):
         pass
+    @property
+    def date(self):
+        return self.__date
+    @date.setter
+    def date(self,new_date):
+        pass
+    @property
+    def time(self):
+        return self.__time
+    @time.setter
+    def time(self,new_time):
+        pass
+
     def save(self):
         with get_conn() as c:
             prod_json = json.dumps(self.products, ensure_ascii=False)
             exists = c.execute("SELECT 1 FROM sales WHERE sale_id = ?", self.sale_id).fetchone()
             if exists:
-                c.execute("UPDATE sales SET client_id = ?, products = ?, total = ? WHERE sale_id = ?",(self._client_id, prod_json, self.total, self.sale_id))
+                c.execute("UPDATE sales SET client_id = ?,date = ?, time = ?, products = ?, total = ? WHERE sale_id = ?",(self._client_id, self.date, self.time, prod_json, self.total, self.sale_id))
             else:
-                c.execute("INSER INTO sales (sale_id, client_id, products, total) VALUES(?, ?, ?, ?)",(self.sale_id,self._client_id, prod_json, self.total))
+                c.execute("INSERT INTO sales (sale_id, date, time, client_id, products, total) VALUES(?, ?, ?, ?, ?, ?)",(self.sale_id,self.date, self.time, self._client_id, prod_json, self.total))
             c.commit()
     @staticmethod
     def load(sale_id:str) -> Optional["Sales"]:
@@ -441,7 +460,7 @@ class Sales:
                         prods = json.loads(r["products"])
                     except json.JSONDecodeError:
                         prods = {}
-                return Sales(client_id=r["client_id"], products=prods, sale_id=r["sale_id"], total = r["total"])
+                return Sales(client_id=r["client_id"], products=prods, sale_id=r["sale_id"], total = r["total"], date_ = r["date"], time_ = r["time"])
             else:
                 return None
 
