@@ -1,5 +1,3 @@
-import tkinter as tk
-from tkinter import ttk
 import json
 import sqlite3
 import random
