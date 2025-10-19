@@ -9,21 +9,21 @@ DataBase.create_tables()
 
 root = ctk.CTk()
 root.title("BAWIZ SYSTEM")
-root.geometry("600x400")
+root.geometry("800x500")
 root.resizable(False, False)
 
-title = ctk.CTkLabel(root,text="INICIAR SESIÓN",font=("Open Sans", 32, "bold"),text_color="#111111")
+title = ctk.CTkLabel(root,text="INICIAR\nSESIÓN",font=("Open Sans", 62, "bold"),text_color="#111111")
 title.pack(pady=25)
 # frame nombre
 # espacio gris
 frame_nombre = ctk.CTkFrame(root, fg_color="#e0e0e0", corner_radius=20)
-frame_nombre.pack(pady=10, ipadx=15, ipady=10)
+frame_nombre.pack(pady=5, ipadx=10, ipady=4)
 
 frame_nombre.grid_columnconfigure(0, minsize=150)
 frame_nombre.grid_columnconfigure(1, minsize=300)
 
-label_nombre = ctk.CTkLabel(frame_nombre, text="Nombre", font=("Open Sans", 14))
-label_nombre.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="e")
+label_nombre = ctk.CTkLabel(frame_nombre, text="Nombre", font=("Open Sans", 20))
+label_nombre.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
 entry_nombre = ctk.CTkEntry(frame_nombre,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
 entry_nombre.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
@@ -31,13 +31,13 @@ entry_nombre.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
 # frame id
 # espacio gris
 frame_id = ctk.CTkFrame(root, fg_color="#e0e0e0", corner_radius=20)
-frame_id.pack(pady=10, ipadx=15, ipady=10)
+frame_id.pack(pady=5, ipadx=10, ipady=4)
 
 frame_id.grid_columnconfigure(0, minsize=150)
 frame_id.grid_columnconfigure(1, minsize=300)
 
-label_id = ctk.CTkLabel(frame_id, text="ID", font=("Open Sans", 14))
-label_id.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="e")
+label_id = ctk.CTkLabel(frame_id, text="ID", font=("Open Sans", 20))
+label_id.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
 entry_id = ctk.CTkEntry(frame_id,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
 entry_id.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
@@ -96,11 +96,11 @@ frame_botones = ctk.CTkFrame(root, fg_color="transparent")
 frame_botones.pack(pady=25)
 
 # boton admin
-btn_admin = ctk.CTkButton(frame_botones,text="Ingresar (Admin)",width=150,height=45,corner_radius=25,fg_color="#bfbfbf",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 12, "underline"),command=login_admin)
+btn_admin = ctk.CTkButton(frame_botones,text="Ingresar (admin)",width=150,height=45,corner_radius=25,fg_color="#e0e0e0",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 16, "bold", "underline"),command=login_admin)
 btn_admin.grid(row=0, column=0, padx=15)
 
 # boton collab
-btn_collab = ctk.CTkButton(frame_botones,text="Ingresar (Colab)",width=150,height=45,corner_radius=25,fg_color="#bfbfbf",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 12, "underline"),command=login_collab)
+btn_collab = ctk.CTkButton(frame_botones,text="Ingresar (collab)",width=150,height=45,corner_radius=25,fg_color="#e0e0e0",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 16, "bold", "underline"),command=login_collab)
 btn_collab.grid(row=0, column=1, padx=15)
 
 root.mainloop()
