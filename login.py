@@ -91,7 +91,6 @@ def login_collab():
     else:
         messagebox.showerror("Error", "Credenciales incorrectas o usuario no registrado.")
 
-
 # general botones
 frame_botones = ctk.CTkFrame(root, fg_color="transparent")
 frame_botones.pack(pady=25)
