@@ -1,7 +1,8 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from main import get_conn, DataBase
-
+from ui_admin import AdminUI
+from ui_collaborator import CollabUI
 
 class LoginUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -70,6 +71,7 @@ class LoginUI(ctk.CTkFrame):
         if user_id.startswith("ADM"):
             if self.validate_user("admins", "admin_id", user_id, name):
                 messagebox.showinfo("Éxito", f"Bienvenido administrador {name}")
+                self.change_to_admin()
 
             else:
                 messagebox.showerror("Error", "Credenciales de administrador incorrectas o no registradas.")
@@ -77,9 +79,18 @@ class LoginUI(ctk.CTkFrame):
         elif user_id.startswith("COL"):
             if self.validate_user("collaborators", "collab_id", user_id, name):
                 messagebox.showinfo("Éxito", f"Bienvenido colaborador {name}")
+                self.change_to_collab()
 
             else:
                 messagebox.showerror("Error", "Credenciales de colaborador incorrectas o no registradas.")
 
         else:
             messagebox.showerror("Error", "El ID debe iniciar con 'ADM' o 'COL' según su tipo de usuario.")
+
+    def change_to_admin(self):
+        self.pack_forget()
+        AdminUI(self.master)
+
+    def change_to_collab(self):
+        self.pack_forget()
+        CollabUI(self.master)

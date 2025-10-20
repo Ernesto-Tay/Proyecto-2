@@ -9,7 +9,7 @@ if __name__ == "__main__":
     root.title("BAWIZ SYSTEM")
     root.geometry("800x500")
     root.resizable(False, False)
+    root.configure(fg_color="white")
 
     LoginUI(root)
-
     root.mainloop()
