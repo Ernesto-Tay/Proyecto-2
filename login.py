@@ -6,7 +6,7 @@ from ui_collaborator import CollabUI
 
 class LoginUI(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
 
@@ -23,7 +23,7 @@ class LoginUI(ctk.CTkFrame):
         frame_nombre.grid_columnconfigure(1, minsize=300)
 
         label_nombre = ctk.CTkLabel(frame_nombre, text="Nombre", font=("Open Sans", 18))
-        label_nombre.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="e")
+        label_nombre.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
         self.entry_nombre = ctk.CTkEntry(frame_nombre,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
         self.entry_nombre.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
@@ -36,7 +36,7 @@ class LoginUI(ctk.CTkFrame):
         frame_id.grid_columnconfigure(1, minsize=300)
 
         label_id = ctk.CTkLabel(frame_id, text="ID", font=("Open Sans", 18))
-        label_id.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="e")
+        label_id.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
         self.entry_id = ctk.CTkEntry(frame_id,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
         self.entry_id.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
