@@ -22,7 +22,7 @@ class LoginUI(ctk.CTkFrame):
         frame_nombre.grid_columnconfigure(0, minsize=150)
         frame_nombre.grid_columnconfigure(1, minsize=300)
 
-        label_nombre = ctk.CTkLabel(frame_nombre, text="Nombre", font=("Open Sans", 18, "bold"))
+        label_nombre = ctk.CTkLabel(frame_nombre, text="Nombre", font=("Open Sans", 18))
         label_nombre.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="e")
 
         self.entry_nombre = ctk.CTkEntry(frame_nombre,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
@@ -35,7 +35,7 @@ class LoginUI(ctk.CTkFrame):
         frame_id.grid_columnconfigure(0, minsize=150)
         frame_id.grid_columnconfigure(1, minsize=300)
 
-        label_id = ctk.CTkLabel(frame_id, text="ID", font=("Open Sans", 18, "bold"))
+        label_id = ctk.CTkLabel(frame_id, text="ID", font=("Open Sans", 18))
         label_id.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="e")
 
         self.entry_id = ctk.CTkEntry(frame_id,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
