@@ -7,6 +7,7 @@ from typing import Optional, Dict, Any, List
 
 DB_NAME = "bawiz.db"
 
+
 def id_generate(id_type):
     val1 = str(random.randint(1, 999))
     val2 = str(random.randint(1, 999))
@@ -27,32 +28,34 @@ def id_generate(id_type):
         new_id = "VNT" + val1 + val2
     return new_id
 
+
 def get_conn():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
+
 class DataBase:
 
     @staticmethod
     def create_tables():
         with get_conn() as conn:
-            conn.executescript(""""+
+            conn.executescript("""
             CREATE TABLE IF NOT EXISTS users (
                 user_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
-                phone REAL NOT NULL,
+                phone REAL NOT NULL
             );
-            
+
             CREATE TABLE IF NOT EXISTS admins (
                 admin_id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
                 position TEXT NOT NULL,
                 type TEXT DEFAULT 'admin',
-                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
-            
+
             CREATE TABLE IF NOT EXISTS collaborators (
                 collab_id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -60,7 +63,7 @@ class DataBase:
                 type TEXT DEFAULT 'collaborator',
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
-            
+
             CREATE TABLE IF NOT EXISTS clients (
                 client_id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -68,7 +71,7 @@ class DataBase:
                 type TEXT DEFAULT 'client',
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
-            
+
             CREATE TABLE IF NOT EXISTS products (
                 product_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -76,7 +79,7 @@ class DataBase:
                 description TEXT NOT NULL,
                 raw_price REAL NOT NULL,
                 sale_price REAL NOT NULL,
-                stock INTEGER NOT NULL,
+                stock INTEGER NOT NULL
             );
             
             CREATE TABLE IF NOT EXISTS providers (
@@ -100,7 +103,7 @@ class DataBase:
             """)
 
 class User:
-    def __init__(self, name:str, phone:int ,user_id = None):
+    def __init__(self, name: str, phone: int, user_id=None):
         self.__user_id = user_id or id_generate("usr")
         self._name = name
         self._phone = phone
@@ -108,17 +111,21 @@ class User:
     @property
     def user_id(self):
         return self.__user_id
+
     @user_id.setter
-    def user_id(self,new_id):
+    def user_id(self, new_id):
         pass
+
     @property
     def name(self):
         return self._name
+
     @name.setter
-    def name(self,name):
+    def name(self, name):
         if len(name) == 0 or not name.isalpha():
             raise ValueError("El nombre debe ser solo letras")
         self._name = name
+
     @property
     def phone(self):
         return self._phone
@@ -130,17 +137,19 @@ class User:
 
     def mostrar_datos(self):
         pass
+
     def save(self):
         with get_conn() as c:
             existing = c.execute("SELECT user_id FROM users WHERE id_user = ?", (self.user_id,)).fetchone()
             if existing:
-                c.execute("UPDATE users SET name=?, phone=? WHERE user_id=?",(self.name, self.phone, self.user_id))
+                c.execute("UPDATE users SET name=?, phone=? WHERE user_id=?", (self.name, self.phone, self.user_id))
             else:
-                c.execute("INSERT INTO users (user_id, name, phone) VALUES (?, ?, ?)",(self.user_id, self.name, self.phone))
+                c.execute("INSERT INTO users (user_id, name, phone) VALUES (?, ?, ?)",
+                          (self.user_id, self.name, self.phone))
             c.commit()
 
     @staticmethod
-    def load(user_id:str)-> Optional["User"]:
+    def load(user_id: str) -> Optional["User"]:
         with get_conn() as c:
             r = c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
             if r:
@@ -149,23 +158,28 @@ class User:
 
 
 class Admin(User):
-    def __init__(self, name:str, phone:int, position:str,user_id=None, admin_id:str = None):
+    def __init__(self, name: str, phone: int, position: str, user_id=None, admin_id: str = None):
         self.__admin_id = admin_id or id_generate("adm")
         self.__position = position
         self.type = "admin"
         User.__init__(self, name, phone, user_id)
+
     @property
     def admin_id(self):
         return self.__admin_id
+
     @admin_id.setter
-    def admin_id(self,new_id):
+    def admin_id(self, new_id):
         pass
+
     @property
     def position(self):
         return self.__position
+
     @position.setter
-    def position(self,new_position):
+    def position(self, new_position):
         pass
+
     def products(self, root):
         pass
     def sales(self, root):
@@ -178,28 +192,31 @@ class Admin(User):
         pass
     def show_sales(self, root):
         pass
+
     def save(self):
         with get_conn() as c:
             super().save()
             existing = c.execute("SELECT admin_id FROM admins WHERE admin_id = ?", (self.admin_id,)).fetchone()
             if existing:
-                c.execute("UPDATE admins SET user_id = ?, position = ?, type = ? WHERE admin_id = ?",(self.user_id, self.position, self.type))
+                c.execute("UPDATE admins SET user_id = ?, position = ?, type = ? WHERE admin_id = ?",
+                          (self.user_id, self.position, self.type))
             else:
-                c.execute("INSERT INTO admins (admin_id, position, type) VALUES (?, ?, ?)",(self.admin_id,self.position,self.type))
+                c.execute("INSERT INTO admins (admin_id, position, type) VALUES (?, ?, ?)",
+                          (self.admin_id, self.position, self.type))
             c.commit()
+
     @staticmethod
-    def load(admin_id:str) ->Optional["Admin"]:
+    def load(admin_id: str) -> Optional["Admin"]:
         with get_conn() as c:
             r = c.execute("SELECT * FROM admins WHERE admin_id = ?", (admin_id,)).fetchone()
             if r:
                 user = User.load(r["user_id"])
-                return Admin(name = user.name, phone = user.phone,position = r["position"], user_id = user.user_id)
+                return Admin(name=user.name, phone=user.phone, position=r["position"], user_id=user.user_id)
             return None
 
 
-
 class Collaborator(User):
-    def __init__(self, name:str, phone:int, position:str,user_id:str = None, collab_id:str = None):
+    def __init__(self, name: str, phone: int, position: str, user_id: str = None, collab_id: str = None):
         self.__collab_id = collab_id or id_generate("col")
         self.position = position
         self.type = "collaborator"
@@ -212,6 +229,7 @@ class Collaborator(User):
         pass
     def mostrar_datos(self):
         pass
+
     def sales(self, root):
         pass
     def clients(self, root):
@@ -252,11 +270,13 @@ class Provider(User):
         pass
     def mostrar_datos(self):
         pass
+
     def add_product(self, product):
         if product not in self.products:
             self.products.append(product)
         else:
             raise ValueError("El producto ya está en la lista")
+
     def del_product(self, product):
         if product in self.products:
             self.products.remove(product)
@@ -360,6 +380,7 @@ class Product:
         if len(new_type) == 0:
             raise ValueError("El tipo debe ser solo letras")
         self._type = new_type
+
     @property
     def raw_p(self):
         return self._raw_p
