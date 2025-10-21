@@ -18,6 +18,15 @@ class AdminUI(ctk.CTkFrame):
         btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
         btn_colab.pack(side="left", padx=6)
 
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_sales.pack(side="left", padx=6)
+
+        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_products.pack(side="left", padx=6)
+
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_clients.pack(side="left", padx=6)
+
         # frame derecho
         right = ctk.CTkFrame(header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
