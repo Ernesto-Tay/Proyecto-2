@@ -8,5 +8,19 @@ class AdminUI(ctk.CTkFrame):
         self.create_header()
 
     def create_header(self):
-        header = ctk.CTkFrame(self, fg_color="#e5e5e5", height=60, corner_radius=0)
+        header = ctk.CTkFrame(self, fg_color="#e0e0e0", height=60, corner_radius=0)
         header.pack(side="top", fill="x")
+
+        # frame izquierdo
+        left = ctk.CTkFrame(header, fg_color="transparent")
+        left.pack(side="left", padx=15, pady=10)
+
+        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_colab.pack(side="left", padx=6)
+
+        # frame derecho
+        right = ctk.CTkFrame(header, fg_color="transparent")
+        right.pack(side="right", padx=15, pady=10)
+
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_logout.pack(side="right", padx=6)
