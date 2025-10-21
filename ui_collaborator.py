@@ -5,5 +5,29 @@ class CollabUI(ctk.CTkFrame):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
+        self.create_header()
 
-        ctk.CTkLabel(self, text="Panel del Colaborador", font=("Open Sans", 32, "bold"), text_color="#111").pack(pady=40)
+    def create_header(self):
+        header = ctk.CTkFrame(self, fg_color="#e0e0e0", height=60, corner_radius=0)
+        header.pack(side="top", fill="x")
+
+        # frame izquierdo
+        left = ctk.CTkFrame(header, fg_color="transparent")
+        left.pack(side="left", padx=15, pady=10)
+
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36, corner_radius=18, fg_color="white",
+                                      hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_sales.pack(side="left", padx=6)
+
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36, corner_radius=18, fg_color="white",
+                                        hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_clients.pack(side="left", padx=6)
+
+        # frame derecho
+        right = ctk.CTkFrame(header, fg_color="transparent")
+        right.pack(side="right", padx=15, pady=10)
+
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18,
+                                       fg_color="white", hover_color="#f2f2f2", text_color="black",
+                                       font=("Open Sans", 13, "bold"))
+        btn_logout.pack(side="right", padx=6)

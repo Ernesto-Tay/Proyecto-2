@@ -141,7 +141,7 @@ class User:
 
     def save(self):
         with get_conn() as c:
-            existing = c.execute("SELECT user_id FROM users WHERE id_user = ?", (self.user_id,)).fetchone()
+            existing = c.execute("SELECT user_id FROM users WHERE user_id = ?", (self.user_id,)).fetchone()
             if existing:
                 c.execute("UPDATE users SET name=?, phone=? WHERE user_id=?", (self.name, self.phone, self.user_id))
             else:
@@ -202,8 +202,8 @@ class Admin(User):
                 c.execute("UPDATE admins SET user_id = ?, position = ?, type = ? WHERE admin_id = ?",
                           (self.user_id, self.position, self.type))
             else:
-                c.execute("INSERT INTO admins (admin_id, position, type) VALUES (?, ?, ?)",
-                          (self.admin_id, self.position, self.type))
+                c.execute("INSERT INTO admins (admin_id, user_id, position, type) VALUES (?,? , ?, ?)",
+                          (self.admin_id,self.user_id, self.position, self.type))
             c.commit()
 
     @staticmethod
