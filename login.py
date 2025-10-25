@@ -94,7 +94,3 @@ class LoginUI(ctk.CTkFrame):
     def change_to_collab(self):
         self.pack_forget()
         CollabUI(self.master)
-
-def logout_login(self):
-    self.pack_forget()
-    LoginUI(self.master)

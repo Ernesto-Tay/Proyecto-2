@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter.messagebox as mbox
 
 class AdminUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -31,5 +32,12 @@ class AdminUI(ctk.CTkFrame):
         right = ctk.CTkFrame(header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
 
-        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"), command = self.logout)
         btn_logout.pack(side="right", padx=6)
+
+    def logout(self):
+        confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
+        if confirm:
+            from login import LoginUI
+            self.pack_forget()
+            LoginUI(self.master)

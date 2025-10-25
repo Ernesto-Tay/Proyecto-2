@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter.messagebox as mbox
 
 class CollabUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -15,19 +16,22 @@ class CollabUI(ctk.CTkFrame):
         left = ctk.CTkFrame(header, fg_color="transparent")
         left.pack(side="left", padx=15, pady=10)
 
-        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36, corner_radius=18, fg_color="white",
-                                      hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
         btn_sales.pack(side="left", padx=6)
 
-        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36, corner_radius=18, fg_color="white",
-                                        hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
         btn_clients.pack(side="left", padx=6)
 
         # frame derecho
         right = ctk.CTkFrame(header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
 
-        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18,
-                                       fg_color="white", hover_color="#f2f2f2", text_color="black",
-                                       font=("Open Sans", 13, "bold"))
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"), command = self.logout)
         btn_logout.pack(side="right", padx=6)
+
+    def logout(self):
+        confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
+        if confirm:
+            from login import LoginUI
+            self.pack_forget()
+            LoginUI(self.master)
