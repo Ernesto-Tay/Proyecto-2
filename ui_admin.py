@@ -1,4 +1,9 @@
 import customtkinter as ctk
+from main import get_conn
+from tkinter import ttk, messagebox, filedialog
+from login import logout_login
+
+DB_NAME = "bawiz.db"
 
 class AdminUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -33,3 +38,31 @@ class AdminUI(ctk.CTkFrame):
 
         btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
         btn_logout.pack(side="right", padx=6)
+
+    def menu_visualizer(self, root, kind):
+        with get_conn() as c:
+            cur = c.cursor()
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name= ? LIMIT = 1;", (kind,))
+            if not cur.fetchone():
+                return None
+
+            def get_hearders(table_name):
+                cur.execute(f"PRAGMA table_info('{table_name}')")
+                return [r[1] for r in cur.fetchall()]
+
+            headers = get_hearders(kind)
+            if headers is None:
+                return None
+            tree = ttk.Treeview(root, show="headings")
+            tree.pack(fill = "both", expand = True)
+            tree["columns"] = headers
+            for col in headers:
+                tree.heading(col, text=col)
+                tree.column(col, width= 800 // len(headers))
+
+            cur.execute(f"SELECT * FROM {kind}")
+            for row in cur.fetchall():
+                tree.insert("", "end", values=row)
+
+
+            return
