@@ -254,7 +254,10 @@ class Collaborator(User):
                 user = User.load(r["user_id"])
                 return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
             return None
-
+    def delete(self):
+        with get_conn() as c:
+            c.execute("DELETE FROM sales WHERE sales_id = ?",(self.collab_id,))
+            c.commit()
 
 class Provider(User):
     def __init__(self, name:str, phone:int,products : List[str] = None,user_id:str = None, provider_id:str = None):
@@ -302,7 +305,10 @@ class Provider(User):
                 products = r["products"].split("|")
                 return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
             return None
-
+    def delete(self):
+        with get_conn() as c:
+            c.execute("DELETE FROM sales WHERE sales_id = ?",(self.provider_id,))
+            c.commit()
 
 class Client(User):
     def __init__(self, name:str, phone:int,user_id:str = None, client_id:str = None, sales: List[str] = None):
@@ -347,6 +353,10 @@ class Client(User):
                 sales = r["sales"].split("|")
                 return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
             return None
+    def delete(self):
+        with get_conn() as c:
+            c.execute("DELETE FROM sales WHERE sales_id = ?",(self.client_id,))
+            c.commit()
 
 
 class Product:
@@ -430,6 +440,11 @@ class Product:
                 providers = r["providers"].split("|")
                 return Product(name = r["name"], types = r["type"], desc = r["description"], raw_p = r["raw_price"], sale_p = r["sale_price"], stock = r["stock"],providers = providers)
             return None
+
+    def delete(self):
+        with get_conn() as c:
+            c.execute("DELETE FROM sales WHERE sales_id = ?",(self.product_id,))
+            c.commit()
 
 
 class Sales:
