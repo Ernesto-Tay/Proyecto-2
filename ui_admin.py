@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from main import get_conn
 from tkinter import ttk, messagebox, filedialog
-from login import logout_login
 
 DB_NAME = "bawiz.db"
 
@@ -46,13 +45,9 @@ class AdminUI(ctk.CTkFrame):
             if not cur.fetchone():
                 return None
 
-            def get_hearders(table_name):
-                cur.execute(f"PRAGMA table_info('{table_name}')")
-                return [r[1] for r in cur.fetchall()]
+            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sale_price", "stock"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            headers = ", ".join([f'"{c}"' for c in [cols]])
 
-            headers = get_hearders(kind)
-            if headers is None:
-                return None
             tree = ttk.Treeview(root, show="headings")
             tree.pack(fill = "both", expand = True)
             tree["columns"] = headers
@@ -60,9 +55,24 @@ class AdminUI(ctk.CTkFrame):
                 tree.heading(col, text=col)
                 tree.column(col, width= 800 // len(headers))
 
+
             cur.execute(f"SELECT * FROM {kind}")
             for row in cur.fetchall():
                 tree.insert("", "end", values=row)
+
+            frame = ctk.CTkFrame(root, relief="ridge", corner_radius=12)
+            frame.pack(fill="both", expand=True, padx=8, pady=8)
+
+            controls = ctk.CTkFrame(frame, relief="ridge", fg_color="transparent")
+            controls.pack(fill="x", padx=8, pady=(4,8))
+
+            col_label = ctk.CTkLabel(controls, text="Filtro...", font=("Open Sans", 13))
+            col_label.pack(side="left", padx=10, pady=10)
+
+
+
+            if kind == "sales":
+                ttk.Label(controls, text="Filtro...")
 
 
             return
