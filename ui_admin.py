@@ -61,7 +61,19 @@ class AdminUI(ctk.CTkFrame):
             self.add_submenu_button(submenu, "Agregar proveedor",lambda: self.action("Agregar proveedor"))
             self.add_submenu_button(submenu, "Ver proveedores",lambda: self.action("Ver proveedores"))
 
-        self.active_submenu = submenu # Guardam la referencia en submenu
+        elif name == "sales":
+            self.add_submenu_button(submenu, "Agregar ventas",lambda: self.action("Agregar ventas"))
+            self.add_submenu_button(submenu, "Ver ventas",lambda: self.action("Ver ventas"))
+
+        elif name == "products":
+            self.add_submenu_button(submenu, "Agregar productos",lambda: self.action("Agregar productos"))
+            self.add_submenu_button(submenu, "Ver productos",lambda: self.action("Ver productos"))
+
+        elif name == "clients":
+            self.add_submenu_button(submenu, "Agregar cliente", lambda: self.action("Agregar cliente"))
+            self.add_submenu_button(submenu, "Ver clientes", lambda: self.action("Ver clientes"))
+
+        self.active_submenu = submenu # Guarda la referencia en submenu
         self.last_opened = name
 
     def add_submenu_button(self, parent, text, command):
