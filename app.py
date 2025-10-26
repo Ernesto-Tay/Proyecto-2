@@ -7,8 +7,8 @@ if __name__ == "__main__":
 
     root = ctk.CTk()
     root.title("BAWIZ SYSTEM")
-    root.geometry("800x500")
-    root.resizable(False, False)
+    root.geometry("1200x800")
+    root.resizable(True, True)
     root.configure(fg_color="white")
 
     LoginUI(root)
