@@ -9,6 +9,7 @@ class LoginUI(ctk.CTkFrame):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
+        self.active_submenu = None
 
         DataBase.create_tables()
 
