@@ -114,8 +114,6 @@ class AdminUI(ctk.CTkFrame):
 
         if msg == "Agregar colaborador":
             self.view_create_collab()
-        else:
-            mbox.showinfo("Acción", f"Seleccionaste: {msg}")
 
     # formulario agregar colaborador
     def view_create_collab(self):
@@ -129,8 +127,7 @@ class AdminUI(ctk.CTkFrame):
         row_nombre.grid_columnconfigure(0, minsize=160)
         row_nombre.grid_columnconfigure(1, minsize=320)
 
-        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(
-            row=0, column=0, padx=(14, 8), pady=8, sticky="w")
+        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf",placeholder_text="String")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -139,8 +136,7 @@ class AdminUI(ctk.CTkFrame):
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
 
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(
-            row=0, column=0, padx=(14, 8), pady=8, sticky="w")
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf", placeholder_text="Int")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -149,8 +145,7 @@ class AdminUI(ctk.CTkFrame):
         row_pos.grid_columnconfigure(0, minsize=160)
         row_pos.grid_columnconfigure(1, minsize=320)
 
-        ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18)).grid(
-            row=0, column=0, padx=(14, 8), pady=8, sticky="w")
+        ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf",placeholder_text="String")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
