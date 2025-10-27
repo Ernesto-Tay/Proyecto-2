@@ -77,7 +77,7 @@ class AdminUI(ctk.CTkFrame):
 
         # frame submenu
         submenu = ctk.CTkFrame(self, fg_color="#f8f8f8", corner_radius=12,border_width=1, border_color="#d0d0d0")
-        submenu.place(x=parent_button.winfo_rootx() - self.master.winfo_rootx(),y=parent_button.winfo_rooty() - self.master.winfo_rooty() + 50)
+        submenu.place(x=parent_button.winfo_x() + 10,y=parent_button.winfo_y() + parent_button.winfo_height() + 5)
 
         if name == "colab":
             self.add_submenu_button(submenu, "Agregar colaborador",lambda: self.action("Agregar colaborador"))
