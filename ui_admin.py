@@ -21,8 +21,10 @@ class AdminUI(ctk.CTkFrame):
     def _open_fullscreen_view(self):
         self.header.pack_forget()
         self.body.pack_forget()
-        self.fullscreen_frame = ctk.CTkFrame(self, fg_color="#fafafa")  # color de fondo
+        self.fullscreen_frame = ctk.CTkFrame(self, fg_color="#fafafa")
         self.fullscreen_frame.pack(expand=True, fill="both")
+        self.fullscreen_frame.lift()  # se sobrepone el frame sobre todos los demás
+        self.update_idletasks()  # refresca el diseño (lo dibuja)
         return self.fullscreen_frame
 
     def _close_fullscreen_view(self):
