@@ -117,11 +117,11 @@ class AdminUI(ctk.CTkFrame):
         else:
             mbox.showinfo("Acción", f"Seleccionaste: {msg}")
 
+    # formulario agregar colaborador
     def view_create_collab(self):
         frame = self._open_fullscreen_view()
 
-        title = ctk.CTkLabel(frame, text="Crear colaborador",
-                             font=("Open Sans", 50, "bold"), text_color="#111111")
+        title = ctk.CTkLabel(frame, text="Crear colaborador",font=("Open Sans", 50, "bold"), text_color="#111111")
         title.pack(pady=(60, 40))
 
         row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
@@ -131,10 +131,7 @@ class AdminUI(ctk.CTkFrame):
 
         ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(
             row=0, column=0, padx=(14, 8), pady=8, sticky="w")
-        self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,
-                                       corner_radius=14, fg_color="white",
-                                       text_color="black", border_color="#cfcfcf",
-                                       placeholder_text="String")
+        self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf",placeholder_text="String")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
@@ -144,10 +141,7 @@ class AdminUI(ctk.CTkFrame):
 
         ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(
             row=0, column=0, padx=(14, 8), pady=8, sticky="w")
-        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36,
-                                    corner_radius=14, fg_color="white",
-                                    text_color="black", border_color="#cfcfcf",
-                                    placeholder_text="Int")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf", placeholder_text="Int")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
@@ -157,19 +151,13 @@ class AdminUI(ctk.CTkFrame):
 
         ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18)).grid(
             row=0, column=0, padx=(14, 8), pady=8, sticky="w")
-        self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36,
-                                    corner_radius=14, fg_color="white",
-                                    text_color="black", border_color="#cfcfcf",
-                                    placeholder_text="String")
+        self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf",placeholder_text="String")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         btns = ctk.CTkFrame(frame, fg_color="white")
         btns.pack(pady=25)
 
-        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=40,
-                                 corner_radius=22, fg_color="white",
-                                 hover_color="#f2f2f2", text_color="black",
-                                 command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=40, corner_radius=22, fg_color="white",hover_color="#f2f2f2", text_color="black", command=self._close_fullscreen_view)
         btn_back.pack()
 
     def view_list_collab(self):
