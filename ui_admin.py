@@ -1,10 +1,11 @@
 import customtkinter as ctk
-from main import get_conn
+from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import calendar
 
 DB_NAME = "bawiz.db"
+classes = {"users": User, "admins": Admin, "collaborators": Collaborator, "providers": Provider, "clients": Client, "sales": Sales, "products": Product}
 
 class AdminUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -12,6 +13,7 @@ class AdminUI(ctk.CTkFrame):
         self.master = master
         self.pack(expand=True, fill="both")
         self.create_header()
+        self.db_info = self.db_extract(classes)
 
     def create_header(self):
         header = ctk.CTkFrame(self, fg_color="#e0e0e0", height=60, corner_radius=0)
@@ -40,12 +42,22 @@ class AdminUI(ctk.CTkFrame):
         btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
         btn_logout.pack(side="right", padx=6)
 
-    def db_extract(self, kind):
+    def db_extract(self, classes):
         with get_conn as c:
+            out = {}
             cur = c.cursor()
-            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=? LIMIT 1;", (kind,))
-            if not cur.fetchone():
-                return None
+
+            # Obtiene todas las tablas que NO sean de metadatos (creadas por SQL para operaciones internas)
+            cur.execute("SELECT table FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+            tables = [r[0] for r in cur.fetchall()]
+
+            for table in tables:
+                # Obtención de encabezados de tabla
+                cur.execute(f"PRAGMA table_info('{table}')")
+                info = cur.fetchall()
+                cols = [col[1] for col in info]
+
+                # Obtener filas
 
 
 
@@ -255,5 +267,4 @@ class AdminUI(ctk.CTkFrame):
                 root.bind_all("<Button-1>", outside_click, add ="+")
                 date_pop.focus_force()
                 day_upd()
-
             return
