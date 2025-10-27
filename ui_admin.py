@@ -210,6 +210,9 @@ class AdminUI(ctk.CTkFrame):
         title = ctk.CTkLabel(frame, text="Crear producto", font=("Open Sans", 50, "bold"), text_color="#111111")
         title.pack(pady=(60, 40))
 
+        container = ctk.CTkFrame(frame, fg_color="transparent")
+        container.pack(pady=10)
+
         # nombre
         row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_nombre.pack(pady=10, ipadx=10, ipady=6)
