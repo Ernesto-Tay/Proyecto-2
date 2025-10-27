@@ -107,7 +107,7 @@ class AdminUI(ctk.CTkFrame):
         btn.pack(padx=8, pady=4)
 
     def action(self, msg):
-        # 🔹 cerrar submenú si está abierto
+        # Cierra el submenú si está abierto
         if self.active_submenu:
             self.active_submenu.destroy()
             self.active_submenu = None
@@ -165,13 +165,6 @@ class AdminUI(ctk.CTkFrame):
 
         btns = ctk.CTkFrame(frame, fg_color="white")
         btns.pack(pady=25)
-
-        btn_create = ctk.CTkButton(btns, text="Crear uno", width=240, height=46,
-                                   corner_radius=24, fg_color="#e0e0e0",
-                                   hover_color="#a9a9a9", text_color="black",
-                                   font=("Open Sans", 18, "bold", "underline"),
-                                   command=self._submit_collab)
-        btn_create.pack(pady=(0, 10))
 
         btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=40,
                                  corner_radius=22, fg_color="white",
