@@ -191,6 +191,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
+        # frame de botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
@@ -208,6 +209,72 @@ class AdminUI(ctk.CTkFrame):
 
         title = ctk.CTkLabel(frame, text="Crear producto", font=("Open Sans", 50, "bold"), text_color="#111111")
         title.pack(pady=(60, 40))
+
+        # nombre
+        row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre.pack(pady=10, ipadx=10, ipady=6)
+        row_nombre.grid_columnconfigure(0, minsize=160)
+        row_nombre.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Tipo
+        row_tipo = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tipo.pack(pady=10, ipadx=10, ipady=6)
+        row_tipo.grid_columnconfigure(0, minsize=160)
+        row_tipo.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_tipo, text="Tipo", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_tipo = ctk.CTkEntry(row_tipo, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_tipo.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Descripción
+        row_desc = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_desc.pack(pady=10, ipadx=10, ipady=6)
+        row_desc.grid_columnconfigure(0, minsize=160)
+        row_desc.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_desc, text="Descripción", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_desc = ctk.CTkEntry(row_desc, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_desc.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Stock
+        row_stock = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_stock.pack(pady=10, ipadx=10, ipady=6)
+        row_stock.grid_columnconfigure(0, minsize=160)
+        row_stock.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_stock, text="Stock", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_stock = ctk.CTkEntry(row_stock, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_stock.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Precio costo
+        row_costo = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_costo.pack(pady=10, ipadx=10, ipady=6)
+        row_costo.grid_columnconfigure(0, minsize=160)
+        row_costo.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_costo, text="Precio costo", font=("Open Sans", 18)).grid( row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_costo = ctk.CTkEntry(row_costo, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_costo.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Precio venta
+        row_venta = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_venta.pack(pady=10, ipadx=10, ipady=6)
+        row_venta.grid_columnconfigure(0, minsize=160)
+        row_venta.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_venta, text="Precio venta", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_venta = ctk.CTkEntry(row_venta, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_venta.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # frame de botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        # Botón "Crear producto"
+        btn_crclient = ctk.CTkButton(btns, text="Crear producto", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        btn_crclient.pack(pady=(0, 12))
+
+        # Botón "Volver"
+        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back.pack()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
