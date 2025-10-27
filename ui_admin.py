@@ -42,7 +42,7 @@ class AdminUI(ctk.CTkFrame):
         btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
         btn_logout.pack(side="right", padx=6)
 
-    def db_extract(self, classes):
+    def db_extract(self, ref_classes):
         with get_conn as c:
             out = {}
             cur = c.cursor()
@@ -58,8 +58,20 @@ class AdminUI(ctk.CTkFrame):
                 cols = [col[1] for col in info]
 
                 # Obtener filas
+                cur.execute(f"SELECT * FROM {table}'")
+                rows = cur.fetchall()
 
-
+                # crear objetos con las filas para usar sus funciones y no complicarnos la vida
+                the_class = ref_classes.get(table)
+                objects = []
+                for row in rows:
+                    row_dict = dict(zip(cols, row))
+                    kind_id = row_dict[cols[0]]
+                    obj = the_class.load(kind_id)
+                    if obj is not None:
+                        objects.append(obj)
+                out[table] = objects
+            return out
 
     def menu_visualizer(self, root, kind):
         """
@@ -253,7 +265,7 @@ class AdminUI(ctk.CTkFrame):
                 ct_apply.pack(side="right", padx=(0, 6))
                 ct_cancel.pack(side="right", padx=(6, 0))
 
-                # cerrar la barrita de opciones cuando se clickee afuera
+                # cerrar la barrita de opciones cuando se de click afuera
                 def outside_click(event):
                     x, y = event.x_root, event.y_root
                     px = date_pop.winfo_rootx()
