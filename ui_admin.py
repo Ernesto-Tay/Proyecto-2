@@ -215,7 +215,6 @@ class AdminUI(ctk.CTkFrame):
 
         row1 = ctk.CTkFrame(container, fg_color="transparent")
         row1.pack(pady=6)
-
         # nombre
         row_nombre = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
         row_nombre.pack(side= "left",pady=10, ipadx=10, ipady=6)
@@ -234,9 +233,11 @@ class AdminUI(ctk.CTkFrame):
         self.ent_tipo = ctk.CTkEntry(row_tipo, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tipo.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
+        row2 = ctk.CTkFrame(container, fg_color="transparent")
+        row2.pack(pady=6)
         # Descripción
-        row_desc = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_desc.pack(pady=10, ipadx=10, ipady=6)
+        row_desc = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_desc.pack(side= "left",pady=10, ipadx=10, ipady=6)
         row_desc.grid_columnconfigure(0, minsize=160)
         row_desc.grid_columnconfigure(1, minsize=320)
         ctk.CTkLabel(row_desc, text="Descripción", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
@@ -244,17 +245,19 @@ class AdminUI(ctk.CTkFrame):
         self.ent_desc.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Stock
-        row_stock = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_stock.pack(pady=10, ipadx=10, ipady=6)
+        row_stock = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_stock.pack(side= "left",pady=10, ipadx=10, ipady=6)
         row_stock.grid_columnconfigure(0, minsize=160)
         row_stock.grid_columnconfigure(1, minsize=320)
         ctk.CTkLabel(row_stock, text="Stock", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_stock = ctk.CTkEntry(row_stock, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_stock.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
+        row3 = ctk.CTkFrame(container, fg_color="transparent")
+        row3.pack(pady=6)
         # Precio costo
-        row_costo = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_costo.pack(pady=10, ipadx=10, ipady=6)
+        row_costo = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_costo.pack(side= "left",pady=10, ipadx=10, ipady=6)
         row_costo.grid_columnconfigure(0, minsize=160)
         row_costo.grid_columnconfigure(1, minsize=320)
         ctk.CTkLabel(row_costo, text="Precio costo", font=("Open Sans", 18)).grid( row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
@@ -262,8 +265,8 @@ class AdminUI(ctk.CTkFrame):
         self.ent_costo.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Precio venta
-        row_venta = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_venta.pack(pady=10, ipadx=10, ipady=6)
+        row_venta = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_venta.pack(side= "left",pady=10, ipadx=10, ipady=6)
         row_venta.grid_columnconfigure(0, minsize=160)
         row_venta.grid_columnconfigure(1, minsize=320)
         ctk.CTkLabel(row_venta, text="Precio venta", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
