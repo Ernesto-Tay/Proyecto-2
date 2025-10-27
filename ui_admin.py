@@ -213,9 +213,12 @@ class AdminUI(ctk.CTkFrame):
         container = ctk.CTkFrame(frame, fg_color="transparent")
         container.pack(pady=10)
 
+        row1 = ctk.CTkFrame(container, fg_color="transparent")
+        row1.pack(pady=6)
+
         # nombre
-        row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_nombre.pack(pady=10, ipadx=10, ipady=6)
+        row_nombre = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre.pack(side= "left",pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=160)
         row_nombre.grid_columnconfigure(1, minsize=320)
         ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
@@ -223,8 +226,8 @@ class AdminUI(ctk.CTkFrame):
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Tipo
-        row_tipo = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_tipo.pack(pady=10, ipadx=10, ipady=6)
+        row_tipo = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_tipo.pack(side= "left",pady=10, ipadx=10, ipady=6)
         row_tipo.grid_columnconfigure(0, minsize=160)
         row_tipo.grid_columnconfigure(1, minsize=320)
         ctk.CTkLabel(row_tipo, text="Tipo", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
