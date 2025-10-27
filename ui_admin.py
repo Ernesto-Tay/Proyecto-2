@@ -115,6 +115,9 @@ class AdminUI(ctk.CTkFrame):
         if msg == "Agregar colaborador":
             self.view_create_collab()
 
+        elif msg == "Agregar cliente":
+            self.view_create_client()
+
     # formulario agregar colaborador
     def view_create_collab(self):
         frame = self._open_fullscreen_view()
@@ -129,7 +132,7 @@ class AdminUI(ctk.CTkFrame):
         row_nombre.grid_columnconfigure(1, minsize=320)
 
         ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
-        self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf",placeholder_text="String")
+        self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
         # telefono, aún no funcional
         row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
@@ -138,7 +141,7 @@ class AdminUI(ctk.CTkFrame):
         row_tel.grid_columnconfigure(1, minsize=320)
 
         ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
-        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf", placeholder_text="Int")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
@@ -163,12 +166,13 @@ class AdminUI(ctk.CTkFrame):
         btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#bdbdbd",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
-    def view_list_collab(self):
+    # formulario agregar cliente
+    def view_create_client(self):
         frame = self._open_fullscreen_view()
-        ctk.CTkLabel(frame, text="(Aquí irá la lista de colaboradores)",
-                     font=("Open Sans", 22, "bold")).pack(pady=80)
-        ctk.CTkButton(frame, text="Volver",
-                      command=self._close_fullscreen_view).pack(pady=20)
+
+        title = ctk.CTkLabel(frame,text="Crear cliente",font=("Open Sans", 50, "bold"),text_color="#111111")
+        title.pack(pady=(60, 40))
+
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
