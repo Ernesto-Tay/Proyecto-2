@@ -107,7 +107,6 @@ class AdminUI(ctk.CTkFrame):
         btn.pack(padx=8, pady=4)
 
     def action(self, msg):
-        """Determina qué vista abrir según el botón seleccionado."""
         # 🔹 cerrar submenú si está abierto
         if self.active_submenu:
             self.active_submenu.destroy()
@@ -115,18 +114,9 @@ class AdminUI(ctk.CTkFrame):
 
         if msg == "Agregar colaborador":
             self.view_create_collab()
-        elif msg == "Ver colaboradores":
-            self.view_list_collab()
-        elif msg == "Agregar proveedor":
-            self.view_create_provider()
-        elif msg == "Ver proveedores":
-            self.view_list_provider()
         else:
             mbox.showinfo("Acción", f"Seleccionaste: {msg}")
 
-    # =====================================================
-    # 🔹 5. FORMULARIO: CREAR COLABORADOR
-    # =====================================================
     def view_create_collab(self):
         frame = self._open_fullscreen_view()
 
@@ -134,7 +124,6 @@ class AdminUI(ctk.CTkFrame):
                              font=("Open Sans", 50, "bold"), text_color="#111111")
         title.pack(pady=(60, 40))
 
-        # --- Fila: Nombre ---
         row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_nombre.pack(pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=160)
@@ -148,7 +137,6 @@ class AdminUI(ctk.CTkFrame):
                                        placeholder_text="String")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # --- Fila: Teléfono ---
         row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
@@ -162,7 +150,6 @@ class AdminUI(ctk.CTkFrame):
                                     placeholder_text="Int")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # --- Fila: Posición ---
         row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
         row_pos.grid_columnconfigure(0, minsize=160)
@@ -176,7 +163,6 @@ class AdminUI(ctk.CTkFrame):
                                     placeholder_text="String")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # --- Botones ---
         btns = ctk.CTkFrame(frame, fg_color="white")
         btns.pack(pady=25)
 
@@ -192,22 +178,6 @@ class AdminUI(ctk.CTkFrame):
                                  hover_color="#f2f2f2", text_color="black",
                                  command=self._close_fullscreen_view)
         btn_back.pack()
-
-    def _submit_collab(self):
-        nombre = self.ent_nombre.get().strip()
-        tel = self.ent_tel.get().strip()
-        pos = self.ent_pos.get().strip()
-
-        if not nombre or not tel or not pos:
-            mbox.showerror("Error", "Debe llenar todos los campos.")
-            return
-        if not tel.isdigit():
-            mbox.showerror("Error", "El teléfono debe ser numérico.")
-            return
-
-        # Aquí podrías guardar en base de datos
-        mbox.showinfo("Éxito", "Colaborador creado correctamente.")
-        self._close_fullscreen_view()
 
     def view_list_collab(self):
         frame = self._open_fullscreen_view()
