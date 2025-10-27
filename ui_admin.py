@@ -130,40 +130,38 @@ class AdminUI(ctk.CTkFrame):
         row_nombre.pack(pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=160)
         row_nombre.grid_columnconfigure(1, minsize=320)
-
         ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
         # telefono, aún no funcional
         row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
-
         ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
+        # posición, aún no funcional
         row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
         row_pos.grid_columnconfigure(0, minsize=160)
         row_pos.grid_columnconfigure(1, minsize=320)
-
-        # posición, aún no funcional
         ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
-        self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf",placeholder_text="String")
+        self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # frame de botones de form (el espacio donde estarán)
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        # botón "Crear colaborador
-        btn_crcolla = ctk.CTkButton(btns,text="Crear colaborador",width=240,height=45,corner_radius=22,fg_color="#bdbdbd",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        # botón "Crear colaborador"
+        btn_crcolla = ctk.CTkButton(btns,text="Crear colaborador",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"))
         btn_crcolla.pack(pady=(0, 12))
 
         # botón "Volver"
-        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#bdbdbd",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
     # formulario agregar cliente
@@ -173,6 +171,33 @@ class AdminUI(ctk.CTkFrame):
         title = ctk.CTkLabel(frame,text="Crear cliente",font=("Open Sans", 50, "bold"),text_color="#111111")
         title.pack(pady=(60, 40))
 
+        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name.pack(pady=10, ipadx=10, ipady=6)
+        row_name.grid_columnconfigure(0, minsize=160)
+        row_name.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # telefono, aún no funcional
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        row_tel.grid_columnconfigure(0, minsize=160)
+        row_tel.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        # Botón "Crear cliente"
+        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        btn_crclient.pack(pady=(0, 12))
+
+        # Botón "Volver"
+        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back.pack()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
