@@ -118,6 +118,9 @@ class AdminUI(ctk.CTkFrame):
         elif msg == "Agregar cliente":
             self.view_create_client()
 
+        elif msg == "Agregar productos":
+            self.view_create_product()
+
     # formulario agregar colaborador
     def view_create_collab(self):
         frame = self._open_fullscreen_view()
@@ -198,6 +201,13 @@ class AdminUI(ctk.CTkFrame):
         # Botón "Volver"
         btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
+
+    # formulario agregar producto
+    def view_create_product(self):
+        frame = self._open_fullscreen_view()
+
+        title = ctk.CTkLabel(frame, text="Crear producto", font=("Open Sans", 50, "bold"), text_color="#111111")
+        title.pack(pady=(60, 40))
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
