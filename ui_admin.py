@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales
+from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import calendar
@@ -92,7 +92,6 @@ class AdminUI(ctk.CTkFrame):
         3.
         """
         with get_conn() as c:
-
             #extrae la información de una tabla en la base de datos, buscándola con el nombre "kind" (argumento ingresado)
             cur = c.cursor()
             cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name= ? LIMIT = 1;", (kind,))
@@ -117,11 +116,6 @@ class AdminUI(ctk.CTkFrame):
             for col in headers:
                 tree.heading(col, text=col)
                 tree.column(col, width= 800 // len(headers))
-
-            # toma todas las instancias de la tabla
-            cur.execute(f"SELECT * FROM {kind}")
-            for row in cur.fetchall():
-                tree.insert("", "end", values=row)
 
             # crea el frame y el espacio para los botoncitos
             frame = ctk.CTkFrame(root, relief="ridge", corner_radius=12)
@@ -154,6 +148,46 @@ class AdminUI(ctk.CTkFrame):
                 search_btn.pack(side="left", padx=6)
                 back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
+
+            def header_filter(filter_button, options, applyc, initial = None, width = 200):
+                existing = getattr(filter_button, "options_popup", None)
+                if existing is not None and existing.winfo_exists():
+                    try: existing.lift()
+                    except Exception:
+                        try: existing.destroy()
+                        except: pass
+
+                # Configuración del topLevel pa que parezca un combobox
+                popup = tk.Toplevel(filter_button.winfo_toplevel())
+                filter_button.options_popup = popup # se guarda la referencia
+                popup.wm_overrideredirect(True)
+                popup.transient(filter_button.winfo_toplevel())
+                popup.attributes("-topmost", True)
+
+                # poner debajo del botoncito
+                ax = filter_button.winfo_rootx()
+                ay = filter_button.winfo_rooty() + filter_button.winfo_height()
+                popup.geometry(f"+{ax}+{ay}")
+
+                # Contenedor
+                bframe = ctk.CTkFrame(popup, relief="ridge",corner_radius = 8, fg_color="transparent")
+                bframe.pack(padx = 4, paxy = 4)
+
+                # Título del botoncito
+                lbel = ctk.CTkLabel(frame, text = "Seleccionar...", font = ("Open Sans", 13, "bold"))
+                lbel.pack(anchor = "w", pady = (0, 4))
+
+                # Creación de la combobox y colocar su valor inicial
+                cbox = ctk.CTkComboBox(frame, values = options, width = width, height = 32)
+                if initial and initial in options:
+                    cbox.set(initial)
+                elif options:
+                    cbox.set(options[0])
+                cbox.pack(anchor = "w", pady = (0, 4))
+
+
+
+
 
             # esta es la configuración del filtro de fecha
             def date_cb(date_button, callback = None, first_values = None):
