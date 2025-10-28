@@ -74,8 +74,46 @@ class CollabUI(ctk.CTkFrame):
         btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="#ffffff", hover_color="#e6e6e6",text_color="black", font=("Open Sans", 12),command=command)
         btn.pack(padx=8, pady=4)
 
+    def view_create_client(self):
+        frame = ctk.CTkFrame(self, fg_color="white")
+        frame.pack(expand=True, fill="both")
+
+        title = ctk.CTkLabel(frame, text="Crear cliente", font=("Open Sans", 50, "bold"), text_color="#111111")
+        title.pack(pady=(60, 40))
+
+        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name.pack(pady=10, ipadx=10, ipady=6)
+        row_name.grid_columnconfigure(0, minsize=160)
+        row_name.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        row_tel.grid_columnconfigure(0, minsize=160)
+        row_tel.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        btn_crclient = ctk.CTkButton(btns, text="Crear cliente", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        btn_crclient.pack(pady=(0, 12))
+
+        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=frame.destroy)
+        btn_back.pack()
+
     def action(self, msg):
-        pass
+        # Cierra el submenú si está abierto
+        if self.active_submenu:
+            self.active_submenu.destroy()
+            self.active_submenu = None
+
+        if msg == "Agregar cliente":
+            self.view_create_client()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
