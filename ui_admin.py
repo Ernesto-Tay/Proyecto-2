@@ -66,41 +66,52 @@ class AdminUI(ctk.CTkFrame):
         btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=self.logout)
         btn_logout.pack(side="right", padx=6)
 
-    def toggle_submenu(self, name, parent_button): # configuracion submenus
-        if self.active_submenu: # Guarda el submenú, si ya hay uno, se desaperece o se destruye antes de abrir otro.
-            self.active_submenu.destroy()
+    def toggle_submenu(self, name, parent_button):
+        # Cierra cualquier submenú abierto
+        if self.active_submenu:
+            try:
+                self.active_submenu.destroy()
+            except:
+                pass
             self.active_submenu = None
 
             if self.last_opened == name:
                 self.last_opened = None
                 return
 
-        # frame submenu
-        submenu = ctk.CTkFrame(self, fg_color="#f8f8f8", corner_radius=12,border_width=1, border_color="#d0d0d0")
-        submenu.place(x=parent_button.winfo_x() + 10,y=parent_button.winfo_y() + parent_button.winfo_height() + 5)
+        submenu = ctk.CTkToplevel(self) # Se crea el submenú como ventana flotante (independiente)
+        submenu.overrideredirect(True)
+        submenu.configure(fg_color="#f8f8f8")
+        submenu.attributes("-topmost", True)  # se mantiene al frente
+
+        ax = parent_button.winfo_rootx()
+        ay = parent_button.winfo_rooty() + parent_button.winfo_height()
+        submenu.geometry(f"+{ax}+{ay}")  # coloca el menú justo debajo del botón
+
+        frame = ctk.CTkFrame(submenu, fg_color="#ffffff", corner_radius=12, border_width=1, border_color="#d0d0d0")
+        frame.pack(padx=4, pady=4)
 
         if name == "colab":
-            self.add_submenu_button(submenu, "Agregar colaborador",lambda: self.action("Agregar colaborador"))
-            self.add_submenu_button(submenu, "Ver colaboradores",lambda: self.action("Ver colaboradores"))
-
+            self.add_submenu_button(frame, "Agregar colaborador", lambda: self.action("Agregar colaborador"))
+            self.add_submenu_button(frame, "Ver colaboradores", lambda: self.action("Ver colaboradores"))
         elif name == "provider":
-            self.add_submenu_button(submenu, "Agregar proveedor",lambda: self.action("Agregar proveedor"))
-            self.add_submenu_button(submenu, "Ver proveedores",lambda: self.action("Ver proveedores"))
-
+            self.add_submenu_button(frame, "Agregar proveedor", lambda: self.action("Agregar proveedor"))
+            self.add_submenu_button(frame, "Ver proveedores", lambda: self.action("Ver proveedores"))
         elif name == "sales":
-            self.add_submenu_button(submenu, "Agregar ventas",lambda: self.action("Agregar ventas"))
-            self.add_submenu_button(submenu, "Ver ventas",lambda: self.action("Ver ventas"))
-
+            self.add_submenu_button(frame, "Agregar ventas", lambda: self.action("Agregar ventas"))
+            self.add_submenu_button(frame, "Ver ventas", lambda: self.action("Ver ventas"))
         elif name == "products":
-            self.add_submenu_button(submenu, "Agregar productos",lambda: self.action("Agregar productos"))
-            self.add_submenu_button(submenu, "Ver productos",lambda: self.action("Ver productos"))
-
+            self.add_submenu_button(frame, "Agregar productos", lambda: self.action("Agregar productos"))
+            self.add_submenu_button(frame, "Ver productos", lambda: self.action("Ver productos"))
         elif name == "clients":
-            self.add_submenu_button(submenu, "Agregar cliente", lambda: self.action("Agregar cliente"))
-            self.add_submenu_button(submenu, "Ver clientes", lambda: self.action("Ver clientes"))
+            self.add_submenu_button(frame, "Agregar cliente", lambda: self.action("Agregar cliente"))
+            self.add_submenu_button(frame, "Ver clientes", lambda: self.action("Ver clientes"))
 
-        self.active_submenu = submenu # Guarda la referencia en submenu
+        self.active_submenu = submenu
         self.last_opened = name
+
+        submenu.bind("<FocusOut>", lambda e: submenu.destroy())
+        submenu.focus_force()
 
     def add_submenu_button(self, parent, text, command):
         btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="#ffffff", hover_color="#e6e6e6",text_color="black", font=("Open Sans", 12),command=command)
