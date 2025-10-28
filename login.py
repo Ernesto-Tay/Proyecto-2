@@ -86,7 +86,7 @@ class LoginUI(ctk.CTkFrame):
                 messagebox.showerror("Error", "Credenciales de colaborador incorrectas o no registradas.")
 
         else:
-            messagebox.showerror("Error", "El ID debe iniciar con 'ADM' o 'COL' según su tipo de usuario.")
+            messagebox.showerror("Error", "ID incorrecto.")
 
     def change_to_admin(self):
         self.pack_forget()
