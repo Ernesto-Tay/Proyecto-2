@@ -185,6 +185,30 @@ class AdminUI(ctk.CTkFrame):
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
 
+                # botoncitos
+                btn_bay = ctk.CTkFrame(bframe, fg_color="transparent")
+                btn_bay.pack(fill="x")
+                def do_apply():
+                    val = cbox.get()
+                    try: applyc(val)
+                    except Exception: pass
+                    try: popup.destroy()
+                    except Exception: pass
+                    try:delattr(filter_button, "options_popup")
+                    except Exception: pass
+                    root.undbind_all("<Button-1>")
+
+                def do_cancel():
+                    try: popup.destroy()
+                    except Exception: pass
+                    try: delattr(filter_button, "options_popup")
+                    except Exception: pass
+                    root.undbind_all("<Button-1>")
+
+                apply_btn = ctk.CTkButton(btns, text)
+
+
+
 
 
 
