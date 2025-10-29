@@ -103,6 +103,7 @@ class AdminUI(ctk.CTkFrame):
             titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos asociados"]}
             headers = cols[kind]
             titles = titles_dict[kind]
+            main_headers = dict(zip(headers, titles))
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -149,7 +150,7 @@ class AdminUI(ctk.CTkFrame):
                 back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
-            def header_filter(filter_button, options, applyc, initial = None, width = 200):
+            def header_filter(filter_button, options, apply_function, initial = None, width = 200):
                 existing = getattr(filter_button, "options_popup", None)
                 if existing is not None and existing.winfo_exists():
                     try: existing.lift()
@@ -185,27 +186,54 @@ class AdminUI(ctk.CTkFrame):
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
 
-                # botoncitos
-                btn_bay = ctk.CTkFrame(bframe, fg_color="transparent")
-                btn_bay.pack(fill="x")
-                def do_apply():
+                # Cancela la aplicación del filtro
+                def cancel():
+                    try:
+                        popup.destroy()
+                    except Exception: pass
+                    try:
+                        delattr(filter_button, "filter_value")
+                    except Exception: pass
+                    try:
+                        root.unbind_all("<Button-1>")
+                    except Exception: pass
+
+                # Aplica el filtro obtenido. Si no funciona,
+                def apply():
                     val = cbox.get()
-                    try: applyc(val)
-                    except Exception: pass
-                    try: popup.destroy()
-                    except Exception: pass
-                    try:delattr(filter_button, "options_popup")
-                    except Exception: pass
-                    root.undbind_all("<Button-1>")
+                    filter_button.filter_value = val
+                    try:
+                        apply_function(val) # Aplica el filtro directamente
+                    except Exception as e:
+                        print("error en la función: ",e)
+                    cancel()
 
-                def do_cancel():
-                    try: popup.destroy()
-                    except Exception: pass
-                    try: delattr(filter_button, "options_popup")
-                    except Exception: pass
-                    root.undbind_all("<Button-1>")
+                cbox.bind("<Return>", apply)
 
-                apply_btn = ctk.CTkButton(btns, text)
+                def offclick(event):
+                    #obtener coordenadas del "evento"
+                    x, y = event.x_root, event.y_root
+                    #obtener coordenadas y dimensiones del toplevel del combobox
+                    px, py = popup.winfo_rootx(), popup.winfo_rooty()
+                    pw, ph = popup.winfo_width(), popup.winfo_height()
+
+                    if not (px <= x <= px + pw and py <= y <= py + ph):
+                        try: popup.destroy()
+                        except: pass
+                        try:
+                            delattr(filter_button, "options_popup")
+                        except: pass
+                        try: root.unbind_all("<Button-1>")
+                        except Exception: pass
+
+                root.bind_all("<Button-1>", offclick, add = "+")
+                popup.focus_force()
+                return
+
+
+
+
+
 
 
 
