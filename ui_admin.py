@@ -131,14 +131,20 @@ class AdminUI(ctk.CTkFrame):
             self.active_submenu.destroy()
             self.active_submenu = None
 
-        if msg == "Agregar colaborador":
-            self.view_create_collab()
+        match msg:
+            case "Agregar colaborador":
+                self.view_create_collab()
+            case "Agregar cliente":
+                self.view_create_client()
+            case "Agregar productos":
+                self.view_create_product()
+            case "Ver colaboradores":
+                pass
+            case "Ver clientes":
+                pass
+            case "Ver productos":
+                pass
 
-        elif msg == "Agregar cliente":
-            self.view_create_client()
-
-        elif msg == "Agregar productos":
-            self.view_create_product()
 
     # formulario agregar colaborador
     def view_create_collab(self):
@@ -376,12 +382,12 @@ class AdminUI(ctk.CTkFrame):
             LoginUI(self.master)
 
     def db_extract(self, ref_classes):
-        with get_conn as c:
+        with get_conn() as c:
             out = {}
             cur = c.cursor()
 
             # Obtiene todas las tablas que NO sean de metadatos (creadas por SQL para operaciones internas)
-            cur.execute("SELECT table FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
             tables = [r[0] for r in cur.fetchall()]
 
             for table in tables:
@@ -391,13 +397,14 @@ class AdminUI(ctk.CTkFrame):
                 cols = [col[1] for col in info]
 
                 # Obtener filas
-                cur.execute(f"SELECT * FROM {table}'")
+                cur.execute(f"SELECT * FROM {table}")
                 rows = cur.fetchall()
 
                 # crear objetos con las filas para usar sus funciones y no complicarnos la vida
                 the_class = ref_classes.get(table)
                 objects = []
                 for row in rows:
+                    # Revisar como extrae la info, no creo que esté bien
                     row_dict = dict(zip(cols, row))
                     kind_id = row_dict[cols[0]]
                     obj = the_class.load(kind_id)
@@ -405,6 +412,9 @@ class AdminUI(ctk.CTkFrame):
                         objects.append(obj)
                 out[table] = objects
             return out
+
+    def entry_upd(self, entry_var, *args):
+        return entry_var.get()
 
     def menu_visualizer(self, root, kind):
         """
@@ -425,13 +435,27 @@ class AdminUI(ctk.CTkFrame):
             titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos asociados"]}
             headers = cols[kind]
             titles = titles_dict[kind]
-            main_headers = dict(zip(headers, titles))
+            #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
+            main_headers = dict(zip(titles, headers))
+            #extrae los datos de la db_info
             table_data = self.db_info[kind]
+            #copia los datos para alterar la lista copiada
+            upd_db = table_data.copy()
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             years = [str(y) for y in range (2025, 2030)]
             date_pop = False
+
+            # Funciones para actualizar la lista de datos
+            def filter_func(header):
+                new_dict = {}
+                search_val = main_headers[header]
+                for val in table_data:
+                    r_data = getattr(val, search_val, None)
+                    # CONTINUAR LA FUNCIÓN CON OTRA QUE DEVUELVA EL VALOR PRESENTE EN EL BUSCADOR
+
+
 
             # crea el frame y el espacio para los botoncitos
             frame = ctk.CTkFrame(root, relief="ridge", corner_radius=12)
@@ -472,6 +496,9 @@ class AdminUI(ctk.CTkFrame):
             for col in headers:
                 tree.heading(col, text=col)
                 tree.column(col, width=800 // len(headers))
+
+            def search_returner(s_entry):
+                return s_entry.trace_add("write", lambda *args: self.entry_upd(s_entry, *args))
 
             def header_filter(filter_button, options, apply_function, initial = None, width = 150):
                 existing = getattr(filter_button, "options_popup", None)
@@ -539,6 +566,7 @@ class AdminUI(ctk.CTkFrame):
                     #obtener coordenadas y dimensiones del toplevel del combobox
                     px, py = popup.winfo_rootx(), popup.winfo_rooty()
                     pw, ph = popup.winfo_width(), popup.winfo_height()
+                    b_id = getattr(event, "click_bind_id", None)
 
                     if not (px <= x <= px + pw and py <= y <= py + ph):
                         try: popup.destroy()
@@ -546,7 +574,7 @@ class AdminUI(ctk.CTkFrame):
                         try:
                             delattr(filter_button, "options_popup")
                         except: pass
-                        try: root.unbind_all("<Button-1>")
+                        try: root.unbind_all("<Button-1>", b_id)
                         except Exception: pass
 
                 root.bind_all("<Button-1>", offclick, add = "+")
@@ -650,15 +678,16 @@ class AdminUI(ctk.CTkFrame):
                     x, y= event.x_root, event.y_root
                     px, py =popup_frame.winfo_rootx(), popup_frame.winfo_rooty()
                     pw, ph = popup_frame.winfo_width(), popup_frame.winfo_height()
+                    e_id = getattr(event, "click_bind_id", None)
                     if not (px <= x <= px + pw and py <= y <= py + ph):
                         try: popup_frame.destroy()
                         except Exception: pass
                         try:delattr(date_button, "options_popup")
                         except Exception: pass
-                        try: root.unbind_all("<Button-1>")
+                        try: root.unbind_all("<Button-1>", e_id)
                         except Exception: pass
 
-                root.bind("<Button-1>", click_outside)
+                root.bind_all("<Button-1>", click_outside, add = "+")
                 popup_frame.focus_force()
                 upd_date()
                 return

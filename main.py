@@ -153,6 +153,7 @@ class User:
     def load(user_id: str) -> Optional["User"]:
         with get_conn() as c:
             r = c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
+            print("toy acá y r es: ",r)
             if r:
                 return User(r["name"], r["phone"], user_id=r["user_id"])
             return None
@@ -209,10 +210,12 @@ class Admin(User):
     @staticmethod
     def load(admin_id: str) -> Optional["Admin"]:
         with get_conn() as c:
+            #debe crear una instancia de User antes de  crear una de Admin
             r = c.execute("SELECT * FROM admins WHERE admin_id = ?", (admin_id,)).fetchone()
             if r:
                 user = User.load(r["user_id"])
-                return Admin(name=user.name, phone=user.phone, position=r["position"], user_id=user.user_id)
+                if user:
+                    return Admin(name=user.name, phone=user.phone, position=r["position"], user_id=user.user_id)
             return None
 
 
@@ -253,7 +256,8 @@ class Collaborator(User):
             r = c.execute("SELECT * FROM collaborators WHERE collab_id = ?", (collab_id,)).fetchone()
             if r:
                 user = User.load(r["user_id"])
-                return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
+                if user:
+                    return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
             return None
     def delete(self):
         with get_conn() as c:
@@ -303,8 +307,9 @@ class Provider(User):
             r = c.execute("SELECT * FROM providers WHERE provider_id = ?", (provider_id,)).fetchone()
             if r:
                 user = User.load(r["provider_id"])
-                products = r["products"].split("|")
-                return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
+                if user:
+                    products = r["products"].split("|")
+                    return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
             return None
     def delete(self):
         with get_conn() as c:
@@ -352,8 +357,9 @@ class Client(User):
             r = c.execute("SELECT * FROM clients WHERE client_id = ?", (client_id,)).fetchone()
             if r:
                 user = User.load(r["client_id"])
-                sales = r["sales"].split("|")
-                return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
+                if user:
+                    sales = r["sales"].split("|")
+                    return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
             return None
     def delete(self):
         with get_conn() as c:
