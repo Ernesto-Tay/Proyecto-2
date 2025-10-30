@@ -1,5 +1,3 @@
-from itertools import product
-
 import customtkinter as ctk
 import tkinter.messagebox as mbox
 from main import Collaborator, Client, Product
