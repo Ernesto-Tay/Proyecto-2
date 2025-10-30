@@ -1,6 +1,8 @@
+from itertools import product
+
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import Collaborator, Client
+from main import Collaborator, Client, Product
 
 
 class AdminUI(ctk.CTkFrame):
@@ -326,12 +328,41 @@ class AdminUI(ctk.CTkFrame):
         btns.pack(pady=25)
 
         # Botón "Crear producto"
-        btn_crclient = ctk.CTkButton(btns, text="Crear producto", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        btn_crclient = ctk.CTkButton(btns, text="Crear producto", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_product)
         btn_crclient.pack(pady=(0, 12))
 
         # Botón "Volver"
         btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
+
+    def create_product(self):
+        name = self.ent_nombre.get().strip()
+        type_ = self.ent_tipo.get().strip()
+        desc = self.ent_desc.get().strip()
+        stock = self.ent_stock.get().strip()
+        raw_price = self.ent_costo.get().strip()
+        sale_price = self.ent_venta.get().strip()
+
+        if not all([name, type_, desc, stock, raw_price, sale_price]):
+            mbox.showerror("Campos Vacíos", "No puede dejar campos vacíos")
+            return
+
+        try:
+            stock = int(stock)
+            raw_price = float(raw_price)
+            sale_price = float(sale_price)
+
+        except ValueError:
+            mbox.showerror("Error numerico","Deben de ingresar numeros")
+            return
+
+        try:
+            product = Product(name=name,types=type_,desc=desc,raw_p=raw_price,sale_p=sale_price,stock=stock)
+            product.save()
+            mbox.showinfo(f"Producto", f"Producto '{name}' creado")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"Error inesperado: {e}")
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")

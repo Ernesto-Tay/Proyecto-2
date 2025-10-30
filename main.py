@@ -76,6 +76,7 @@ class DataBase:
                 product_id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 type TEXT DEFAULT 'product',
+                providers TEXT NOT NULL,
                 description TEXT NOT NULL,
                 raw_price REAL NOT NULL,
                 sale_price REAL NOT NULL,
