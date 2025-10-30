@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
+from main import Collaborator
 
 class AdminUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -148,7 +149,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # telefono, aún no funcional
+        # telefono
         row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
@@ -157,7 +158,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # posición, aún no funcional
+        # posición
         row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
         row_pos.grid_columnconfigure(0, minsize=160)
@@ -166,17 +167,35 @@ class AdminUI(ctk.CTkFrame):
         self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # frame de botones de form (el espacio donde estarán)
+        # frame de botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
         # botón "Crear colaborador"
-        btn_crcolla = ctk.CTkButton(btns,text="Crear colaborador",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        btn_crcolla = ctk.CTkButton(btns,text="Crear colaborador",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_collaborator)
         btn_crcolla.pack(pady=(0, 12))
 
         # botón "Volver"
         btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
+
+    # lógica para crear colaborador
+    def create_collaborator(self):
+        name = self.ent_nombre.get().strip()
+        phone = self.ent_tel.get().strip()
+        position = self.ent_pos.get().strip()
+
+        if not name or not phone or not position:
+            mbox.showerror("Campos vacíos", "Se deben llenar todos los campos.")
+            return
+
+        try:
+            collab = Collaborator(name=name, phone=phone, position=position) # crea al objeto
+            collab.save() # metodo importado para guardar
+            mbox.showinfo(f"Colaborador creado", f"Colaborador {name} creado y guardado")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"Error inesperado: {e}")
 
     # formulario agregar cliente
     def view_create_client(self):
