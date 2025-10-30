@@ -133,9 +133,9 @@ class AdminUI(ctk.CTkFrame):
 
             if kind == "sales":
                 # Organiza los botoncitos específicamente para las ventas
-                filter_btn = ctk.CTkButton(controls, text = "Filtrar", width = 100, height = 36,  corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, text = "Filtrar", width = 150, height = 36,  corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 100, height = 36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 date_btn.pack(side="left", padx=6)
                 search_btn = ctk.CTkEntry(controls, text = "Buscar...", width = 400, height = 36, corner_radius = 18, fg_color = "white", text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
@@ -143,14 +143,14 @@ class AdminUI(ctk.CTkFrame):
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
-                filter_btn = ctk.CTkButton(controls, text="Filtrar", width=200, height=36, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, text="Filtrar", width=150, height=36, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
                 search_btn = ctk.CTkEntry(controls, text="Buscar...", width=400, height=36, corner_radius=18, fg_color="white", text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
                 back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
-            def header_filter(filter_button, options, apply_function, initial = None, width = 200):
+            def header_filter(filter_button, options, apply_function, initial = None, width = 150):
                 existing = getattr(filter_button, "options_popup", None)
                 if existing is not None and existing.winfo_exists():
                     try: existing.lift()
@@ -231,18 +231,8 @@ class AdminUI(ctk.CTkFrame):
                 return
 
 
-
-
-
-
-
-
-
-
-
-
             # esta es la configuración del filtro de fecha
-            def date_cb(date_button, callback = None, first_values = None):
+            def date_cb(date_button, change_function, callback = None, first_values = None, width = 150):
                 date_exists = getattr(root, "date_pop", None)
                 if date_exists is not None and date_exists.winfo_exists():
                     try:
