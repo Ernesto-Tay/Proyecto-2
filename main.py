@@ -335,13 +335,14 @@ class Client(User):
         else:
             raise ValueError("La venta no está en la lista")
     def save(self):
+        super().save() # guarda el usuario en la tabla users primero
         new_sales = "|".join(self.sales)
         with get_conn() as c:
             exists = c.execute("SELECT client_id FROM clients WHERE client_id = ?", (self.client_id,)).fetchone()
             if exists:
                 c.execute("UPDATE clients SET sales = ?, type = ? WHERE client_id = ?", (new_sales, self.type, self.client_id))
             else:
-                c.execute("INSERT INTO clients (client_id, sales, type) VALUES (?,?,?)",(self.client_id, self.sales, self.type))
+                c.execute("INSERT INTO clients (client_id, user_id, sales, type) VALUES (?,?,?,?)",(self.client_id,self.user_id, new_sales, self.type))
             c.commit()
 
     @staticmethod

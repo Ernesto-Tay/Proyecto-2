@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import Collaborator
+from main import Collaborator, Client
+
 
 class AdminUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -226,12 +227,29 @@ class AdminUI(ctk.CTkFrame):
         btns.pack(pady=25)
 
         # Botón "Crear cliente"
-        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"))
+        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_client)
         btn_crclient.pack(pady=(0, 12))
 
         # Botón "Volver"
         btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
+
+    # lógica para crear colaborador
+    def create_client(self):
+        name = self.ent_nombre.get().strip()
+        phone = self.ent_tel.get().strip()
+
+        if not name or not phone:
+            mbox.showerror("Campos vacíos", "Se deben llenar todos los campos.")
+            return
+
+        try:
+            client = Client(name=name, phone=phone) # crea al objeto
+            client.save() # metodo importado para guardar
+            mbox.showinfo(f"Colaborador creado", f"Cliente {name} creado y guardado")
+            self._close_fullscreen_view() # cierra la ventana cuando se crea
+        except Exception as e:
+            mbox.showerror("Error", f"Error inesperado: {e}")
 
     # formulario agregar producto
     def view_create_product(self):
