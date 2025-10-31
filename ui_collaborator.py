@@ -1,26 +1,36 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import Client
+from main import Client, get_conn
 
 class CollabUI(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, current_user=None):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
-
         # elementos principales
         self.header = None
         self.body = None
         self.fullscreen_frame = None  # frame para vistas completas
-
         # submenús
         self.active_submenu = None
         self.last_opened = None  # guarda cuál botón se abrió
-
         # inicialización
         self.create_header()
         self.body = ctk.CTkFrame(self, fg_color="white")
         self.body.pack(expand=True, fill="both")
+
+        # Mensaje de bienvenida
+        self.current_user = current_user
+        if self.current_user:
+            name = self.current_user.get("name", "Usuario")
+            phone = self.current_user.get("phone", "Sin teléfono")
+        else:
+            name= "Usuario"
+            phone ="Sin teléfono"
+
+        msg = f"Bienvenido, {name}\nTeléfono: {phone}"
+        welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#111111",justify="center")
+        welcome_label.pack(expand=True)
 
     def _open_fullscreen_view(self):
         self.header.pack_forget()
@@ -140,42 +150,6 @@ class CollabUI(ctk.CTkFrame):
 
         # botón volver
         btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
-        btn_back.pack()
-
-    # formulario agregar cliente
-    def view_create_client(self):
-        frame = self._open_fullscreen_view()
-
-        title = ctk.CTkLabel(frame,text="Crear cliente",font=("Open Sans", 50, "bold"),text_color="#111111")
-        title.pack(pady=(60, 40))
-
-        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_name.pack(pady=10, ipadx=10, ipady=6)
-        row_name.grid_columnconfigure(0, minsize=160)
-        row_name.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
-        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
-        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
-
-        # telefono, aún no funcional
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
-        row_tel.pack(pady=10, ipadx=10, ipady=6)
-        row_tel.grid_columnconfigure(0, minsize=160)
-        row_tel.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
-        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
-        self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
-
-        # frame de botones
-        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
-        btns.pack(pady=25)
-
-        # Botón "Crear cliente"
-        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_client)
-        btn_crclient.pack(pady=(0, 12))
-
-        # Botón "Volver"
-        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
     # lógica para crear colaborador

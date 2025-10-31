@@ -9,7 +9,7 @@ DB_NAME = "bawiz.db"
 classes = {"users": User, "admins": Admin, "collaborators": Collaborator, "providers": Provider, "clients": Client, "sales": Sales, "products": Product}
 
 class AdminUI(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, current_user=None):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
@@ -26,8 +26,17 @@ class AdminUI(ctk.CTkFrame):
         self.body = ctk.CTkFrame(self, fg_color="white")
         self.body.pack(expand=True, fill="both")
 
-        set_widget_scaling(0.8)
-        set_window_scaling(0.8)
+        # Mensaje de bienvenida
+        self.current_user = current_user
+        if self.current_user:
+            name = self.current_user.get("name", "Usuario")
+            phone = self.current_user.get("phone", "Sin teléfono")
+        else:
+            name, phone = "Usuario", "Sin teléfono"
+
+        msg = f"Bienvenido, {name}\nTeléfono: {phone}"
+        welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#111111",justify="center")
+        welcome_label.pack(expand=True)
 
     def _open_fullscreen_view(self):
         self.header.pack_forget()
