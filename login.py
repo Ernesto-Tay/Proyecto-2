@@ -71,7 +71,6 @@ class LoginUI(ctk.CTkFrame):
 
         if user_id.startswith("ADM"):
             if self.validate_user("admins", "admin_id", user_id, name):
-                messagebox.showinfo("Éxito", f"Bienvenido administrador {name}")
                 self.change_to_admin()
 
             else:
@@ -79,7 +78,6 @@ class LoginUI(ctk.CTkFrame):
 
         elif user_id.startswith("COL"):
             if self.validate_user("collaborators", "collab_id", user_id, name):
-                messagebox.showinfo("Éxito", f"Bienvenido colaborador {name}")
                 self.change_to_collab()
 
             else:
