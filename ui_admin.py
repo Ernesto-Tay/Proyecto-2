@@ -20,6 +20,7 @@ class AdminUI(ctk.CTkFrame):
         # submenús
         self.active_submenu = None
         self.last_opened = None  # guarda cuál botón se abrió
+        self.searchbar_frame = None
         # inicialización
         self.create_header()
         self.db_info = self.db_extract(classes)
@@ -139,11 +140,11 @@ class AdminUI(ctk.CTkFrame):
             case "Agregar productos":
                 self.view_create_product()
             case "Ver colaboradores":
-                self.menu_visualizer(self.master, "collaborators")
+                self.menu_visualizer(self.master, "collaborators", self.searchbar_frame)
             case "Ver clientes":
-                self.menu_visualizer(self.master, "clients")
+                self.menu_visualizer(self.master, "clients",self.searchbar_frame)
             case "Ver productos":
-                self.menu_visualizer(self.master, "products")
+                self.menu_visualizer(self.master, "products",self.searchbar_frame)
 
 
     # formulario agregar colaborador
@@ -416,12 +417,9 @@ class AdminUI(ctk.CTkFrame):
     def entry_upd(self, entry_var, *args):
         return entry_var.get()
 
-    def menu_visualizer(self, root, kind):
+    def menu_visualizer(self, root, kind, frame):
         """
-        Toma en cuenta lo siguiente:
-        1. Crea funciones para filtro por columna (que admita un valor, que es el encabezado)
-        2. Crea función para filtro por fecha que descomponga la date en day, month, year (que admita un dict con 4 vals: año, mes, numero_mes y día)
-        3. Ambas funciones deben filtrar los valores vistos en el dict de valores y retornar UNA COPIA, aunque deben luego
+        t e x t o
         """
         with get_conn() as c:
             #extrae la información de una tabla en la base de datos, buscándola con el nombre "kind" (argumento ingresado)
@@ -480,6 +478,8 @@ class AdminUI(ctk.CTkFrame):
                     return filt_list
 
             # crea el frame y el espacio para los botoncitos
+            if getattr(frame, "current_frame", None) is not None:
+                frame.destroy()
             frame = ctk.CTkFrame(root, corner_radius=12)
             frame.pack(fill="both", expand=True, padx=8, pady=8)
 
@@ -519,8 +519,7 @@ class AdminUI(ctk.CTkFrame):
             tree["columns"] = titles
             for col in titles:
                 tree.heading(col, text=col)
-                tree.column(col, width=800 // len(titles))
-
+                tree.column(col, width=800 // len(titles), anchor = "w")
 
 
             def header_filter(filter_button, options, apply_function, edit_list = upd_db, initial = None, width = 150):
@@ -717,5 +716,15 @@ class AdminUI(ctk.CTkFrame):
             fgen_list = upd_db
             if kind == "sales":
                 fgen_list =date_cb(date_btn, date_filter_func)
-
             upgraded_list = header_filter(filter_btn, titles, filter_func, fgen_list)
+
+            for f_val in upgraded_list:
+                if kind == "sales" or kind == "providers":
+                    list_text = "Ver ▾"
+                    all_vals = []
+                    for type in headers:
+                        main_val = getattr(f_val, type, "")
+                        all_vals.append(main_val)
+                    i_id = all_vals[0]
+                    tree.insert(i_id,)
+
