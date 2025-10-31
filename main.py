@@ -292,13 +292,21 @@ class Provider(User):
             raise ValueError("El producto no fué encontrado")
 
     def save(self):
-        products = "|".join(self.products)
+        super().save()
+
+        product_strings = []
+        for p in self.products:
+            if p is not None:
+                product_strings.append(str(p))
+        products = "|".join(product_strings)
+
         with get_conn() as c:
-            exists = c.execute("SELECT provider_id FROM providers WHERE provider_id = ?", (self.provider_id,)).fetchone()
+            exists = c.execute("SELECT provider_id FROM providers WHERE provider_id = ?",(self.provider_id,)).fetchone()
             if exists:
-                c.execute("UPDATE providers SET products = ? WHERE provider_id = ?",(products,self.provider_id))
+                c.execute("UPDATE providers SET user_id = ?, products = ?, type = ? WHERE provider_id = ?",(self.user_id, products, self.type, self.provider_id))
             else:
-                c.execute("INSERT INTO providers (provider_id, products) VALUES (?,?)",(self.provider_id,products))
+                c.execute("INSERT INTO providers (provider_id, user_id, products, type) VALUES (?, ?, ?, ?)",(self.provider_id, self.user_id, products, self.type))
+
             c.commit()
 
     @staticmethod
@@ -430,14 +438,15 @@ class Product:
             self.providers.remove(provider)
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
+
     def save(self):
-        providers = "|".join(self.providers)
+        providers = "|".join(str(p) for p in self.providers if p)
         with get_conn() as c:
-            exists = c.execute("SELECT product_id FROM products WHERE product_id = ?", (self.product_id,)).fetchone()
+            exists = c.execute("SELECT product_id FROM products WHERE product_id = ?",(self.product_id,)).fetchone()
             if exists:
-                c.execute("UPDATE products SET name = ?, type = ?, providers = ?, description = ?, raw_price = ?, sale_price = ?, stock = ?", (self.name, self.type, providers, self.description, self.raw_p, self.sale_p, self.stock))
+                c.execute("""UPDATE products SET name = ?, type = ?, providers = ?, description = ?, raw_price = ?, sale_price = ?, stock = ?WHERE product_id = ?""", (self.name,self.type,providers,self.description,self.raw_p,self.sale_p,self.stock,self.product_id))
             else:
-                c.execute("INSERT INTO products (name, type, providers, description, raw_price, sale_price, stock) VALUES (?,?,?,?,?,?,?)",(self.name, self.type, providers, self.description, self.raw_p, self.sale_p, self.stock))
+                c.execute("""INSERT INTO products (product_id, name, type, providers, description, raw_price, sale_price, stock)VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (self.product_id,self.name,self.type,providers,self.description,self.raw_p,self.sale_p,self.stock))
             c.commit()
 
     @staticmethod

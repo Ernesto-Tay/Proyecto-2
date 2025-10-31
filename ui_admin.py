@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate
+from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate, get_conn
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import calendar
@@ -138,13 +138,14 @@ class AdminUI(ctk.CTkFrame):
                 self.view_create_client()
             case "Agregar productos":
                 self.view_create_product()
+            case "Agregar proveedor":
+                self.view_create_provider()
             case "Ver colaboradores":
                 pass
             case "Ver clientes":
                 pass
             case "Ver productos":
                 pass
-
 
     # formulario agregar colaborador
     def view_create_collab(self):
@@ -205,7 +206,7 @@ class AdminUI(ctk.CTkFrame):
         try:
             collab = Collaborator(name=name, phone=phone, position=position) # crea al objeto
             collab.save() # metodo importado para guardar
-            mbox.showinfo(f"Colaborador creado", f"Colaborador {name} creado y guardado")
+            mbox.showinfo(f"Colaborador creado", f"Colaborador '{name}' creado y guardado")
             self._close_fullscreen_view()
         except Exception as e:
             mbox.showerror("Error", f"Error inesperado: {e}")
@@ -258,7 +259,7 @@ class AdminUI(ctk.CTkFrame):
         try:
             client = Client(name=name, phone=phone) # crea al objeto
             client.save() # metodo importado para guardar
-            mbox.showinfo(f"Colaborador creado", f"Cliente {name} creado y guardado")
+            mbox.showinfo(f"Colaborador creado", f"Cliente '{name}' creado y guardado")
             self._close_fullscreen_view() # cierra la ventana cuando se crea
         except Exception as e:
             mbox.showerror("Error", f"Error inesperado: {e}")
@@ -373,6 +374,101 @@ class AdminUI(ctk.CTkFrame):
             self._close_fullscreen_view()
         except Exception as e:
             mbox.showerror("Error", f"Error inesperado: {e}")
+
+    # formulario para agregar proveedor
+    def view_create_provider(self):
+        frame = self._open_fullscreen_view()
+
+        title = ctk.CTkLabel(frame,text="Crear proveedor",font=("Open Sans", 50, "bold"),text_color="#111111")
+        title.pack(pady=(60, 40))
+
+        # nombre
+        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name.pack(pady=10, ipadx=10, ipady=6)
+        row_name.grid_columnconfigure(0, minsize=160)
+        row_name.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # teléfono
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        row_tel.grid_columnconfigure(0, minsize=160)
+        row_tel.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # busqueda de productos
+        ctk.CTkLabel(frame, text="Buscar productos:",font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20, pady=(10, 0))
+
+        self.ent_search = ctk.CTkEntry(frame, width=400, height=36,corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_search.pack(padx=20, pady=(4, 10), anchor="w")
+        self.ent_search.bind("<KeyRelease>", self.update_product_checklist)
+
+        self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=200)
+        self.products_frame.pack(fill="x", padx=20, pady=5)
+
+        self.product_checks = {}
+        self.update_product_checklist()
+
+        # botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        btn_create = ctk.CTkButton(btns, text="Crear proveedor", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_provider)
+        btn_create.pack(pady=(0, 12))
+
+        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back.pack()
+
+    def update_product_checklist(self, *_): # reconstruye dinámicamente la lista de productos
+        search_term = self.ent_search.get().lower().strip()
+        for widget in self.products_frame.winfo_children(): # limpia frame antes de reconstruir
+            widget.destroy()
+
+        self.product_checks = {}
+
+        with get_conn() as c: # consulta de productos desde la base de datos
+            rows = c.execute("SELECT product_id, name, type, description FROM products").fetchall()
+
+        for row in rows: # por cada producto, extrae sus datos para poder mostrarlos
+            pid = row["product_id"]
+            name = row["name"]
+            type_ = row["type"]
+            desc = row["description"]
+            text = f"{name}  |  {type_}  |  {desc}"
+            if not search_term or (search_term in name.lower()) or (search_term in type_.lower()) or (search_term in desc.lower()):
+                var = tk.IntVar(value=0)  # guarda el estado del checkbox (1 si está marcado, 0 si no).
+                chk = ctk.CTkCheckBox(self.products_frame,text=text,text_color="black",font=("Open Sans", 14),variable=var,onvalue=1,offvalue=0)
+                chk.var = var
+                chk.pack(anchor="w", padx=10, pady=4)
+
+                self.product_checks[pid] = chk  #  se guarda una referencia en el diccionario self.product_checks, usando el product_id como clave.
+
+    def create_provider(self):
+        name = self.ent_nombre.get().strip()  #guarda el proveedor con los productos seleccionados
+        phone = self.ent_tel.get().strip()
+        selected_products = []
+        for pid, chk in self.product_checks.items(): # recorre cada producto, donde mira si el checkbox está marcado (chk.var.get() == 1), lo añade a selected_products.
+            if chk.var.get() == 1:  # obtiene el valor real
+                selected_products.append(str(pid))
+
+        if not name or not phone:
+            mbox.showerror("Campos vacíos", "Debe llenar todos los campos.")
+            return
+        if not selected_products:
+            mbox.showwarning("Sin productos", "Debe seleccionar al menos un producto.")
+            return
+
+        try:
+            provider = Provider(name=name, phone=phone, products=selected_products)
+            provider.save()
+            mbox.showinfo("Proveedor creado", f"Proveedor '{name}' guardado correctamente.")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"No se pudo crear el proveedor:\n{e}")
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
