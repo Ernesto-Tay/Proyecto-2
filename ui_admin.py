@@ -494,9 +494,9 @@ class AdminUI(ctk.CTkFrame):
 
             if kind == "sales":
                 # Organiza los botoncitos específicamente para las ventas
-                filter_btn = ctk.CTkButton(controls, text = "Filtrar", width = 150, height = 36,  corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkLabel(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="transparent", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                date_btn = ctk.CTkLabel(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="transparent", text_color="black", font=("Open Sans", 13, "bold"))
                 date_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
@@ -505,12 +505,12 @@ class AdminUI(ctk.CTkFrame):
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
-                filter_btn = ctk.CTkButton(controls, text="Filtrar", width=150, height=36, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkLabel(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="transparent", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
             # Creación de la tablita visualizadora de opciones
@@ -546,12 +546,8 @@ class AdminUI(ctk.CTkFrame):
                 bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="transparent")
                 bframe.pack(padx = 4, pady = 4)
 
-                # Título del botoncito
-                lbel = ctk.CTkLabel(frame, text = "Seleccionar...", font = ("Open Sans", 13, "bold"))
-                lbel.pack(anchor = "w", pady = (0, 4))
-
                 # Creación de la combobox y colocar su valor inicial
-                cbox = ctk.CTkComboBox(frame, values = options, width = width, height = 32)
+                cbox = ctk.CTkComboBox(frame, values = options, width = width, height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 if initial and initial in options:
                     cbox.set(initial)
                 elif options:
@@ -644,13 +640,13 @@ class AdminUI(ctk.CTkFrame):
                 selects.pack(anchor = "w", pady = (0, 4))
 
                 # combobox año
-                cb_year = ctk.CTkComboBox(selects, values=years, width=100, height=18, fg_color="white")
+                cb_year = ctk.CTkComboBox(selects, values=years, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 cb_year.pack(anchor = "left", pady = (0, 4))
                 # combobox mes
-                cb_month = ctk.CTkComboBox(selects, values=months, width=100, height=18, fg_color="white")
+                cb_month = ctk.CTkComboBox(selects, values=months, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 cb_month.pack(anchor = "left", pady = (0, 4))
                 # combobox día (varía con el mes, por eso empieza vacío)
-                cb_day = ctk.CTkComboBox(selects, values = [], width=100, height=18, fg_color="white")
+                cb_day = ctk.CTkComboBox(selects, values = [], width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 cb_day.pack(anchor = "left", pady = (0, 4))
 
                 # Si hay valore iniciales (first_values), los establecemos
@@ -718,9 +714,8 @@ class AdminUI(ctk.CTkFrame):
                 popup_frame.focus_force()
                 upd_date()
                 return new_list
-
             fgen_list = upd_db
             if kind == "sales":
                 fgen_list =date_cb(date_btn, date_filter_func)
 
-            upgraded_list = header_filter(filter_btn, titles, filter_func)
+            upgraded_list = header_filter(filter_btn, titles, filter_func, fgen_list)
