@@ -26,6 +26,9 @@ class AdminUI(ctk.CTkFrame):
         self.body = ctk.CTkFrame(self, fg_color="white")
         self.body.pack(expand=True, fill="both")
 
+        set_widget_scaling(0.8)
+        set_window_scaling(0.8)
+
     def _open_fullscreen_view(self):
         self.header.pack_forget()
         self.body.pack_forget()
@@ -377,10 +380,11 @@ class AdminUI(ctk.CTkFrame):
 
     # formulario para agregar proveedor
     def view_create_provider(self):
-        frame = self._open_fullscreen_view()
-
+        container = self._open_fullscreen_view()
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
+        frame.pack(expand=True, fill="both")
         title = ctk.CTkLabel(frame,text="Crear proveedor",font=("Open Sans", 50, "bold"),text_color="#111111")
-        title.pack(pady=(60, 40))
+        title.pack(pady=(40, 20))
 
         # nombre
         row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
@@ -407,7 +411,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_search.pack(padx=20, pady=(4, 10), anchor="w")
         self.ent_search.bind("<KeyRelease>", self.update_product_checklist)
 
-        self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=200)
+        self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=100)
         self.products_frame.pack(fill="x", padx=20, pady=5)
 
         self.product_checks = {}
@@ -417,10 +421,10 @@ class AdminUI(ctk.CTkFrame):
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        btn_create = ctk.CTkButton(btns, text="Crear proveedor", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_provider)
+        btn_create = ctk.CTkButton(btns, text="Crear proveedor", width=200, height=40,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_provider)
         btn_create.pack(pady=(0, 12))
 
-        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
     def update_product_checklist(self, *_): # reconstruye dinámicamente la lista de productos
