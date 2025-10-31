@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
+from main import Client
 
 class CollabUI(ctk.CTkFrame):
     def __init__(self, master):
@@ -141,13 +142,67 @@ class CollabUI(ctk.CTkFrame):
         btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
+    # formulario agregar cliente
+    def view_create_client(self):
+        frame = self._open_fullscreen_view()
+
+        title = ctk.CTkLabel(frame,text="Crear cliente",font=("Open Sans", 50, "bold"),text_color="#111111")
+        title.pack(pady=(60, 40))
+
+        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name.pack(pady=10, ipadx=10, ipady=6)
+        row_name.grid_columnconfigure(0, minsize=160)
+        row_name.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # telefono, aún no funcional
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        row_tel.grid_columnconfigure(0, minsize=160)
+        row_tel.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # frame de botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        # Botón "Crear cliente"
+        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_client)
+        btn_crclient.pack(pady=(0, 12))
+
+        # Botón "Volver"
+        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back.pack()
+
+    # lógica para crear colaborador
+    def create_client(self):
+        name = self.ent_nombre.get().strip()
+        phone = self.ent_tel.get().strip()
+
+        if not name or not phone:
+            mbox.showerror("Campos vacíos", "Se deben llenar todos los campos.")
+            return
+
+        try:
+            client = Client(name=name, phone=phone) # crea al objeto
+            client.save() # metodo importado para guardar
+            mbox.showinfo(f"Colaborador creado", f"Cliente '{name}' creado y guardado")
+            self._close_fullscreen_view() # cierra la ventana cuando se crea
+        except Exception as e:
+            mbox.showerror("Error", f"Error inesperado: {e}")
+
     def action(self, msg):
         if self.active_submenu:
             self.active_submenu.destroy()
             self.active_submenu = None
 
-        if msg == "Agregar cliente":
-            self.view_create_client()
+        match msg:
+            case "Agregar cliente":
+                self.view_create_client()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
