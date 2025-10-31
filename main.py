@@ -153,6 +153,7 @@ class User:
     def load(user_id: str) -> Optional["User"]:
         with get_conn() as c:
             r = c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
+            print("toy acá y r es: ",r)
             if r:
                 return User(r["name"], r["phone"], user_id=r["user_id"])
             return None
@@ -209,10 +210,12 @@ class Admin(User):
     @staticmethod
     def load(admin_id: str) -> Optional["Admin"]:
         with get_conn() as c:
+            #debe crear una instancia de User antes de  crear una de Admin
             r = c.execute("SELECT * FROM admins WHERE admin_id = ?", (admin_id,)).fetchone()
             if r:
                 user = User.load(r["user_id"])
-                return Admin(name=user.name, phone=user.phone, position=r["position"], user_id=user.user_id)
+                if user:
+                    return Admin(name=user.name, phone=user.phone, position=r["position"], user_id=user.user_id)
             return None
 
 
@@ -253,7 +256,8 @@ class Collaborator(User):
             r = c.execute("SELECT * FROM collaborators WHERE collab_id = ?", (collab_id,)).fetchone()
             if r:
                 user = User.load(r["user_id"])
-                return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
+                if user:
+                    return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
             return None
     def delete(self):
         with get_conn() as c:
@@ -288,13 +292,21 @@ class Provider(User):
             raise ValueError("El producto no fué encontrado")
 
     def save(self):
-        products = "|".join(self.products)
+        super().save()
+
+        product_strings = []
+        for p in self.products:
+            if p is not None:
+                product_strings.append(str(p))
+        products = "|".join(product_strings)
+
         with get_conn() as c:
-            exists = c.execute("SELECT provider_id FROM providers WHERE provider_id = ?", (self.provider_id,)).fetchone()
+            exists = c.execute("SELECT provider_id FROM providers WHERE provider_id = ?",(self.provider_id,)).fetchone()
             if exists:
-                c.execute("UPDATE providers SET products = ? WHERE provider_id = ?",(products,self.provider_id))
+                c.execute("UPDATE providers SET user_id = ?, products = ?, type = ? WHERE provider_id = ?",(self.user_id, products, self.type, self.provider_id))
             else:
-                c.execute("INSERT INTO providers (provider_id, products) VALUES (?,?)",(self.provider_id,products))
+                c.execute("INSERT INTO providers (provider_id, user_id, products, type) VALUES (?, ?, ?, ?)",(self.provider_id, self.user_id, products, self.type))
+
             c.commit()
 
     @staticmethod
@@ -303,8 +315,9 @@ class Provider(User):
             r = c.execute("SELECT * FROM providers WHERE provider_id = ?", (provider_id,)).fetchone()
             if r:
                 user = User.load(r["provider_id"])
-                products = r["products"].split("|")
-                return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
+                if user:
+                    products = r["products"].split("|")
+                    return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
             return None
     def delete(self):
         with get_conn() as c:
@@ -352,8 +365,9 @@ class Client(User):
             r = c.execute("SELECT * FROM clients WHERE client_id = ?", (client_id,)).fetchone()
             if r:
                 user = User.load(r["client_id"])
-                sales = r["sales"].split("|")
-                return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
+                if user:
+                    sales = r["sales"].split("|")
+                    return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
             return None
     def delete(self):
         with get_conn() as c:
@@ -424,14 +438,15 @@ class Product:
             self.providers.remove(provider)
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
+
     def save(self):
-        providers = "|".join(self.providers)
+        providers = "|".join(str(p) for p in self.providers if p)
         with get_conn() as c:
-            exists = c.execute("SELECT product_id FROM products WHERE product_id = ?", (self.product_id,)).fetchone()
+            exists = c.execute("SELECT product_id FROM products WHERE product_id = ?",(self.product_id,)).fetchone()
             if exists:
-                c.execute("UPDATE products SET name = ?, type = ?, providers = ?, description = ?, raw_price = ?, sale_price = ?, stock = ?", (self.name, self.type, providers, self.description, self.raw_p, self.sale_p, self.stock))
+                c.execute("""UPDATE products SET name = ?, type = ?, providers = ?, description = ?, raw_price = ?, sale_price = ?, stock = ?WHERE product_id = ?""", (self.name,self.type,providers,self.description,self.raw_p,self.sale_p,self.stock,self.product_id))
             else:
-                c.execute("INSERT INTO products (name, type, providers, description, raw_price, sale_price, stock) VALUES (?,?,?,?,?,?,?)",(self.name, self.type, providers, self.description, self.raw_p, self.sale_p, self.stock))
+                c.execute("""INSERT INTO products (product_id, name, type, providers, description, raw_price, sale_price, stock)VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (self.product_id,self.name,self.type,providers,self.description,self.raw_p,self.sale_p,self.stock))
             c.commit()
 
     @staticmethod
