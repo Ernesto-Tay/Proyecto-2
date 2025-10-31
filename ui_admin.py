@@ -139,11 +139,11 @@ class AdminUI(ctk.CTkFrame):
             case "Agregar productos":
                 self.view_create_product()
             case "Ver colaboradores":
-                pass
+                self.menu_visualizer(self.master, "collaborators")
             case "Ver clientes":
-                pass
+                self.menu_visualizer(self.master, "clients")
             case "Ver productos":
-                pass
+                self.menu_visualizer(self.master, "products")
 
 
     # formulario agregar colaborador
@@ -426,7 +426,7 @@ class AdminUI(ctk.CTkFrame):
         with get_conn() as c:
             #extrae la información de una tabla en la base de datos, buscándola con el nombre "kind" (argumento ingresado)
             cur = c.cursor()
-            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name= ? LIMIT = 1;", (kind,))
+            cur.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ? LIMIT 1;", (kind,))
             if not cur.fetchone():
                 return None
 
@@ -446,22 +446,20 @@ class AdminUI(ctk.CTkFrame):
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             years = [str(y) for y in range (2025, 2030)]
             date_pop = False
-
             # Funciones para actualizar la lista de datos
             def filter_func(header):
-                new_dict = {}
+                new_list = []
                 search_val = main_headers[header]
                 for val in table_data:
                     r_data = getattr(val, search_val, None)
-                    # CONTINUAR LA FUNCIÓN CON OTRA QUE DEVUELVA EL VALOR PRESENTE EN EL BUSCADOR
-
+                    
 
 
             # crea el frame y el espacio para los botoncitos
-            frame = ctk.CTkFrame(root, relief="ridge", corner_radius=12)
+            frame = ctk.CTkFrame(root, corner_radius=12)
             frame.pack(fill="both", expand=True, padx=8, pady=8)
 
-            controls = ctk.CTkFrame(frame, relief="ridge", fg_color="transparent")
+            controls = ctk.CTkFrame(frame,  fg_color="transparent")
             controls.pack(fill="x", padx=8, pady=(4,8))
 
             # inicializa los botoncitos para evitar error de llamada
@@ -484,7 +482,7 @@ class AdminUI(ctk.CTkFrame):
                 # si es otro modo (proveedores, productos...), pone la configuración normal
                 filter_btn = ctk.CTkButton(controls, text="Filtrar", width=150, height=36, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                search_btn = ctk.CTkEntry(controls, text="Buscar...", width=400, height=36, corner_radius=18, fg_color="white", text_color="grey", font=("Open Sans", 13, "bold"))
+                search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...", width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
                 back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
@@ -492,13 +490,11 @@ class AdminUI(ctk.CTkFrame):
             # Creación de la tablita visualizadora de opciones
             tree = ttk.Treeview(root, show="headings")
             tree.pack(fill="both", expand=True)
-            tree["columns"] = headers
-            for col in headers:
+            tree["columns"] = titles
+            for col in titles:
                 tree.heading(col, text=col)
-                tree.column(col, width=800 // len(headers))
+                tree.column(col, width=800 // len(titles))
 
-            def search_returner(s_entry):
-                return s_entry.trace_add("write", lambda *args: self.entry_upd(s_entry, *args))
 
             def header_filter(filter_button, options, apply_function, initial = None, width = 150):
                 existing = getattr(filter_button, "options_popup", None)
@@ -521,7 +517,7 @@ class AdminUI(ctk.CTkFrame):
                 popup.geometry(f"+{ax}+{ay}")
 
                 # Contenedor
-                bframe = ctk.CTkFrame(popup, relief="ridge",corner_radius = 8, fg_color="transparent")
+                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="transparent")
                 bframe.pack(padx = 4, paxy = 4)
 
                 # Título del botoncito
@@ -607,14 +603,14 @@ class AdminUI(ctk.CTkFrame):
                 date_pop.geometry(f"+{ax}+{ay}")
 
                 # configuramos el contenedor interno para que quede chulo
-                popup_frame = ctk.CTkFrame(date_pop, relief="ridge", corner_radius=12, fg_color = "white")
+                popup_frame = ctk.CTkFrame(date_pop, corner_radius=12, fg_color = "white")
                 popup_frame.pack(padx=4, pady=4)
 
                 # le colocamos título
-                title = ctk.CTkLabel(popup_frame, text = "Seleccionar fecha", relief="ridge", fg_color="white")
+                title = ctk.CTkLabel(popup_frame, text = "Seleccionar fecha", fg_color="white")
                 title.pack(anchor = "w", pady = (0, 4))
 
-                selects = ctk.CTkFrame(popup_frame, relief="ridge", fg_color="transparent")
+                selects = ctk.CTkFrame(popup_frame, fg_color="transparent")
                 selects.pack(anchor = "w", pady = (0, 4))
 
                 # combobox año
