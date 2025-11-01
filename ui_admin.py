@@ -445,6 +445,32 @@ class AdminUI(ctk.CTkFrame):
             years = [str(y) for y in range (2025, 2030)]
             date_pop = False
 
+            item_map = {}
+            def apply_filters():
+
+                base = upd_db
+                result = base[:]
+
+                #filtro por encabezado seleccionado
+                header_selected = getattr(filter_btn, "filter_value", None)
+                header_attr = main_headers.get(header_selected, header_selected) if header_selected else None
+
+                #texto ingresado en el buscador
+                search_text = ""
+                try:
+                    search_text = search_var.get().strip()
+                except Exception:
+                    pass
+
+                if search_text:
+                    s=search_text.lower()
+                    if header_attr:
+                        result = [obj for obj in result if s in str(getattr(obj, header_attr, "").lower())]
+
+
+
+
+
             # Función para filtrar los datos y buscarlos por el header
             def filter_func(header, filt_list):
                 try:
@@ -718,7 +744,7 @@ class AdminUI(ctk.CTkFrame):
                 fgen_list =date_cb(date_btn, date_filter_func)
             upgraded_list = header_filter(filter_btn, titles, filter_func, fgen_list)
             p_col_index = "#4"
-            item_map = {}
+
             for f_val in upgraded_list:
                 if kind == "sales" or kind == "providers":
                     list_text = "Ver ▾"
