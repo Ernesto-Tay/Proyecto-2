@@ -446,7 +446,7 @@ class AdminUI(ctk.CTkFrame):
             date_pop = False
 
             item_map = {}
-            def apply_filters():
+            def apply_filters(tree):
 
                 base = upd_db
                 result = base[:]
@@ -461,7 +461,6 @@ class AdminUI(ctk.CTkFrame):
                     search_text = search_var.get().strip()
                 except Exception:
                     pass
-
                 if search_text:
                     s=search_text.lower()
                     if header_attr:
@@ -509,12 +508,8 @@ class AdminUI(ctk.CTkFrame):
                     tree.insert("", "end", iid=iid, values=all_vals)
                     item_map[iid] = item
 
-            #actualizador al escribir
-            def search_change(var_name = None, index = None, mode = None):
-                apply_filters()
-
             # crea el frame y el espacio para los botoncitos
-            if getattr(frame, "current_frame", None) is not None:
+            if frame is not None:
                 frame.destroy()
             frame = ctk.CTkFrame(root, corner_radius=12)
             frame.pack(fill="both", expand=True, padx=8, pady=8)
@@ -549,22 +544,8 @@ class AdminUI(ctk.CTkFrame):
                 back_btn = ctk.CTkButton(controls, text="Cerrar",command = frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
-            # se añade el actualizador cada vez que se escribe
-            try:
-                search_var.trace_add('write', search_change)
-            except Exception:
-                pass
 
-            # Creación de la tablita visualizadora de opciones
-            tree = ttk.Treeview(frame, show="headings")
-            tree.pack(fill="both", expand=True)
-            tree["columns"] = titles
-            for col in titles:
-                tree.heading(col, text=col)
-                tree.column(col, width=800 // len(titles), anchor = "w")
-
-
-            def header_filter(filter_button, options, initial = None, width = 150):
+            def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
                 existing = getattr(filter_button, "options_popup", None)
                 if existing is not None and existing.winfo_exists():
                     try: existing.lift()
@@ -603,7 +584,7 @@ class AdminUI(ctk.CTkFrame):
                         popup.destroy()
                     except Exception as e:
                         print("error en la función: ",e)
-                    apply_filters()
+                    apply_filters(origin_tree)
 
                 cbox.bind("<Return>", apply)
 
@@ -630,7 +611,7 @@ class AdminUI(ctk.CTkFrame):
                 return
 
             # esta es la configuración del filtro de fecha
-            def date_cb(date_button, first_values = None):
+            def date_cb(date_button, origin_tree, first_values = None):
                 date_exists = getattr(root, "date_pop", None)
                 if date_exists is not None and date_exists.winfo_exists():
                     try:
@@ -745,16 +726,35 @@ class AdminUI(ctk.CTkFrame):
                 popup_frame.focus_force()
                 upd_date()
                 return
-            fgen_list = upd_db
-            header_filter(filter_btn, titles)
-            if kind == "sales":
-                date_cb(date_btn)
-            apply_filters()
             try:
                 p_col_index = f'#{titles.index('productos')+1}'
             except:
                 p_col_index = None
 
+            # Creación de la tablita visualizadora de opciones
+            tree = ttk.Treeview(frame, show="headings")
+
+            #instanciamos JUSTO después del tree para que se vean bien las cosas
+            header_filter(filter_btn, titles, tree)
+            if kind == "sales":
+                date_cb(date_btn, tree)
+            apply_filters(tree)
+            # empaquetamos el tree
+            tree.pack(fill="both", expand=True)
+            tree["columns"] = titles
+            for col in titles:
+                tree.heading(col, text=col)
+                tree.column(col, width=800 // len(titles), anchor="w")
+
+            # actualizador al escribir
+            def search_change(var_name=None, index=None, mode=None):
+                apply_filters(tree)
+
+            # se añade el actualizador cada vez que se escribe
+            try:
+                search_var.trace_add('write', search_change)
+            except Exception:
+                pass
 
             def tree_click(event):
                 x, y = event.x, event.y
