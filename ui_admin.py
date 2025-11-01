@@ -750,10 +750,27 @@ class AdminUI(ctk.CTkFrame):
                         return
 
                     if kind== "sales" or kind == "providers":
-
                         if e_col == p_col_index:
-                            return
-                    return
+                            return  show_list(root, r_line)
+                    return  row_menu(tree, event, r_line, e_row)
+                tree.bind("<Button-1>", tree_click)
 
+                def row_menu(origin, event, line, row):
+                    menu = tk.Menu(tree, tearoff=0)
+                    menu.add_command(label="editar") #command = lambda l=line: edit_sale(l) -> comando para mostrar la ventana de "editar venta"
+                    menu.add_command(label="eliminar") #command = lambda l=line: del_sale(l) -> comando para el popup de eliminación
+                    menu.post(event.x_root, event.y_root)
 
+                def show_list(origin, r_line):
+                    top = tk.Toplevel(origin)
+                    top.geometry("300x220")
+
+                    list_frame = ttk.Frame(top)
+                    list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
+
+                    scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
+                    lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
+                    scrollbar.config(command=lbox.yview)
+                    scrollbar.pack(side="right", fill="y")
+                    lbox.pack(side="left", fill="x", expand=True)
 
