@@ -597,7 +597,7 @@ class AdminUI(ctk.CTkFrame):
                 tree.column(col, width=800 // len(titles), anchor = "w")
 
 
-            def header_filter(filter_button, options, apply_function, edit_list = upd_db, initial = None, width = 150):
+            def header_filter(filter_button, options, initial = None, width = 150):
                 existing = getattr(filter_button, "options_popup", None)
                 if existing is not None and existing.winfo_exists():
                     try: existing.lift()
@@ -628,29 +628,15 @@ class AdminUI(ctk.CTkFrame):
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
 
-                # Cancela la aplicación del filtro
-                def cancel():
-                    try:
-                        popup.destroy()
-                    except Exception: pass
-                    try:
-                        delattr(filter_button, "filter_value")
-                    except Exception: pass
-                    try:
-                        root.unbind_all("<Button-1>")
-                    except Exception: pass
-
-                new_list = edit_list
-
                 # Aplica el filtro obtenido. Si no funciona,
                 def apply():
                     val = cbox.get()
                     filter_button.filter_value = val
                     try:
-                        new_list = apply_function(val, edit_list)
+                        popup.destroy()
                     except Exception as e:
                         print("error en la función: ",e)
-                    cancel()
+                    apply_filters()
 
                 cbox.bind("<Return>", apply)
 
@@ -674,10 +660,10 @@ class AdminUI(ctk.CTkFrame):
 
                 root.bind_all("<Button-1>", offclick, add = "+")
                 popup.focus_force()
-                return new_list
+                return
 
             # esta es la configuración del filtro de fecha
-            def date_cb(date_button, change_function, edit_list = upd_db, first_values = None):
+            def date_cb(date_button, first_values = None):
                 date_exists = getattr(root, "date_pop", None)
                 if date_exists is not None and date_exists.winfo_exists():
                     try:
@@ -752,22 +738,26 @@ class AdminUI(ctk.CTkFrame):
                     else:
                         cb_day.configure(values=[])
                         cb_day.set("")
+                def date_apply():
+                    # poner valores y guardarlos en el botoncito
+                    vals ={
+                        "year": cb_year.get() if cb_year.get() in years else "",
+                        "month": (f"{months.index(cb_month.get())+1:02d}" if cb_month.get() in months else ""),
+                        "day": cb_day.get() if cb_day.get() else ""
+                    }
+                    date_button.date_value = vals
+                    try:date_pop.destroy()
+                    except Exception:pass
+                    apply_filters()
 
-                # poner valores y guardarlos en el botoncito
-                vals ={
-                    "year": cb_year.get() if cb_year.get() in years else "",
-                    "month": (f"{months.index(cb_month.get())+1:02d}" if cb_month.get() in months else ""),
-                    "day": cb_day.get() if cb_day.get() else ""
-                }
-                date_button.date_value = vals
+                def date_change(changed):
+                    if changed in ("year","month"):
+                        upd_date()
+                    date_apply()
 
-                new_list = edit_list
-                try: new_list = change_function(vals, edit_list)
-                except Exception as e: print("Error: ",e)
-
-                cb_year.bind("<<ComboboxSelected>>", upd_date)
-                cb_month.bind("<<ComboboxSelected>>", upd_date)
-                cb_day.bind("<<ComboboxSelected>>", upd_date)
+                cb_year.configure(command= lambda _: date_change("year"))
+                cb_month.configure(command = lambda _: date_change("month"))
+                cb_day.configure(command = lambda _: date_change("day"))
 
                 # cierra el toplevel si se hace click afuera del toplevel
                 def click_outside(event):
@@ -787,81 +777,61 @@ class AdminUI(ctk.CTkFrame):
                 root.bind_all("<Button-1>", click_outside, add = "+")
                 popup_frame.focus_force()
                 upd_date()
-                return new_list
+                return
             fgen_list = upd_db
             if kind == "sales":
                 fgen_list =date_cb(date_btn, date_filter_func)
             upgraded_list = header_filter(filter_btn, titles, filter_func, fgen_list)
             p_col_index = "#4"
 
-            for f_val in upgraded_list:
-                if kind == "sales" or kind == "providers":
-                    list_text = "Ver ▾"
-                    all_vals = []
-                    for type in headers:
-                        main_val = getattr(f_val, type, "")
-                        all_vals.append(main_val)
-                    i_id = all_vals[0]
-                    all_vals[-2] = list_text
-                    tree.insert("", "end", i_id, values=all_vals)
-                    item_map[i_id] = all_vals
-                else:
-                    all_vals = []
-                    for type in headers:
-                        main_val = getattr(f_val, type, "")
-                        all_vals.append(main_val)
-                    i_id = all_vals[0]
-                    tree.insert("", "end", i_id, values=all_vals)
-                    item_map[i_id] = all_vals
+            def tree_click(event):
+                x, y = event.x, event.y
+                e_row = tree.identify_row(y)
+                e_col=tree.identify_column(x)
+                r_line = item_map.get(e_row, None)
+                if not e_row:
+                    return
+                if not r_line:
+                    return
 
-                def tree_click(event):
-                    x, y = event.x, event.y
-                    e_row = tree.identify_row(y)
-                    e_col=tree.identify_column(x)
-                    r_line = item_map.get(e_row, None)
-                    if not e_row:
-                        return
-                    if not r_line:
-                        return
+                if kind== "sales" or kind == "providers":
+                    if e_col == p_col_index:
+                        return  show_list(root, r_line)
+                return  row_menu(tree, event, r_line, e_row)
+            tree.bind("<Button-1>", tree_click)
 
-                    if kind== "sales" or kind == "providers":
-                        if e_col == p_col_index:
-                            return  show_list(root, r_line)
-                    return  row_menu(tree, event, r_line, e_row)
-                tree.bind("<Button-1>", tree_click)
+            def row_menu(origin, event, line, row):
+                menu = tk.Menu(tree, tearoff=0)
+                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar venta"
+                menu.add_command(label="eliminar") #command = lambda l=line: del_event(l) -> comando para el popup de eliminación
+                menu.post(event.x_root, event.y_root)
 
-                def row_menu(origin, event, line, row):
-                    menu = tk.Menu(tree, tearoff=0)
-                    menu.add_command(label="editar") #command = lambda l=line: edit_sale(l) -> comando para mostrar la ventana de "editar venta"
-                    menu.add_command(label="eliminar") #command = lambda l=line: del_sale(l) -> comando para el popup de eliminación
-                    menu.post(event.x_root, event.y_root)
+            def show_list(origin, r_line):
+                top = tk.Toplevel(origin)
+                top.geometry("300x220")
 
-                def show_list(origin, r_line):
-                    top = tk.Toplevel(origin)
-                    top.geometry("300x220")
+                list_frame = ttk.Frame(top)
+                list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
 
-                    list_frame = ttk.Frame(top)
-                    list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
+                scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
+                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
+                scrollbar.config(command=lbox.yview)
+                scrollbar.pack(side="right", fill="y")
+                lbox.pack(side="left", fill="x", expand=True)
 
-                    scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
-                    lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
-                    scrollbar.config(command=lbox.yview)
-                    scrollbar.pack(side="right", fill="y")
-                    lbox.pack(side="left", fill="x", expand=True)
+                if kind == "sales":
+                    p_in = getattr(r_line, "products", False)
+                    if p_in is not False:
+                        for key, p in p_in:
+                            entrance = {
+                                "v1" : key,
+                                "v2" : p["subtotal"],
+                            }
+                            lbox.insert("end", " | ".join(entrance.values()))
 
-                    if kind == "sales":
-                        p_in = getattr(r_line, "products", False)
-                        if p_in is not False:
-                            for key, p in p_in:
-                                entrance = {
-                                    "v1" : key,
-                                    "v2" : p["subtotal"],
-                                }
-                                lbox.insert("end", " | ".join(entrance.values()))
-
-                    if kind == "providers":
-                        p_in = getattr(r_line, "products", False)
-                        if p_in is not False:
-                            for val in p_in:
-                                lbox.insert("end", val)
-                    ctk.CTkButton(top, text = "Cerrar", command = top.destroy(), width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
+                if kind == "providers":
+                    p_in = getattr(r_line, "products", False)
+                    if p_in is not False:
+                        for val in p_in:
+                            lbox.insert("end", val)
+                ctk.CTkButton(top, text = "Cerrar", command = top.destroy(), width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
