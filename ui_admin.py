@@ -501,7 +501,7 @@ class AdminUI(ctk.CTkFrame):
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Volver", width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command = frame.destroy, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
@@ -510,11 +510,11 @@ class AdminUI(ctk.CTkFrame):
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Cerrar",command = frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
             # Creación de la tablita visualizadora de opciones
-            tree = ttk.Treeview(root, show="headings")
+            tree = ttk.Treeview(frame, show="headings")
             tree.pack(fill="both", expand=True)
             tree["columns"] = titles
             for col in titles:
@@ -774,3 +774,19 @@ class AdminUI(ctk.CTkFrame):
                     scrollbar.pack(side="right", fill="y")
                     lbox.pack(side="left", fill="x", expand=True)
 
+                    if kind == "sales":
+                        p_in = getattr(r_line, "products", False)
+                        if p_in is not False:
+                            for key, p in p_in:
+                                entrance = {
+                                    "v1" : key,
+                                    "v2" : p["subtotal"],
+                                }
+                                lbox.insert("end", " | ".join(entrance.values()))
+
+                    if kind == "providers":
+                        p_in = getattr(r_line, "products", False)
+                        if p_in is not False:
+                            for val in p_in:
+                                lbox.insert("end", val)
+                    ctk.CTkButton(top, text = "Cerrar", command = top.destroy(), width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
