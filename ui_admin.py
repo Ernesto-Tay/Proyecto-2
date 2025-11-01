@@ -717,7 +717,8 @@ class AdminUI(ctk.CTkFrame):
             if kind == "sales":
                 fgen_list =date_cb(date_btn, date_filter_func)
             upgraded_list = header_filter(filter_btn, titles, filter_func, fgen_list)
-
+            p_col_index = "#4"
+            item_map = {}
             for f_val in upgraded_list:
                 if kind == "sales" or kind == "providers":
                     list_text = "Ver ▾"
@@ -726,5 +727,33 @@ class AdminUI(ctk.CTkFrame):
                         main_val = getattr(f_val, type, "")
                         all_vals.append(main_val)
                     i_id = all_vals[0]
-                    tree.insert(i_id,)
+                    all_vals[-2] = list_text
+                    tree.insert("", "end", i_id, values=all_vals)
+                    item_map[i_id] = all_vals
+                else:
+                    all_vals = []
+                    for type in headers:
+                        main_val = getattr(f_val, type, "")
+                        all_vals.append(main_val)
+                    i_id = all_vals[0]
+                    tree.insert("", "end", i_id, values=all_vals)
+                    item_map[i_id] = all_vals
+
+                def tree_click(event):
+                    x, y = event.x, event.y
+                    e_row = tree.identify_row(y)
+                    e_col=tree.identify_column(x)
+                    r_line = item_map.get(e_row, None)
+                    if not e_row:
+                        return
+                    if not r_line:
+                        return
+
+                    if kind== "sales" or kind == "providers":
+
+                        if e_col == p_col_index:
+                            return
+                    return
+
+
 
