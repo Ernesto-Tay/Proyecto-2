@@ -436,36 +436,39 @@ class AdminUI(ctk.CTkFrame):
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
             main_headers = dict(zip(titles, headers))
+            reverse_headers = dict(zip(headers, titles))
             #extrae los datos de la db_info
             table_data = self.db_info[kind]
-            #copia los datos para alterar la lista copiada
-            upd_db = table_data.copy()
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             years = [str(y) for y in range (2025, 2030)]
-            date_pop = False
 
             item_map = {}
-            def apply_filters(tree):
-
-                base = upd_db
+            def apply_filters(m_tree):
+                base = table_data
                 result = base[:]
+
+                # reiniciar el treeview con los datos filtrados
+                for chld in m_tree.get_children():
+                    m_tree.delete(chld)
+                item_map.clear()
 
                 #filtro por encabezado seleccionado
                 header_selected = getattr(filter_btn, "filter_value", None)
                 header_attr = main_headers.get(header_selected, header_selected) if header_selected else None
-
+                print("header_selected: ", header_selected)
                 #texto ingresado en el buscador
                 search_text = ""
                 try:
                     search_text = search_var.get().strip()
+                    print("search_text: ", search_text)
                 except Exception:
                     pass
                 if search_text:
                     s=search_text.lower()
                     if header_attr:
-                        result = [obj for obj in result if s in str(getattr(obj, header_attr, "").lower())]
+                        result = [obj for obj in result if s in str(getattr(obj, header_attr, "")).lower()]
                     else:
                         tmp = []
                         for obj in result:
@@ -474,7 +477,7 @@ class AdminUI(ctk.CTkFrame):
                                     tmp.append(obj)
                                     break
                         result = tmp
-
+                    print("result: ", result)
                 # filtrar por fecha (si aplica)
                 date_vals = getattr(date_btn, "date_value", None)
                 if date_vals and date_vals.get("year") and date_vals.get("month_num") and date_vals.get("day"):
@@ -488,13 +491,8 @@ class AdminUI(ctk.CTkFrame):
                         result = filtered
                     except Exception:
                         pass
-
-                # reiniciar el treeview con los datos filtrados
-                for chld in tree.get_children():
-                    tree.delete(chld)
-                item_map.clear()
                 for idx, item in enumerate(result):
-                    all_vals = [getattr(item, t, "") for t in headers]
+                    all_vals = [str(getattr(item, t, "")) for t in headers]
 
                     #revisar si es "sales" o "providers" para poner la sección de "vista"
                     try:
@@ -502,11 +500,11 @@ class AdminUI(ctk.CTkFrame):
                         if kind in ("sales", "providers"):
                             all_vals[title_idx] = "Ver ▾"
                     except ValueError:
-                        prod_idx = None
+                        title_idx = None
 
                     # Añadir al tree_insert y al trace_map
                     iid = f"r{idx}"
-                    tree.insert("", "end", iid=iid, values=all_vals)
+                    m_tree.insert("", "end", iid=iid, values=all_vals)
                     item_map[iid] = item
 
             # crea el frame y el espacio para los botoncitos
@@ -545,7 +543,7 @@ class AdminUI(ctk.CTkFrame):
                 back_btn = ctk.CTkButton(controls, text="Cerrar",command = frame_2.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
-
+            print("search_var initial:", repr(search_var.get()))
             def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
                 existing = getattr(filter_button, "options_popup", None)
                 if existing is not None and existing.winfo_exists():
@@ -576,17 +574,21 @@ class AdminUI(ctk.CTkFrame):
                 elif options:
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
+                print("cbox_var initial:", repr(getattr(cbox, 'get', lambda: None)()))
 
                 # Aplica el filtro obtenido. Si no funciona,
-                def apply():
-                    val = cbox.get()
+                def apply(value = None):
+                    val =  value if value else cbox.get()
+
                     filter_button.filter_value = val
+                    print("val is: ",val)
                     try:
                         popup.destroy()
                     except Exception as e:
                         print("error en la función: ",e)
                     apply_filters(origin_tree)
 
+                cbox.configure(command = apply)
                 cbox.bind("<Return>", apply)
 
                 def offclick(event):
