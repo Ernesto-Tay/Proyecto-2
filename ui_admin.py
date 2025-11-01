@@ -430,7 +430,7 @@ class AdminUI(ctk.CTkFrame):
 
             # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
             cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sale_price", "stock"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
-            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos asociados"]}
+            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
             headers = cols[kind]
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
@@ -466,9 +466,52 @@ class AdminUI(ctk.CTkFrame):
                     s=search_text.lower()
                     if header_attr:
                         result = [obj for obj in result if s in str(getattr(obj, header_attr, "").lower())]
+                    else:
+                        tmp = []
+                        for obj in result:
+                            for h in headers:
+                                if s in str(getattr(obj, h, "")).lower():
+                                    tmp.append(obj)
+                                    break
+                        result = tmp
 
+                # filtrar por fecha (si aplica)
+                date_vals = getattr(date_btn, "date_value", None)
+                if date_vals and date_vals.get("year") and date_vals.get("month_num") and date_vals.get("day"):
+                    try:
+                        fy, fm, fd = int(date_vals["year"]), int(date_vals["month_num"]), int(date_vals["day"])
+                        filtered = []
+                        for obj in result:
+                            r=getattr(obj, "date", None)
+                            if r and r.year == fy and r.month == fm and r.day == fd:
+                                filtered.append(obj)
+                        result = filtered
+                    except Exception:
+                        pass
 
+                # reiniciar el treeview con los datos filtrados
+                for chld in tree.get_children():
+                    tree.delete(chld)
+                item_map.clear()
+                for idx, item in enumerate(result):
+                    all_vals = [getattr(item, t, "") for t in headers]
 
+                    #revisar si es "sales" o "providers" para poner la sección de "vista"
+                    try:
+                        title_idx = headers.index("products")
+                        if kind in ("sales", "providers"):
+                            all_vals[title_idx] = "Ver ▾"
+                    except ValueError:
+                        prod_idx = None
+
+                    # Añadir al tree_insert y al trace_map
+                    iid = f"r{idx}"
+                    tree.insert("", "end", iid=iid, values=all_vals)
+                    item_map[iid] = item
+
+            #actualizador al escribir
+            def search_change(var_name = None, index = None, mode = None):
+                apply_filters()
 
 
             # Función para filtrar los datos y buscarlos por el header
@@ -538,6 +581,12 @@ class AdminUI(ctk.CTkFrame):
                 search_btn.pack(side="left", padx=6)
                 back_btn = ctk.CTkButton(controls, text="Cerrar",command = frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
+
+            # se añade el actualizador cada vez que se escribe
+            try:
+                search_var.trace_add('write', search_change)
+            except Exception:
+                pass
 
             # Creación de la tablita visualizadora de opciones
             tree = ttk.Treeview(frame, show="headings")
