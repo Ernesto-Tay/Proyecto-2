@@ -513,39 +513,6 @@ class AdminUI(ctk.CTkFrame):
             def search_change(var_name = None, index = None, mode = None):
                 apply_filters()
 
-
-            # Función para filtrar los datos y buscarlos por el header
-            def filter_func(header, filt_list):
-                try:
-                    new_list = []
-                    search_val = main_headers[header]
-                    current_char = search_var.trace_add("write", lambda var_name, index, mode: self.entry_upd(search_var))
-                    for val in filt_list:
-                        r_data = getattr(val, search_val, None)
-                        if r_data is not None:
-                            if current_char in r_data:
-                                new_list.append(val)
-                    return new_list
-                except Exception as e:
-                    print("Error: ",e)
-                    return filt_list
-
-            # Función para filtrar los datos en función de la fecha (solo aplica si es "sale")
-            def date_filter_func(date_config, filt_list):
-                try:
-                    new_list = []
-                    f_year, f_month, f_day = date_config['year'], date_config['month'], date_config['day']
-                    for val in filt_list:
-                        r_data = getattr(val, "date", None)
-                        if r_data is not None:
-                            v_year, v_month, v_day = r_data.year, r_data.month, r_data.day
-                            if f_year == v_year and f_month == v_month and f_day == v_day:
-                                new_list.append(val)
-                    return new_list
-                except Exception as e:
-                    print("Error: ",e)
-                    return filt_list
-
             # crea el frame y el espacio para los botoncitos
             if getattr(frame, "current_frame", None) is not None:
                 frame.destroy()
@@ -779,10 +746,15 @@ class AdminUI(ctk.CTkFrame):
                 upd_date()
                 return
             fgen_list = upd_db
+            header_filter(filter_btn, titles)
             if kind == "sales":
-                fgen_list =date_cb(date_btn, date_filter_func)
-            upgraded_list = header_filter(filter_btn, titles, filter_func, fgen_list)
-            p_col_index = "#4"
+                date_cb(date_btn)
+            apply_filters()
+            try:
+                p_col_index = f'#{titles.index('productos')+1}'
+            except:
+                p_col_index = None
+
 
             def tree_click(event):
                 x, y = event.x, event.y
@@ -791,6 +763,7 @@ class AdminUI(ctk.CTkFrame):
                 r_line = item_map.get(e_row, None)
                 if not e_row:
                     return
+                inst = item_map.get(e_row, None)
                 if not r_line:
                     return
 
@@ -802,17 +775,15 @@ class AdminUI(ctk.CTkFrame):
 
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
-                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar venta"
-                menu.add_command(label="eliminar") #command = lambda l=line: del_event(l) -> comando para el popup de eliminación
+                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
+                menu.add_command(label="eliminar") #command = lambda l=line, iid=row: del_event(l) -> comando para el popup de eliminación
                 menu.post(event.x_root, event.y_root)
 
             def show_list(origin, r_line):
                 top = tk.Toplevel(origin)
                 top.geometry("300x220")
-
                 list_frame = ttk.Frame(top)
                 list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
-
                 scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
                 lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
                 scrollbar.config(command=lbox.yview)
