@@ -15,6 +15,7 @@ class CollabUI(ctk.CTkFrame):
         self.master = master
         self.pack(expand=True, fill="both")
         self.db_info = self.db_extract(classes)
+        self.searchbar_frame = None
 
         # elementos principales
         self.header = None
@@ -200,7 +201,23 @@ class CollabUI(ctk.CTkFrame):
     def entry_upd(self, entry_var, *args):
         return entry_var.get()
 
-    def menu_visualizer(self, root, kind, sb_frame):
+    # función para cerrar la searchbar
+    def close_searchbar(self):
+        frm = getattr(self, "searchbar_frame", None)
+        if frm and frm.winfo_exists():
+            try:
+                frm.destroy()
+            except Exception:
+                pass
+        # cerrar popup abierto (si es que hay alguno)
+        pop = getattr(self, "current_popup", None)
+        if pop and pop.winfo_exists():
+            try:
+                pop.destroy()
+            except Exception:
+                pass
+
+    def menu_visualizer(self, root, kind):
         """
         t e x t o
         """
@@ -289,12 +306,15 @@ class CollabUI(ctk.CTkFrame):
                     search_btn.focus_set()
 
             # crea el frame y el espacio para los botoncitos
-            if sb_frame and sb_frame.winfo_exists():
-                sb_frame.destroy()
-            sb_frame = ctk.CTkFrame(root, corner_radius=12)
-            sb_frame.pack(fill="both", expand=True, padx=8, pady=8)
+            if getattr(self, "searchbar_frame", None) and self.searchbar_frame.winfo_exists():
+                try:
+                    self.searchbar_frame.destroy()
+                except Exception:
+                    pass
+            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12)
+            self.searchbar_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
-            controls = ctk.CTkFrame(sb_frame,  fg_color="transparent")
+            controls = ctk.CTkFrame(self.searchbar_frame,  fg_color="transparent")
             controls.pack(fill="x", padx=8, pady=(4,8))
 
             filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
@@ -302,11 +322,17 @@ class CollabUI(ctk.CTkFrame):
             search_var = ctk.StringVar()
             search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
             search_btn.pack(side="left", padx=6)
-            back_btn = ctk.CTkButton(controls, text="Cerrar",command = sb_frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+            back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.searchbar_frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
             back_btn.pack(side="right", padx=6)
 
             print("search_var initial:", repr(search_var.get()))
             def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
+                old = getattr(self, "_current_popup", None)
+                if old is not None and old.winfo_exists():
+                    try:
+                        old.destroy()
+                    except Exception:
+                        pass
                 existing = getattr(filter_button, "options_popup", None)
                 if existing is not None and existing.winfo_exists():
                     try: existing.lift()
@@ -378,13 +404,15 @@ class CollabUI(ctk.CTkFrame):
 
                 b_id = root.bind_all("<Button-1>", offclick, add = "+")
                 popup.focus_force()
+                popup.grab_set()
+                popup.wait_window()
                 return
             try:
                 p_col_index = f'#{titles.index('productos')+1}'
             except:
                 p_col_index = None
             # Creación de la tablita visualizadora de opciones
-            tree = ttk.Treeview(sb_frame, show="headings")
+            tree = ttk.Treeview(self.searchbar_frame, show="headings")
 
             #instanciamos JUSTO después del tree para que se vean bien las cosas
             filter_btn.configure(command = lambda:header_filter(filter_btn, titles, tree))

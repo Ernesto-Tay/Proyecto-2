@@ -140,11 +140,11 @@ class AdminUI(ctk.CTkFrame):
             case "Agregar productos":
                 self.view_create_product()
             case "Ver colaboradores":
-                self.menu_visualizer(self.master, "collaborators", self.searchbar_frame)
+                self.menu_visualizer(self.master, "collaborators")
             case "Ver clientes":
-                self.menu_visualizer(self.master, "clients",self.searchbar_frame)
+                self.menu_visualizer(self.master, "clients")
             case "Ver productos":
-                self.menu_visualizer(self.master, "products",self.searchbar_frame)
+                self.menu_visualizer(self.master, "products")
 
 
     # formulario agregar colaborador
@@ -379,7 +379,7 @@ class AdminUI(ctk.CTkFrame):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:
             from login import LoginUI
-            self.searchbar_frame.destroy() if getattr(self.searchbar_frame, "winfo_exists", None) else None
+            self.close_searchbar()
             self.pack_forget()
             LoginUI(self.master)
 
@@ -418,7 +418,23 @@ class AdminUI(ctk.CTkFrame):
     def entry_upd(self, entry_var, *args):
         return entry_var.get()
 
-    def menu_visualizer(self, root, kind, sb_frame):
+        # función para cerrar la searchbar
+    def close_searchbar(self):
+        frm = getattr(self, "searchbar_frame", None)
+        if frm and frm.winfo_exists():
+            try:
+                frm.destroy()
+            except Exception:
+                pass
+        # cerrar popup abierto (si es que hay alguno)
+        pop = getattr(self, "current_popup", None)
+        if pop and pop.winfo_exists():
+            try:
+                pop.destroy()
+            except Exception:
+                pass
+
+    def menu_visualizer(self, root, kind):
         """
         t e x t o
         """
@@ -436,7 +452,6 @@ class AdminUI(ctk.CTkFrame):
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
             main_headers = dict(zip(titles, headers))
-            reverse_headers = dict(zip(headers, titles))
             #extrae los datos de la db_info
             table_data = self.db_info[kind]
 
@@ -509,12 +524,15 @@ class AdminUI(ctk.CTkFrame):
                     search_btn.focus_set()
 
             # crea el frame y el espacio para los botoncitos
-            if sb_frame and sb_frame.winfo_exists():
-                sb_frame.destroy()
-            sb_frame = ctk.CTkFrame(root, corner_radius=12)
-            sb_frame.pack(fill="both", expand=True, padx=8, pady=8)
+            if getattr(self, "searchbar_frame", None) and self.searchbar_frame.winfo_exists():
+                try:
+                    self.searchbar_frame.destroy()
+                except Exception:
+                    pass
+            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12)
+            self.searchbar_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
-            controls = ctk.CTkFrame(sb_frame,  fg_color="transparent")
+            controls = ctk.CTkFrame(self.searchbar_frame,  fg_color="transparent")
             controls.pack(fill="x", padx=8, pady=(4,8))
 
             # inicializa los botoncitos para evitar error de llamada
@@ -532,7 +550,7 @@ class AdminUI(ctk.CTkFrame):
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Cerrar",command = sb_frame.destroy, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
@@ -541,17 +559,17 @@ class AdminUI(ctk.CTkFrame):
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Cerrar",command = sb_frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
             print("search_var initial:", repr(search_var.get()))
             def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
-                existing = getattr(filter_button, "options_popup", None)
-                if existing is not None and existing.winfo_exists():
-                    try: existing.lift()
+                old = getattr(self, "_current_popup", None)
+                if old is not None and old.winfo_exists():
+                    try:
+                        old.destroy()
                     except Exception:
-                        try: existing.destroy()
-                        except: pass
+                        pass
 
                 # Configuración del topLevel pa que parezca un combobox
                 popup = ctk.CTkToplevel(filter_button.winfo_toplevel())
@@ -617,10 +635,18 @@ class AdminUI(ctk.CTkFrame):
 
                 b_id = root.bind_all("<Button-1>", offclick, add = "+")
                 popup.focus_force()
+                popup.grab_set()
+                popup.wait_window()
                 return
 
             # esta es la configuración del filtro de fecha
             def date_cb(date_button, origin_tree, first_values = None):
+                old = getattr(self, "_current_popup", None)
+                if old is not None and old.winfo_exists():
+                    try:
+                        old.destroy()
+                    except Exception:
+                        pass
                 date_exists = getattr(root, "date_pop", None)
                 if date_exists is not None and date_exists.winfo_exists():
                     try:
@@ -737,6 +763,8 @@ class AdminUI(ctk.CTkFrame):
                 root.bind_all("<Button-1>", click_outside, add = "+")
                 popup_frame.focus_force()
                 upd_date()
+                popup_frame.grab_set()
+                popup_frame.wait_window()
                 return
             try:
                 p_col_index = f'#{titles.index('productos')+1}'
@@ -744,7 +772,7 @@ class AdminUI(ctk.CTkFrame):
                 p_col_index = None
 
             # Creación de la tablita visualizadora de opciones
-            tree = ttk.Treeview(sb_frame, show="headings")
+            tree = ttk.Treeview(self.searchbar_frame, show="headings")
 
             #instanciamos JUSTO después del tree para que se vean bien las cosas
             filter_btn.configure(command = lambda:header_filter(filter_btn, titles, tree))
@@ -794,6 +822,9 @@ class AdminUI(ctk.CTkFrame):
             def show_list(origin, r_line):
                 top = tk.Toplevel(origin)
                 top.geometry("300x220")
+                top.transient(origin)
+                top.grab_set()
+                top.wait_window()
                 list_frame = ttk.Frame(top)
                 list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
                 scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
@@ -817,4 +848,4 @@ class AdminUI(ctk.CTkFrame):
                     if p_in is not False:
                         for val in p_in:
                             lbox.insert("end", val)
-                ctk.CTkButton(top, text = "Cerrar", command = top.destroy(), width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
+                ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
