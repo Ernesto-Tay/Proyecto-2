@@ -487,7 +487,7 @@ class AdminUI(ctk.CTkFrame):
         except Exception as e:
             mbox.showerror("Error", f"No se pudo crear el proveedor:\n{e}")
 
-    def manage_sale_cart(self, action=None, product_id=None, quantity=0, unit_price=0.0, current_sale):
+    def manage_sale_cart(self, action=None, product_id=None, quantity=0, unit_price=0.0):
         """
         Función centralizada para manejar la lógica base del diccionario que guarda las ventas.
         Permite inicializar el carrito, agregar productos, eliminarlos,
