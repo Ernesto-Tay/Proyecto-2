@@ -379,7 +379,7 @@ class AdminUI(ctk.CTkFrame):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:
             from login import LoginUI
-            self.searchbar_frame.destroy() if self.searchbar_frame else None
+            self.searchbar_frame.destroy() if getattr(self.searchbar_frame, "winfo_exists", None) else None
             self.pack_forget()
             LoginUI(self.master)
 
@@ -418,7 +418,7 @@ class AdminUI(ctk.CTkFrame):
     def entry_upd(self, entry_var, *args):
         return entry_var.get()
 
-    def menu_visualizer(self, root, kind, frame):
+    def menu_visualizer(self, root, kind, sb_frame):
         """
         t e x t o
         """
@@ -506,14 +506,15 @@ class AdminUI(ctk.CTkFrame):
                     iid = f"r{idx}"
                     m_tree.insert("", "end", iid=iid, values=all_vals)
                     item_map[iid] = item
+                    search_btn.focus_set()
 
             # crea el frame y el espacio para los botoncitos
-            if frame is not None:
-                frame.destroy()
-            frame_2 = ctk.CTkFrame(frame, corner_radius=12)
-            frame_2.pack(fill="both", expand=True, padx=8, pady=8)
+            if sb_frame and sb_frame.winfo_exists():
+                sb_frame.destroy()
+            sb_frame = ctk.CTkFrame(root, corner_radius=12)
+            sb_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
-            controls = ctk.CTkFrame(frame_2,  fg_color="transparent")
+            controls = ctk.CTkFrame(sb_frame,  fg_color="transparent")
             controls.pack(fill="x", padx=8, pady=(4,8))
 
             # inicializa los botoncitos para evitar error de llamada
@@ -524,23 +525,23 @@ class AdminUI(ctk.CTkFrame):
 
             if kind == "sales":
                 # Organiza los botoncitos específicamente para las ventas
-                filter_btn = ctk.CTkLabel(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="transparent", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                date_btn = ctk.CTkLabel(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="transparent", text_color="black", font=("Open Sans", 13, "bold"))
+                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 date_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Cerrar",command = frame_2.destroy, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command = sb_frame.destroy, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
-                filter_btn = ctk.CTkLabel(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="transparent", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Cerrar",command = frame_2.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Cerrar",command = sb_frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
             print("search_var initial:", repr(search_var.get()))
@@ -553,10 +554,16 @@ class AdminUI(ctk.CTkFrame):
                         except: pass
 
                 # Configuración del topLevel pa que parezca un combobox
-                popup = tk.Toplevel(filter_button.winfo_toplevel())
+                popup = ctk.CTkToplevel(filter_button.winfo_toplevel())
+                filter_button.options_popup = popup
                 popup.wm_overrideredirect(True)
                 popup.transient(filter_button.winfo_toplevel())
                 popup.attributes("-topmost", True)
+                popup.update_idletasks()
+                popup.deiconify()
+                popup.lift()
+
+                print(getattr(filter_btn, "options_popup", None))
 
                 # poner debajo del botoncito
                 ax = filter_button.winfo_rootx()
@@ -568,7 +575,7 @@ class AdminUI(ctk.CTkFrame):
                 bframe.pack(padx = 4, pady = 4)
 
                 # Creación de la combobox y colocar su valor inicial
-                cbox = ctk.CTkComboBox(frame_2, values = options, width = width, height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
+                cbox = ctk.CTkComboBox(bframe, values = options, width = width, height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 if initial and initial in options:
                     cbox.set(initial)
                 elif options:
@@ -589,27 +596,26 @@ class AdminUI(ctk.CTkFrame):
                     apply_filters(origin_tree)
 
                 cbox.configure(command = apply)
-                cbox.bind("<Return>", apply)
 
                 def offclick(event):
+                    if not popup.winfo_exists():
+                        return
                     #obtener coordenadas del "evento"
                     x, y = event.x_root, event.y_root
                     #obtener coordenadas y dimensiones del toplevel del combobox
                     if popup.winfo_exists():
                         px, py = popup.winfo_rootx(), popup.winfo_rooty()
                         pw, ph = popup.winfo_width(), popup.winfo_height()
-                        b_id = getattr(event, "click_bind_id", None)
 
                         if not (px <= x <= px + pw and py <= y <= py + ph):
                             try: popup.destroy()
                             except: pass
-                            try:
-                                delattr(filter_button, "options_popup")
+                            try:delattr(filter_button, "options_popup")
                             except: pass
                             try: root.unbind_all("<Button-1>", b_id)
                             except Exception: pass
 
-                root.bind_all("<Button-1>", offclick, add = "+")
+                b_id = root.bind_all("<Button-1>", offclick, add = "+")
                 popup.focus_force()
                 return
 
@@ -627,11 +633,14 @@ class AdminUI(ctk.CTkFrame):
                             pass
 
                 # crear y configurar un top level para que funcione más como un combobox con pequeñas comboboxes... y no como un toplevel
-                date_pop = tk.Toplevel(date_button.winfo_toplevel())
+                date_pop = ctk.CTkToplevel(date_button.winfo_toplevel())
                 date_button.date_pop = date_pop
                 date_pop.wm_overrideredirect(True)
                 date_pop.transient(date_button.winfo_toplevel())
                 date_pop.attributes("-topmost", True)
+                date_pop.update_idletasks()
+                date_pop.deiconify()
+                date_pop.lift()
 
                 # colocarlo debajo del botoncito de acción
 
@@ -735,12 +744,12 @@ class AdminUI(ctk.CTkFrame):
                 p_col_index = None
 
             # Creación de la tablita visualizadora de opciones
-            tree = ttk.Treeview(frame_2, show="headings")
+            tree = ttk.Treeview(sb_frame, show="headings")
 
             #instanciamos JUSTO después del tree para que se vean bien las cosas
-            header_filter(filter_btn, titles, tree)
+            filter_btn.configure(command = lambda:header_filter(filter_btn, titles, tree))
             if kind == "sales":
-                date_cb(date_btn, tree)
+                date_btn.configure(command = lambda: date_cb(date_btn, tree))
             apply_filters(tree)
             # empaquetamos el tree
             tree.pack(fill="both", expand=True)

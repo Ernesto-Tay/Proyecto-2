@@ -1,11 +1,20 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
+from tkinter import ttk
+import tkinter as tk
+from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate
+import datetime
+from datetime import date
+DB_NAME = "bawiz.db"
+classes = {"users": User, "admins": Admin, "collaborators": Collaborator, "providers": Provider, "clients": Client, "sales": Sales, "products": Product}
+
 
 class CollabUI(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
+        self.db_info = self.db_extract(classes)
 
         # elementos principales
         self.header = None
@@ -155,3 +164,295 @@ class CollabUI(ctk.CTkFrame):
             from login import LoginUI
             self.pack_forget()
             LoginUI(self.master)
+
+    def db_extract(self, ref_classes):
+        with get_conn() as c:
+            out = {}
+            cur = c.cursor()
+
+            # Obtiene todas las tablas que NO sean de metadatos (creadas por SQL para operaciones internas)
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+            tables = [r[0] for r in cur.fetchall()]
+
+            for table in tables:
+                # Obtención de encabezados de tabla
+                cur.execute(f"PRAGMA table_info('{table}')")
+                info = cur.fetchall()
+                cols = [col[1] for col in info]
+
+                # Obtener filas
+                cur.execute(f"SELECT * FROM {table}")
+                rows = cur.fetchall()
+
+                # crear objetos con las filas para usar sus funciones y no complicarnos la vida
+                the_class = ref_classes.get(table)
+                objects = []
+                for row in rows:
+                    # Revisar como extrae la info, no creo que esté bien
+                    row_dict = dict(zip(cols, row))
+                    kind_id = row_dict[cols[0]]
+                    obj = the_class.load(kind_id)
+                    if obj is not None:
+                        objects.append(obj)
+                out[table] = objects
+            return out
+
+    def entry_upd(self, entry_var, *args):
+        return entry_var.get()
+
+    def menu_visualizer(self, root, kind, sb_frame):
+        """
+        t e x t o
+        """
+        with get_conn() as c:
+            #extrae la información de una tabla en la base de datos, buscándola con el nombre "kind" (argumento ingresado)
+            cur = c.cursor()
+            cur.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ? LIMIT 1;", (kind,))
+            if not cur.fetchone():
+                return None
+
+            # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
+            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sale_price", "stock"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
+            headers = cols[kind]
+            titles = titles_dict[kind]
+            #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
+            main_headers = dict(zip(titles, headers))
+            reverse_headers = dict(zip(headers, titles))
+            #extrae los datos de la db_info
+            table_data = self.db_info[kind]
+            # define la fecha de hoy
+            today = date.today()
+
+            item_map = {}
+            def apply_filters(m_tree):
+                base = table_data
+                result = base[:]
+
+                # reiniciar el treeview con los datos filtrados
+                for chld in m_tree.get_children():
+                    m_tree.delete(chld)
+                item_map.clear()
+
+                #filtro por encabezado seleccionado
+                header_selected = getattr(filter_btn, "filter_value", None)
+                header_attr = main_headers.get(header_selected, header_selected) if header_selected else None
+                print("header_selected: ", header_selected)
+                #texto ingresado en el buscador
+                search_text = ""
+                try:
+                    search_text = search_var.get().strip()
+                    print("search_text: ", search_text)
+                except Exception:
+                    pass
+                if search_text:
+                    s=search_text.lower()
+                    if header_attr:
+                        result = [obj for obj in result if s in str(getattr(obj, header_attr, "")).lower()]
+                    else:
+                        tmp = []
+                        for obj in result:
+                            for h in headers:
+                                if s in str(getattr(obj, h, "")).lower():
+                                    tmp.append(obj)
+                                    break
+                        result = tmp
+                    print("result: ", result)
+                # filtrar por fecha (si aplica)
+                date_vals = today
+                if date_vals and date_vals.year and date_vals.month and date_vals.day:
+                    try:
+                        fy, fm, fd = int(date_vals.year), int(date_vals.month), int(date_vals.day)
+                        filtered = []
+                        for obj in result:
+                            r=getattr(obj, "date", None)
+                            if r and r.year == fy and r.month == fm and r.day == fd:
+                                filtered.append(obj)
+                        result = filtered
+                    except Exception:
+                        pass
+                for idx, item in enumerate(result):
+                    all_vals = [str(getattr(item, t, "")) for t in headers]
+
+                    #revisar si es "sales" o "providers" para poner la sección de "vista"
+                    try:
+                        title_idx = headers.index("products")
+                        if kind == "sales":
+                            all_vals[title_idx] = "Ver ▾"
+                    except ValueError:
+                        title_idx = None
+
+                    # Añadir al tree_insert y al trace_map
+                    iid = f"r{idx}"
+                    m_tree.insert("", "end", iid=iid, values=all_vals)
+                    item_map[iid] = item
+                    search_btn.focus_set()
+
+            # crea el frame y el espacio para los botoncitos
+            if sb_frame and sb_frame.winfo_exists():
+                sb_frame.destroy()
+            sb_frame = ctk.CTkFrame(root, corner_radius=12)
+            sb_frame.pack(fill="both", expand=True, padx=8, pady=8)
+
+            controls = ctk.CTkFrame(sb_frame,  fg_color="transparent")
+            controls.pack(fill="x", padx=8, pady=(4,8))
+
+            filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+            filter_btn.pack(side="left", padx=6)
+            search_var = ctk.StringVar()
+            search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
+            search_btn.pack(side="left", padx=6)
+            back_btn = ctk.CTkButton(controls, text="Cerrar",command = sb_frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+            back_btn.pack(side="right", padx=6)
+
+            print("search_var initial:", repr(search_var.get()))
+            def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
+                existing = getattr(filter_button, "options_popup", None)
+                if existing is not None and existing.winfo_exists():
+                    try: existing.lift()
+                    except Exception:
+                        try: existing.destroy()
+                        except: pass
+
+                # Configuración del topLevel pa que parezca un combobox
+                popup = ctk.CTkToplevel(filter_button.winfo_toplevel())
+                filter_button.options_popup = popup
+                popup.wm_overrideredirect(True)
+                popup.transient(filter_button.winfo_toplevel())
+                popup.attributes("-topmost", True)
+                popup.update_idletasks()
+                popup.deiconify()
+                popup.lift()
+
+                print(getattr(filter_btn, "options_popup", None))
+
+                # poner debajo del botoncito
+                ax = filter_button.winfo_rootx()
+                ay = filter_button.winfo_rooty() + filter_button.winfo_height()
+                popup.geometry(f"+{ax}+{ay}")
+
+                # Contenedor
+                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="transparent")
+                bframe.pack(padx = 4, pady = 4)
+
+                # Creación de la combobox y colocar su valor inicial
+                cbox = ctk.CTkComboBox(bframe, values = options, width = width, height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
+                if initial and initial in options:
+                    cbox.set(initial)
+                elif options:
+                    cbox.set(options[0])
+                cbox.pack(anchor = "w", pady = (0, 4))
+                print("cbox_var initial:", repr(getattr(cbox, 'get', lambda: None)()))
+
+                # Aplica el filtro obtenido. Si no funciona,
+                def apply(value = None):
+                    val =  value if value else cbox.get()
+
+                    filter_button.filter_value = val
+                    print("val is: ",val)
+                    try:
+                        popup.destroy()
+                    except Exception as e:
+                        print("error en la función: ",e)
+                    apply_filters(origin_tree)
+
+                cbox.configure(command = apply)
+
+                def offclick(event):
+                    if not popup.winfo_exists():
+                        return
+                    #obtener coordenadas del "evento"
+                    x, y = event.x_root, event.y_root
+                    #obtener coordenadas y dimensiones del toplevel del combobox
+                    if popup.winfo_exists():
+                        px, py = popup.winfo_rootx(), popup.winfo_rooty()
+                        pw, ph = popup.winfo_width(), popup.winfo_height()
+
+                        if not (px <= x <= px + pw and py <= y <= py + ph):
+                            try: popup.destroy()
+                            except: pass
+                            try:delattr(filter_button, "options_popup")
+                            except: pass
+                            try: root.unbind_all("<Button-1>", b_id)
+                            except Exception: pass
+
+                b_id = root.bind_all("<Button-1>", offclick, add = "+")
+                popup.focus_force()
+                return
+            try:
+                p_col_index = f'#{titles.index('productos')+1}'
+            except:
+                p_col_index = None
+            # Creación de la tablita visualizadora de opciones
+            tree = ttk.Treeview(sb_frame, show="headings")
+
+            #instanciamos JUSTO después del tree para que se vean bien las cosas
+            filter_btn.configure(command = lambda:header_filter(filter_btn, titles, tree))
+            apply_filters(tree)
+            # empaquetamos el tree
+            tree.pack(fill="both", expand=True)
+            tree["columns"] = titles
+            for col in titles:
+                tree.heading(col, text=col)
+                tree.column(col, width=800 // len(titles), anchor="w")
+
+            # actualizador al escribir
+            def search_change(var_name=None, index=None, mode=None):
+                apply_filters(tree)
+
+            # se añade el actualizador cada vez que se escribe
+            try:
+                search_var.trace_add('write', search_change)
+            except Exception:
+                pass
+
+            def tree_click(event):
+                x, y = event.x, event.y
+                e_row = tree.identify_row(y)
+                e_col=tree.identify_column(x)
+                r_line = item_map.get(e_row, None)
+                if not e_row:
+                    return
+                inst = item_map.get(e_row, None)
+                if not r_line:
+                    return
+
+                if kind== "sales" or kind == "providers":
+                    if e_col == p_col_index:
+                        return  show_list(root, r_line)
+                return  row_menu(tree, event, r_line, e_row)
+            tree.bind("<Button-1>", tree_click)
+
+            def row_menu(origin, event, line, row):
+                menu = tk.Menu(tree, tearoff=0)
+                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
+                menu.add_command(label="eliminar") #command = lambda l=line, iid=row: del_event(l) -> comando para el popup de eliminación
+                menu.post(event.x_root, event.y_root)
+
+            def show_list(origin, r_line):
+                top = tk.Toplevel(origin)
+                top.geometry("300x220")
+                list_frame = ttk.Frame(top)
+                list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
+                scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
+                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
+                scrollbar.config(command=lbox.yview)
+                scrollbar.pack(side="right", fill="y")
+                lbox.pack(side="left", fill="x", expand=True)
+
+                if kind == "sales":
+                    p_in = getattr(r_line, "products", False)
+                    if p_in is not False:
+                        for key, p in p_in:
+                            entrance = {
+                                "v1" : key,
+                                "v2" : p["subtotal"],
+                            }
+                            lbox.insert("end", " | ".join(entrance.values()))
+
+                if kind == "providers":
+                    p_in = getattr(r_line, "products", False)
+                    if p_in is not False:
+                        for val in p_in:
+                            lbox.insert("end", val)
+                ctk.CTkButton(top, text = "Cerrar", command = top.destroy(), width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
