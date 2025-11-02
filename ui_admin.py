@@ -487,7 +487,7 @@ class AdminUI(ctk.CTkFrame):
         except Exception as e:
             mbox.showerror("Error", f"No se pudo crear el proveedor:\n{e}")
 
-    def manage_sale_cart(self, action=None, product_id=None, quantity=0, unit_price=0.0):
+    def manage_sale(self, action=None, product_id=None, quantity=0, unit_price=0.0):
         """
         Función centralizada para manejar la lógica base del diccionario que guarda las ventas.
         Permite inicializar el carrito, agregar productos, eliminarlos,
@@ -534,6 +534,42 @@ class AdminUI(ctk.CTkFrame):
             # venta en el momento
             print(json.dumps(self.current_sale, indent=4, ensure_ascii=False))
             return
+
+    def save_sale_to_db(self):
+        """
+        Guarda la venta actual (diccionario) en la base de datos y actualiza existencias.
+        """
+
+        # Verifica que exista una venta activa
+        if not hasattr(self, "current_sale") or not self.current_sale.get("products"):
+            return
+
+        if not self.current_sale.get("client"):
+            return
+
+        # Calcular total
+        total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
+
+        # Crear ID único para la venta
+        sale_id = "SAL" + datetime.now().strftime("%d%m%H%M%S")
+
+        # Fecha y hora actuales
+        now = datetime.now()
+        date_str = now.strftime("%Y-%m-%d")
+        time_str = now.strftime("%H:%M:%S")
+
+        # Guarda en la base de datos
+
+        with get_conn() as conn:
+            conn.execute("""INSERT INTO sales (sale_id, client_id, date, time, products, total) VALUES (?, ?, ?, ?, ?, ?)""", (sale_id,self.current_sale["client"],date_str,time_str,json.dumps(self.current_sale["products"], ensure_ascii=False),total))
+
+            # Actualiza el stock por cada producto vendido
+            for product_id, data in self.current_sale["products"].items():
+                conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
+                conn.commit()
+        # Reinicia el diccionario para una futura nueva venta
+        self.manage_sale_cart("init")
+
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
