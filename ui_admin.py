@@ -547,10 +547,10 @@ class AdminUI(ctk.CTkFrame):
         if not self.current_sale.get("client"):
             return
 
-        # Calcular total
+        # Calcula total
         total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
 
-        # Crear ID único para la venta
+        # Crea ID único para la venta
         sale_id = "SAL" + datetime.now().strftime("%d%m%H%M%S")
 
         # Fecha y hora actuales
@@ -570,15 +570,10 @@ class AdminUI(ctk.CTkFrame):
         # Reinicia el diccionario para una futura nueva venta
         self.manage_sale("init")
 
-    # ==============================
-    # 🟩 COMMIT 3 — INTERFAZ DE REGISTRO DE VENTAS
-    # ==============================
-
     def view_create_sale(self):
         """Interfaz completa para registrar una venta"""
         container = self._open_fullscreen_view()
 
-        # 📜 Scroll general
         frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
         frame.pack(expand=True, fill="both")
 
@@ -588,7 +583,6 @@ class AdminUI(ctk.CTkFrame):
         # Inicializamos el carrito de venta (por si acaso)
         self.manage_sale("init")
 
-        # ---------- CLIENTE ----------
         ctk.CTkLabel(frame, text="Buscar cliente:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
                                                                                          pady=(10, 0))
         self.ent_client_search = ctk.CTkEntry(
@@ -602,40 +596,27 @@ class AdminUI(ctk.CTkFrame):
 
         self.selected_client = None  # cliente elegido
 
-        # ---------- PRODUCTOS ----------
-        ctk.CTkLabel(frame, text="Buscar productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
-                                                                                           pady=(15, 0))
-        self.ent_prod_search = ctk.CTkEntry(
-            frame, width=350, height=34, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf"
-        )
+        # frame de productos
+        ctk.CTkLabel(frame, text="Buscar productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,pady=(15, 0))
+        self.ent_prod_search = ctk.CTkEntry(frame, width=350, height=34, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_prod_search.pack(padx=20, pady=(4, 10), anchor="w")
         self.ent_prod_search.bind("<KeyRelease>", self.update_product_search)
 
         self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=220)
         self.products_frame.pack(fill="x", padx=20, pady=5)
 
-        # ---------- BOTONES ----------
+        # botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
         btn_save = ctk.CTkButton(
-            btns, text="Guardar venta", width=200, height=40, corner_radius=20,
-            fg_color="#e0e0e0", hover_color="#9e9e9e",
-            text_color="black", font=("Open Sans", 15, "bold", "underline"),
-            command=self.save_sale_to_db
-        )
+            btns, text="Guardar venta", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self.save_sale_to_db)
         btn_save.pack(pady=(0, 12))
 
-        btn_back = ctk.CTkButton(
-            btns, text="Volver", width=200, height=40, corner_radius=20,
-            fg_color="#e0e0e0", hover_color="#9e9e9e",
-            text_color="black", font=("Open Sans", 15, "bold", "underline"),
-            command=self._close_fullscreen_view
-        )
+        btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
-    # ---------- FUNCIONES AUXILIARES ----------
-
+    # Funciones para buscar
     def update_client_search(self, *_):
         """Filtra clientes mientras se escribe"""
         term = self.ent_client_search.get().lower().strip()
@@ -647,12 +628,7 @@ class AdminUI(ctk.CTkFrame):
 
         for row in rows:
             if term in row["name"].lower():
-                btn = ctk.CTkButton(
-                    self.client_frame,
-                    text=f"{row['name']}  |  {row['phone']}",
-                    fg_color="white", text_color="black", anchor="w", hover_color="#f2f2f2",
-                    command=lambda cid=row["client_id"], name=row["name"]: self.select_client(cid, name)
-                )
+                btn = ctk.CTkButton(self.client_frame,text=f"{row['name']}  |  {row['phone']}",fg_color="white", text_color="black", anchor="w", hover_color="#f2f2f2",command=lambda cid=row["client_id"], name=row["name"]: self.select_client(cid, name))
                 btn.pack(fill="x", padx=10, pady=2)
 
     def select_client(self, client_id, name):
@@ -682,35 +658,25 @@ class AdminUI(ctk.CTkFrame):
                 frame = ctk.CTkFrame(self.products_frame, fg_color="#f8f8f8", corner_radius=8)
                 frame.pack(fill="x", padx=10, pady=4)
 
-                label = ctk.CTkLabel(
-                    frame, text=f"{name} (Q{price}) | Stock: {stock}", text_color="black",
-                    anchor="w", font=("Open Sans", 14)
-                )
+                label = ctk.CTkLabel(frame, text=f"{name} (Q{price}) | Stock: {stock}", text_color="black",anchor="w", font=("Open Sans", 14))
                 label.pack(side="left", padx=8)
 
                 # Selector de cantidad
                 qty_var = tk.IntVar(value=1)
-                minus_btn = ctk.CTkButton(frame, text="-", width=30, height=30,
-                                          command=lambda v=qty_var: v.set(max(1, v.get() - 1)))
+                minus_btn = ctk.CTkButton(frame, text="-", width=30, height=30,command=lambda v=qty_var: v.set(max(1, v.get() - 1)))
                 minus_btn.pack(side="right", padx=2)
                 qty_entry = ctk.CTkEntry(frame, width=40, textvariable=qty_var, justify="center")
                 qty_entry.pack(side="right", padx=2)
-                plus_btn = ctk.CTkButton(frame, text="+", width=30, height=30,
-                                         command=lambda v=qty_var: v.set(v.get() + 1))
+                plus_btn = ctk.CTkButton(frame, text="+", width=30, height=30,command=lambda v=qty_var: v.set(v.get() + 1))
                 plus_btn.pack(side="right", padx=2)
 
-                add_btn = ctk.CTkButton(
-                    frame, text="Agregar", width=100,
-                    command=lambda pid=prod_id, p=price, q=qty_var, n=name: self.add_product(pid, p, q, n)
-                )
+                add_btn = ctk.CTkButton(frame, text="Agregar", width=100,command=lambda pid=prod_id, p=price, q=qty_var, n=name: self.add_product(pid, p, q, n))
                 add_btn.pack(side="right", padx=8)
 
     def add_product(self, product_id, price, qty_var, name):
-        """Agrega producto al carrito usando la lógica del commit 1"""
+        """Agrega producto al diccionario usando la lógica"""
         cantidad = qty_var.get()
         subtotal = round(cantidad * price, 2)
-
-        # Usa el manejador del commit 1
         self.manage_sale("add", product_id, cantidad, price)
 
         mbox.showinfo("Producto agregado", f"{name}\nCantidad: {cantidad}\nSubtotal: Q{subtotal}")
@@ -737,7 +703,7 @@ class AdminUI(ctk.CTkFrame):
                 info = cur.fetchall()
                 cols = [col[1] for col in info]
 
-                # Obtener filas
+                # obtiene filas
                 cur.execute(f"SELECT * FROM {table}")
                 rows = cur.fetchall()
 
@@ -745,7 +711,7 @@ class AdminUI(ctk.CTkFrame):
                 the_class = ref_classes.get(table)
                 objects = []
                 for row in rows:
-                    # Revisar como extrae la info, no creo que esté bien
+                    # Revisa como extrae la info, no creo que este bien
                     row_dict = dict(zip(cols, row))
                     kind_id = row_dict[cols[0]]
                     obj = the_class.load(kind_id)
