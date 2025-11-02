@@ -4,6 +4,8 @@ from main import get_conn, User, Admin, Collaborator, Provider, Client , Product
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import calendar
+import json
+from datetime import datetime
 
 DB_NAME = "bawiz.db"
 classes = {"users": User, "admins": Admin, "collaborators": Collaborator, "providers": Provider, "clients": Client, "sales": Sales, "products": Product}
@@ -152,6 +154,8 @@ class AdminUI(ctk.CTkFrame):
                 self.view_create_product()
             case "Agregar proveedor":
                 self.view_create_provider()
+            case "Agregar ventas":
+                self.view_create_sale()
             case "Ver colaboradores":
                 pass
             case "Ver clientes":
@@ -482,6 +486,54 @@ class AdminUI(ctk.CTkFrame):
             self._close_fullscreen_view()
         except Exception as e:
             mbox.showerror("Error", f"No se pudo crear el proveedor:\n{e}")
+
+    def manage_sale_cart(self, action=None, product_id=None, quantity=0, unit_price=0.0, current_sale):
+        """
+        Función centralizada para manejar la lógica base del diccionario que guarda las ventas.
+        Permite inicializar el carrito, agregar productos, eliminarlos,
+        calcular el total y visualizar el estado actual.
+        """
+
+        if action == "init":  # Inicializa el diccionario
+            self.current_sale = {
+                "client": None,  # Guarda al cliente seleccionado (su ID)
+                "products": {}  # {product_id: {"quantity": int, "subtotal": float}}
+            }
+            return
+
+        if action == "add":
+            if not hasattr(self, "current_sale"): # Si no existe el diccionario, lo inicializa automáticamente
+                self.manage_sale_cart("init")
+
+            if product_id in self.current_sale["products"]: # Acá, si el producto ya existe, suma cantidades y recalcula subtotal
+                self.current_sale["products"][product_id]["quantity"] += quantity
+                self.current_sale["products"][product_id]["subtotal"] = round(
+                    self.current_sale["products"][product_id]["quantity"] * unit_price, 2
+                )
+            else: # Si es un producto nuevo, se añade al diccionario
+                self.current_sale["products"][product_id] = {
+                    "quantity": quantity,
+                    "subtotal": round(quantity * unit_price, 2)
+                }
+            return
+
+        if action == "remove":
+            if hasattr(self, "current_sale") and product_id in self.current_sale["products"]:
+                del self.current_sale["products"][product_id]
+            return
+
+        if action == "total":
+            if not hasattr(self, "current_sale"):
+                return 0
+            total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
+            return total
+
+        if action == "print": # Muestra lo que contiene el diccionario
+            if not hasattr(self, "current_sale"):
+                return
+            # venta en el momento
+            print(json.dumps(self.current_sale, indent=4, ensure_ascii=False))
+            return
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
