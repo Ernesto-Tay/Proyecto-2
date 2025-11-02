@@ -503,7 +503,7 @@ class Sales:
     @staticmethod
     def load(sale_id:str) -> Optional["Sales"]:
         with get_conn() as c:
-            r = c.execute("SELECT * FROM sales WHERE sale_id = ?", sale_id).fetchone()
+            r = c.execute("SELECT * FROM sales WHERE sale_id = ?", (sale_id,)).fetchone()
             if r:
                 prods = {}
                 if r["products"]:

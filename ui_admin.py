@@ -34,7 +34,8 @@ class AdminUI(ctk.CTkFrame):
             name = self.current_user.get("name", "Usuario")
             phone = self.current_user.get("phone", "Sin teléfono")
         else:
-            name, phone = "Usuario", "Sin teléfono"
+            name = "Usuario"
+            phone = "Sin teléfono"
 
         msg = f"Bienvenido, {name}\nTeléfono: {phone}"
         welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#111111",justify="center")
@@ -555,7 +556,7 @@ class AdminUI(ctk.CTkFrame):
 
         # Fecha y hora actuales
         now = datetime.now()
-        date_str = now.strftime("%Y-%m-%d")
+        date_str = now.strftime("%d/%m/%Y")
         time_str = now.strftime("%H:%M:%S")
 
         # Guarda en la base de datos
@@ -680,13 +681,53 @@ class AdminUI(ctk.CTkFrame):
                 add_btn = ctk.CTkButton(frame, text="Agregar", width=100,command=lambda pid=prod_id, p=price, q=qty_var, n=name: self.add_product(pid, p, q, n))
                 add_btn.pack(side="right", padx=8)
 
+    def refresh_cart_view(self):
+        """Actualiza la vista del carrito en la interfaz."""
+        # Limpia el contenido previo
+        for widget in self.cart_frame.winfo_children():
+            widget.destroy()
+
+        # Si no hay venta activa
+        if not hasattr(self, "current_sale") or not self.current_sale["products"]:
+            lbl = ctk.CTkLabel(self.cart_frame, text="No hay productos agregados.",text_color="gray", font=("Open Sans", 14, "italic"))
+            lbl.pack(pady=10)
+            self.lbl_total.configure(text="Total: Q0.00")
+            return
+
+        # Recorre los productos agregados
+        for pid, info in self.current_sale["products"].items():
+            row = ctk.CTkFrame(self.cart_frame, fg_color="#f4f4f4", corner_radius=10)
+            row.pack(fill="x", padx=10, pady=4)
+
+            # Nombre del producto
+            with get_conn() as c:
+                prod = c.execute("SELECT name FROM products WHERE product_id = ?", (pid,)).fetchone()
+                prod_name = prod["name"] if prod else "Desconocido"
+
+            ctk.CTkLabel(row, text=f"{prod_name}", anchor="w",font=("Open Sans", 14, "bold"), text_color="black").pack(side="left", padx=10)
+            ctk.CTkLabel(row, text=f"Cantidad: {info['quantity']}", anchor="center",font=("Open Sans", 13), text_color="black").pack(side="left", padx=10)
+            ctk.CTkLabel(row, text=f"Subtotal: Q{info['subtotal']:.2f}", anchor="center",font=("Open Sans", 13), text_color="black").pack(side="left", padx=10)
+
+            # Botón eliminar producto
+            del_btn = ctk.CTkButton(row, text="X", width=30, height=28, fg_color="#e57373",hover_color="#ef5350", text_color="white",command=lambda p=pid: self.remove_product_from_cart(p))
+            del_btn.pack(side="right", padx=10)
+
+        # Actualiza el total
+        total = self.manage_sale("total")
+        self.lbl_total.configure(text=f"Total: Q{total:.2f}")
+
+    def remove_product_from_cart(self, product_id):
+        """Elimina un producto del diccionario y refresca la vista."""
+        self.manage_sale("remove", product_id)
+        self.refresh_cart_view()
+
+
     def add_product(self, product_id, price, qty_var, name):
-        """Agrega producto al diccionario usando la lógica"""
+        """Agrega producto al diccionario y refresca vista"""
         cantidad = qty_var.get()
         subtotal = round(cantidad * price, 2)
         self.manage_sale("add", product_id, cantidad, price)
-
-        mbox.showinfo("Producto agregado", f"{name}\nCantidad: {cantidad}\nSubtotal: Q{subtotal}")
+        self.refresh_cart_view()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
