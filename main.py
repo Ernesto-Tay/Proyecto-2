@@ -425,6 +425,29 @@ class Product:
             self.providers.remove(provider)
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
+
+    # Ordenamiento por bubble sort
+    def sale_sorter(self):
+        for i in range(len(self.providers) - 1):
+            for j in range(len(self.providers) - 1 - i):
+                if self.providers[j] > self.providers[j + 1]:
+                    self.providers[j], self.providers[j + 1] = self.providers[j + 1], self.providers[j]
+
+    #Búsqueda binaria para buscar proveedores
+    def binary_search(self, prov):
+        inicio = 0
+        fin = len(self.providers) - 1
+        while inicio <= fin:
+            medio = (inicio + fin) // 2
+            if self.providers[medio] == prov:
+                return medio
+            elif self.providers[medio] < prov:
+                inicio = medio + 1
+            else:
+                fin = medio - 1
+        return None
+
+
     #Guardado en la db
     def save(self):
         providers = "|".join(self.providers)

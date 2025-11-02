@@ -796,6 +796,7 @@ class AdminUI(ctk.CTkFrame):
             except Exception:
                 pass
 
+            #se traza el click si está en el treeview
             def tree_click(event):
                 x, y = event.x, event.y
                 e_row = tree.identify_row(y)
