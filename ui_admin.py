@@ -570,6 +570,18 @@ class AdminUI(ctk.CTkFrame):
         # Reinicia el diccionario para una futura nueva venta
         self.manage_sale_cart("init")
 
+    def view_create_sale(self):
+        container = self._open_fullscreen_view()
+
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa") # para scrollear por si acaso
+        frame.pack(expand=True, fill="both")
+
+        title = ctk.CTkLabel(frame, text="Registrar Venta", font=("Open Sans", 42, "bold"), text_color="#111111")
+        title.pack(pady=(30, 20))
+
+        self.manage_sale_cart("init") # se el carrito de venta (por si acaso)
+
+        ctk.CTkLabel(frame, text="Buscar cliente:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,pady=(10, 0))
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
