@@ -571,50 +571,57 @@ class AdminUI(ctk.CTkFrame):
         self.manage_sale("init")
 
     def view_create_sale(self):
-        """Interfaz completa para registrar una venta"""
         container = self._open_fullscreen_view()
-
         frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
         frame.pack(expand=True, fill="both")
 
         title = ctk.CTkLabel(frame, text="Registrar Venta", font=("Open Sans", 42, "bold"), text_color="#111111")
         title.pack(pady=(30, 20))
 
-        # Inicializamos el carrito de venta (por si acaso)
+        # Inicializa el diccionario
         self.manage_sale("init")
 
-        ctk.CTkLabel(frame, text="Buscar cliente:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
-                                                                                         pady=(10, 0))
-        self.ent_client_search = ctk.CTkEntry(
-            frame, width=350, height=34, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf"
-        )
+        # cliente
+        ctk.CTkLabel(frame, text="Buscar cliente:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20, pady=(10, 0))
+        self.ent_client_search = ctk.CTkEntry(frame, width=350, height=34, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_client_search.pack(padx=20, pady=(4, 10), anchor="w")
         self.ent_client_search.bind("<KeyRelease>", self.update_client_search)
 
         self.client_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=80)
         self.client_frame.pack(fill="x", padx=20, pady=5)
 
-        self.selected_client = None  # cliente elegido
+        self.selected_client = None
 
-        # frame de productos
-        ctk.CTkLabel(frame, text="Buscar productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,pady=(15, 0))
-        self.ent_prod_search = ctk.CTkEntry(frame, width=350, height=34, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
+        # productos
+        ctk.CTkLabel(frame, text="Buscar productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20, pady=(15, 0))
+        self.ent_prod_search = ctk.CTkEntry(frame, width=350, height=34, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_prod_search.pack(padx=20, pady=(4, 10), anchor="w")
         self.ent_prod_search.bind("<KeyRelease>", self.update_product_search)
 
         self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=220)
         self.products_frame.pack(fill="x", padx=20, pady=5)
 
+        # lista de productos
+        ctk.CTkLabel(frame, text="Productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20, pady=(20, 0))
+        self.cart_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=200)
+        self.cart_frame.pack(fill="x", padx=20, pady=5)
+
+        # etiqueta de total
+        self.lbl_total = ctk.CTkLabel(frame, text="Total: Q0.00", font=("Open Sans", 20, "bold"), text_color="#333333")
+        self.lbl_total.pack(anchor="e", padx=30, pady=(10, 5))
+
         # botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        btn_save = ctk.CTkButton(
-            btns, text="Guardar venta", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self.save_sale_to_db)
+        btn_save = ctk.CTkButton(btns, text="Guardar venta", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self.save_sale_to_db)
         btn_save.pack(pady=(0, 12))
 
         btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
+
+        # Inicia vista del carrito vacía
+        self.refresh_cart_view()
 
     # Funciones para buscar
     def update_client_search(self, *_):
