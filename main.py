@@ -279,7 +279,7 @@ class Provider(User):
             for j in range(i + 1, len(self.products)):
                 if self.products[j] < self.products[min_index]:
                     min_index = j
-            self.self.products[i], self.products[min_index] = self.products[min_index], self.products[i]
+            self.products[i], self.products[min_index] = self.products[min_index], self.products[i]
 
     # Méthodo de guardado en la db
     def save(self):
