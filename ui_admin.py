@@ -503,7 +503,7 @@ class AdminUI(ctk.CTkFrame):
 
         if action == "add":
             if not hasattr(self, "current_sale"): # Si no existe el diccionario, lo inicializa automáticamente
-                self.manage_sale_cart("init")
+                self.manage_sale("init")
 
             if product_id in self.current_sale["products"]: # Acá, si el producto ya existe, suma cantidades y recalcula subtotal
                 self.current_sale["products"][product_id]["quantity"] += quantity
@@ -568,20 +568,152 @@ class AdminUI(ctk.CTkFrame):
                 conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
                 conn.commit()
         # Reinicia el diccionario para una futura nueva venta
-        self.manage_sale_cart("init")
+        self.manage_sale("init")
+
+    # ==============================
+    # 🟩 COMMIT 3 — INTERFAZ DE REGISTRO DE VENTAS
+    # ==============================
 
     def view_create_sale(self):
+        """Interfaz completa para registrar una venta"""
         container = self._open_fullscreen_view()
 
-        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa") # para scrollear por si acaso
+        # 📜 Scroll general
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
         frame.pack(expand=True, fill="both")
 
         title = ctk.CTkLabel(frame, text="Registrar Venta", font=("Open Sans", 42, "bold"), text_color="#111111")
         title.pack(pady=(30, 20))
 
-        self.manage_sale_cart("init") # se el carrito de venta (por si acaso)
+        # Inicializamos el carrito de venta (por si acaso)
+        self.manage_sale("init")
 
-        ctk.CTkLabel(frame, text="Buscar cliente:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,pady=(10, 0))
+        # ---------- CLIENTE ----------
+        ctk.CTkLabel(frame, text="Buscar cliente:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
+                                                                                         pady=(10, 0))
+        self.ent_client_search = ctk.CTkEntry(
+            frame, width=350, height=34, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf"
+        )
+        self.ent_client_search.pack(padx=20, pady=(4, 10), anchor="w")
+        self.ent_client_search.bind("<KeyRelease>", self.update_client_search)
+
+        self.client_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=80)
+        self.client_frame.pack(fill="x", padx=20, pady=5)
+
+        self.selected_client = None  # cliente elegido
+
+        # ---------- PRODUCTOS ----------
+        ctk.CTkLabel(frame, text="Buscar productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
+                                                                                           pady=(15, 0))
+        self.ent_prod_search = ctk.CTkEntry(
+            frame, width=350, height=34, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf"
+        )
+        self.ent_prod_search.pack(padx=20, pady=(4, 10), anchor="w")
+        self.ent_prod_search.bind("<KeyRelease>", self.update_product_search)
+
+        self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=220)
+        self.products_frame.pack(fill="x", padx=20, pady=5)
+
+        # ---------- BOTONES ----------
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        btn_save = ctk.CTkButton(
+            btns, text="Guardar venta", width=200, height=40, corner_radius=20,
+            fg_color="#e0e0e0", hover_color="#9e9e9e",
+            text_color="black", font=("Open Sans", 15, "bold", "underline"),
+            command=self.save_sale_to_db
+        )
+        btn_save.pack(pady=(0, 12))
+
+        btn_back = ctk.CTkButton(
+            btns, text="Volver", width=200, height=40, corner_radius=20,
+            fg_color="#e0e0e0", hover_color="#9e9e9e",
+            text_color="black", font=("Open Sans", 15, "bold", "underline"),
+            command=self._close_fullscreen_view
+        )
+        btn_back.pack()
+
+    # ---------- FUNCIONES AUXILIARES ----------
+
+    def update_client_search(self, *_):
+        """Filtra clientes mientras se escribe"""
+        term = self.ent_client_search.get().lower().strip()
+        for widget in self.client_frame.winfo_children():
+            widget.destroy()
+
+        with get_conn() as c:
+            rows = c.execute("SELECT client_id, name, phone FROM clients").fetchall()
+
+        for row in rows:
+            if term in row["name"].lower():
+                btn = ctk.CTkButton(
+                    self.client_frame,
+                    text=f"{row['name']}  |  {row['phone']}",
+                    fg_color="white", text_color="black", anchor="w", hover_color="#f2f2f2",
+                    command=lambda cid=row["client_id"], name=row["name"]: self.select_client(cid, name)
+                )
+                btn.pack(fill="x", padx=10, pady=2)
+
+    def select_client(self, client_id, name):
+        """Guarda el cliente seleccionado"""
+        self.selected_client = client_id
+        self.current_sale["client"] = client_id
+        mbox.showinfo("Cliente seleccionado", f"Cliente: {name}\nID: {client_id}")
+        self.ent_client_search.delete(0, "end")
+        self.ent_client_search.insert(0, name)
+
+    def update_product_search(self, *_):
+        """Muestra productos disponibles y permite agregarlos al carrito"""
+        term = self.ent_prod_search.get().lower().strip()
+        for widget in self.products_frame.winfo_children():
+            widget.destroy()
+
+        with get_conn() as c:
+            rows = c.execute("SELECT product_id, name, sale_price, stock FROM products").fetchall()
+
+        for row in rows:
+            if term in row["name"].lower():
+                prod_id = row["product_id"]
+                name = row["name"]
+                price = row["sale_price"]
+                stock = row["stock"]
+
+                frame = ctk.CTkFrame(self.products_frame, fg_color="#f8f8f8", corner_radius=8)
+                frame.pack(fill="x", padx=10, pady=4)
+
+                label = ctk.CTkLabel(
+                    frame, text=f"{name} (Q{price}) | Stock: {stock}", text_color="black",
+                    anchor="w", font=("Open Sans", 14)
+                )
+                label.pack(side="left", padx=8)
+
+                # Selector de cantidad
+                qty_var = tk.IntVar(value=1)
+                minus_btn = ctk.CTkButton(frame, text="-", width=30, height=30,
+                                          command=lambda v=qty_var: v.set(max(1, v.get() - 1)))
+                minus_btn.pack(side="right", padx=2)
+                qty_entry = ctk.CTkEntry(frame, width=40, textvariable=qty_var, justify="center")
+                qty_entry.pack(side="right", padx=2)
+                plus_btn = ctk.CTkButton(frame, text="+", width=30, height=30,
+                                         command=lambda v=qty_var: v.set(v.get() + 1))
+                plus_btn.pack(side="right", padx=2)
+
+                add_btn = ctk.CTkButton(
+                    frame, text="Agregar", width=100,
+                    command=lambda pid=prod_id, p=price, q=qty_var, n=name: self.add_product(pid, p, q, n)
+                )
+                add_btn.pack(side="right", padx=8)
+
+    def add_product(self, product_id, price, qty_var, name):
+        """Agrega producto al carrito usando la lógica del commit 1"""
+        cantidad = qty_var.get()
+        subtotal = round(cantidad * price, 2)
+
+        # Usa el manejador del commit 1
+        self.manage_sale("add", product_id, cantidad, price)
+
+        mbox.showinfo("Producto agregado", f"{name}\nCantidad: {cantidad}\nSubtotal: Q{subtotal}")
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
