@@ -446,8 +446,8 @@ class AdminUI(ctk.CTkFrame):
                 return None
 
             # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
-            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sale_price", "stock"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
-            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
+            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "compras"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
             headers = cols[kind]
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
@@ -767,7 +767,10 @@ class AdminUI(ctk.CTkFrame):
                 popup_frame.wait_window()
                 return
             try:
-                p_col_index = f'#{titles.index('productos')+1}'
+                if kind == "sales" or kind == "providers":
+                    p_col_index = f'#{titles.index('productos')+1}'
+                elif kind == "clients":
+                    p_col_index = f'#{titles.index('compras')+1}'
             except:
                 p_col_index = None
 
@@ -804,11 +807,10 @@ class AdminUI(ctk.CTkFrame):
                 r_line = item_map.get(e_row, None)
                 if not e_row:
                     return
-                inst = item_map.get(e_row, None)
                 if not r_line:
                     return
 
-                if kind== "sales" or kind == "providers":
+                if kind== "sales" or kind == "providers" or kind == "clients":
                     if e_col == p_col_index:
                         return  show_list(root, r_line)
                 return  row_menu(tree, event, r_line, e_row)
@@ -835,6 +837,7 @@ class AdminUI(ctk.CTkFrame):
                 lbox.pack(side="left", fill="x", expand=True)
 
                 if kind == "sales":
+                    r_line.convert('subtotal')
                     p_in = getattr(r_line, "products", False)
                     if p_in is not False:
                         for key, p in p_in:
@@ -845,8 +848,27 @@ class AdminUI(ctk.CTkFrame):
                             lbox.insert("end", " | ".join(entrance.values()))
 
                 if kind == "providers":
+                    r_line.prod_ordering()
                     p_in = getattr(r_line, "products", False)
                     if p_in is not False:
                         for val in p_in:
                             lbox.insert("end", val)
+
+                if kind == "clients":
+                    r_line.sale_sorter()
+                    p_in = getattr(r_line, "sales", False)
+                    if p_in and p_in is not False:
+                        r_prods = [prod for prod in self.db_info["products"] if prod.product_id in p_in]
+                        s_list = []
+                        for val in p_in:
+                            for p in r_prods:
+                                if p.product_id == val:
+                                    sale = [p.product_id, p.total]
+                                    s_list.append(sale)
+                        for val in s_list:
+                            lbox.insert("end", " | ".join(val))
+                    else:
+                        lbox.insert("end", "No hay compras asociadas")
+
+
                 ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))

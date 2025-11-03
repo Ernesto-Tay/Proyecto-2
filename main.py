@@ -506,7 +506,7 @@ class Sales:
 
     # Convertir el diccionario a lista y pasarlo por quick_sort (funciona con valores dinámicos)
     def convert(self, order_val):
-        if order_val not in ['cantidad','precio']:
+        if order_val not in ['cuantity','subtotal']:
             return
         p_list = list(self.products.items())
         new_list = self.sort(p_list, order_val)
