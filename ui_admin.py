@@ -543,9 +543,11 @@ class AdminUI(ctk.CTkFrame):
 
         # Verifica que exista una venta activa
         if not hasattr(self, "current_sale") or not self.current_sale.get("products"):
+            mbox.showerror("Venta vacía", "Debe agregar al menos un producto antes de guardar.")
             return
 
         if not self.current_sale.get("client"):
+            mbox.showerror("Cliente no seleccionado", "Debe seleccionar un cliente para la venta.")
             return
 
         # Calcula total
@@ -559,17 +561,30 @@ class AdminUI(ctk.CTkFrame):
         date_str = now.strftime("%d/%m/%Y")
         time_str = now.strftime("%H:%M:%S")
 
-        # Guarda en la base de datos
+        try:
+            # Guarda en la base de datos
+            with get_conn() as conn:
+                conn.execute("""
+                    INSERT INTO sales (sale_id, client_id, date, time, products, total)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                    (sale_id,self.current_sale["client"],date_str,time_str,json.dumps(self.current_sale["products"], ensure_ascii=False),total))
 
-        with get_conn() as conn:
-            conn.execute("""INSERT INTO sales (sale_id, client_id, date, time, products, total) VALUES (?, ?, ?, ?, ?, ?)""", (sale_id,self.current_sale["client"],date_str,time_str,json.dumps(self.current_sale["products"], ensure_ascii=False),total))
-
-            # Actualiza el stock por cada producto vendido
-            for product_id, data in self.current_sale["products"].items():
-                conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
+                # Actualiza stock
+                for product_id, data in self.current_sale["products"].items():
+                    conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
                 conn.commit()
-        # Reinicia el diccionario para una futura nueva venta
-        self.manage_sale("init")
+
+            mbox.showinfo("Venta registrada", f"Venta guardada exitosamente con ID {sale_id}.\nTotal: Q{total:.2f}")
+
+            # Reinicia el carrito y vista
+            self.manage_sale("init")
+            self.refresh_cart_view()
+            self.ent_client_search.delete(0, "end")
+            self.ent_prod_search.delete(0, "end")
+
+        except Exception as e:
+            mbox.showerror("Error", f"Ocurrió un error inesperado:\n{e}")
 
     def view_create_sale(self):
         container = self._open_fullscreen_view()
@@ -632,7 +647,11 @@ class AdminUI(ctk.CTkFrame):
             widget.destroy()
 
         with get_conn() as c:
-            rows = c.execute("SELECT client_id, name, phone FROM clients").fetchall()
+            rows = c.execute("""
+                SELECT c.client_id, u.name, u.phone
+                FROM clients c
+                JOIN users u ON c.user_id = u.user_id
+            """).fetchall()
 
         for row in rows:
             if term in row["name"].lower():
