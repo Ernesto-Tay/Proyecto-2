@@ -836,7 +836,7 @@ class AdminUI(ctk.CTkFrame):
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
             main_headers = dict(zip(titles, headers))
             #extrae los datos de la db_info
-            self.db_extract(classes)
+            self.db_info = self.db_extract(classes)
             table_data = self.db_info[kind]
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
@@ -1200,6 +1200,7 @@ class AdminUI(ctk.CTkFrame):
                 return  row_menu(tree, event, r_line, e_row)
             tree.bind("<Button-1>", tree_click)
 
+            #Menú adicional en caso sea venta, proveedor o producto
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
                 menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
@@ -1211,11 +1212,25 @@ class AdminUI(ctk.CTkFrame):
                 top.geometry("300x220")
                 top.transient(origin)
                 top.grab_set()
-                top.wait_window()
+                top.configure(bg = "white")
+
+
+                top.update_idletasks()
+                w = 350
+                h = 250
+                root_x = origin.winfo_rootx()
+                root_y = origin.winfo_rooty()
+                root_w = origin.winfo_width()
+                root_h = origin.winfo_height()
+                x = root_x + (root_w // 2) - (w // 2)
+                y = root_y + (root_h // 2) - (h // 2)
+                top.geometry(f"{w}x{h}+{x}+{y}")
+
+
                 list_frame = ttk.Frame(top)
-                list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
+                list_frame.pack(side="top", expand = True, fill = "both", padx = 5, pady = (10, 5))
                 scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
-                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
+                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False, bg="white", font=("Open Sans", 12))
                 scrollbar.config(command=lbox.yview)
                 scrollbar.pack(side="right", fill="y")
                 lbox.pack(side="left", fill="x", expand=True)
