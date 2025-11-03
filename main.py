@@ -488,7 +488,7 @@ class Sales:
     def __init__(self,client_id:str, products: Optional[Dict[str, Dict[str, Any]]] = None, sale_id = None, total:int = None, date_:str = None, time_:str = None):
         self.__sale_id = sale_id or id_generate("sal")
         self.__date = datetime.strptime(date_, "%d/%m/%Y").date() or date.today().strftime("%d/%m/%Y")
-        self.__time = datetime.strptime(time_, "%H:%M").time() if time_ else datetime.now().time()
+        self.__time = datetime.strptime(time_, "%H:%M:%S").time() if time_ else datetime.now().time()
         self._client_id = client_id
         self.products : Dict[str, Dict[str, Any]] = products or {}
         self.total = total

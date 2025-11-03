@@ -165,6 +165,10 @@ class AdminUI(ctk.CTkFrame):
                 self.menu_visualizer(self.master, "clients")
             case "Ver productos":
                 self.menu_visualizer(self.master, "products")
+            case "Ver proveedores":
+                self.menu_visualizer(self.master, "providers")
+            case "Ver ventas":
+                self.menu_visualizer(self.master, "sales")
 
     # formulario agregar colaborador
     def view_create_collab(self):
@@ -832,6 +836,7 @@ class AdminUI(ctk.CTkFrame):
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
             main_headers = dict(zip(titles, headers))
             #extrae los datos de la db_info
+            self.db_extract(classes)
             table_data = self.db_info[kind]
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
