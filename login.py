@@ -49,17 +49,12 @@ class LoginUI(ctk.CTkFrame):
     def validate_user(self, table, campo_id, id_usuario, nombre):
         try:
             with get_conn() as conn:
-                query = f"""
-                    SELECT 1
-                    FROM {table} t
-                    JOIN users u ON t.user_id = u.user_id
-                    WHERE t.{campo_id} = ? AND u.name = ?
-                """
+                query = f"""SELECT u.name, u.phone FROM {table} t JOIN users u ON t.user_id = u.user_id WHERE t.{campo_id} = ? AND u.name = ?"""
                 result = conn.execute(query, (id_usuario, nombre)).fetchone()
-                return result is not None
+                return result
         except Exception as e:
             messagebox.showerror("Error de BD", str(e))
-            return False
+            return None
     # login
     def login(self):
         name = self.entry_nombre.get().strip()
@@ -69,29 +64,32 @@ class LoginUI(ctk.CTkFrame):
             messagebox.showerror("Error", "Debe llenar todos los campos.")
             return
 
+        user_data = None
         if user_id.startswith("ADM"):
-            if self.validate_user("admins", "admin_id", user_id, name):
-                messagebox.showinfo("Éxito", f"Bienvenido administrador {name}")
-                self.change_to_admin()
-
+            user_data = self.validate_user("admins", "admin_id", user_id, name)
+            if user_data:
+                self.pack_forget()
+                AdminUI(self.master,current_user={"name": user_data["name"], "phone": user_data["phone"]})
+                return
             else:
                 messagebox.showerror("Error", "Credenciales de administrador incorrectas o no registradas.")
 
         elif user_id.startswith("COL"):
-            if self.validate_user("collaborators", "collab_id", user_id, name):
-                messagebox.showinfo("Éxito", f"Bienvenido colaborador {name}")
-                self.change_to_collab()
+            user_data = self.validate_user("collaborators", "collab_id", user_id, name)
 
-            else:
-                messagebox.showerror("Error", "Credenciales de colaborador incorrectas o no registradas.")
+            if user_data:
+                self.pack_forget()
+                CollabUI(self.master,current_user={"name": user_data["name"], "phone": user_data["phone"]})
+                return
 
+            messagebox.showerror("Error", "Credenciales de colaborador incorrectas o no registradas.")
         else:
             messagebox.showerror("Error", "ID incorrecto.")
 
     def change_to_admin(self):
         self.pack_forget()
-        AdminUI(self.master)
+        AdminUI(self.master,current_user={"name": self.entry_nombre.get(), "phone": "Desconocido"})
 
     def change_to_collab(self):
         self.pack_forget()
-        CollabUI(self.master)
+        CollabUI(self.master,current_user={"name": self.entry_nombre.get(), "phone": "Desconocido"})

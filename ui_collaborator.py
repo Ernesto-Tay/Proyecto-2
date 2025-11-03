@@ -1,25 +1,36 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
+from main import Client, get_conn
 
 class CollabUI(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, current_user=None):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
-
         # elementos principales
         self.header = None
         self.body = None
         self.fullscreen_frame = None  # frame para vistas completas
-
         # submenús
         self.active_submenu = None
         self.last_opened = None  # guarda cuál botón se abrió
-
         # inicialización
         self.create_header()
         self.body = ctk.CTkFrame(self, fg_color="white")
         self.body.pack(expand=True, fill="both")
+
+        # Mensaje de bienvenida
+        self.current_user = current_user
+        if self.current_user:
+            name = self.current_user.get("name", "Usuario")
+            phone = self.current_user.get("phone", "Sin teléfono")
+        else:
+            name= "Usuario"
+            phone ="Sin teléfono"
+
+        msg = f"Bienvenido, {name}\nTeléfono: {phone}"
+        welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#111111",justify="center")
+        welcome_label.pack(expand=True)
 
     def _open_fullscreen_view(self):
         self.header.pack_forget()
@@ -141,13 +152,31 @@ class CollabUI(ctk.CTkFrame):
         btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
+    # lógica para crear colaborador
+    def create_client(self):
+        name = self.ent_nombre.get().strip()
+        phone = self.ent_tel.get().strip()
+
+        if not name or not phone:
+            mbox.showerror("Campos vacíos", "Se deben llenar todos los campos.")
+            return
+
+        try:
+            client = Client(name=name, phone=phone) # crea al objeto
+            client.save() # metodo importado para guardar
+            mbox.showinfo(f"Colaborador creado", f"Cliente '{name}' creado y guardado")
+            self._close_fullscreen_view() # cierra la ventana cuando se crea
+        except Exception as e:
+            mbox.showerror("Error", f"Error inesperado: {e}")
+
     def action(self, msg):
         if self.active_submenu:
             self.active_submenu.destroy()
             self.active_submenu = None
 
-        if msg == "Agregar cliente":
-            self.view_create_client()
+        match msg:
+            case "Agregar cliente":
+                self.view_create_client()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
