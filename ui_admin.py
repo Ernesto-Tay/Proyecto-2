@@ -22,6 +22,7 @@ class AdminUI(ctk.CTkFrame):
         # submenús
         self.active_submenu = None
         self.last_opened = None  # guarda cuál botón se abrió
+        self.searchbar_frame = None
         # inicialización
         self.create_header()
         self.db_info = self.db_extract(classes)
@@ -158,11 +159,11 @@ class AdminUI(ctk.CTkFrame):
             case "Agregar ventas":
                 self.view_create_sale()
             case "Ver colaboradores":
-                pass
+                self.menu_visualizer(self.master, "collaborators")
             case "Ver clientes":
-                pass
+                self.menu_visualizer(self.master, "clients")
             case "Ver productos":
-                pass
+                self.menu_visualizer(self.master, "products")
 
     # formulario agregar colaborador
     def view_create_collab(self):
@@ -756,6 +757,7 @@ class AdminUI(ctk.CTkFrame):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:
             from login import LoginUI
+            self.close_searchbar()
             self.pack_forget()
             LoginUI(self.master)
 
@@ -794,52 +796,121 @@ class AdminUI(ctk.CTkFrame):
     def entry_upd(self, entry_var, *args):
         return entry_var.get()
 
+        # función para cerrar la searchbar
+    def close_searchbar(self):
+        frm = getattr(self, "searchbar_frame", None)
+        if frm and frm.winfo_exists():
+            try:
+                frm.destroy()
+            except Exception:
+                pass
+        # cerrar popup abierto (si es que hay alguno)
+        pop = getattr(self, "current_popup", None)
+        if pop and pop.winfo_exists():
+            try:
+                pop.destroy()
+            except Exception:
+                pass
+
     def menu_visualizer(self, root, kind):
         """
-        Toma en cuenta lo siguiente:
-        1. Crea funciones para filtro por columna (que admita un valor, que es el encabezado)
-        2. Crea función para filtro por fecha que descomponga la date en day, month, year (que admita un dict con 4 vals: año, mes, numero_mes y día)
-        3. Ambas funciones deben filtrar los valores vistos en el dict de valores y retornar UNA COPIA, aunque deben luego
+        t e x t o
         """
         with get_conn() as c:
             #extrae la información de una tabla en la base de datos, buscándola con el nombre "kind" (argumento ingresado)
             cur = c.cursor()
-            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name= ? LIMIT = 1;", (kind,))
+            cur.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ? LIMIT 1;", (kind,))
             if not cur.fetchone():
                 return None
 
             # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
-            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sale_price", "stock"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
-            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos asociados"]}
+            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "compras"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
             headers = cols[kind]
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
             main_headers = dict(zip(titles, headers))
             #extrae los datos de la db_info
             table_data = self.db_info[kind]
-            #copia los datos para alterar la lista copiada
-            upd_db = table_data.copy()
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             years = [str(y) for y in range (2025, 2030)]
-            date_pop = False
 
-            # Funciones para actualizar la lista de datos
-            def filter_func(header):
-                new_dict = {}
-                search_val = main_headers[header]
-                for val in table_data:
-                    r_data = getattr(val, search_val, None)
-                    # CONTINUAR LA FUNCIÓN CON OTRA QUE DEVUELVA EL VALOR PRESENTE EN EL BUSCADOR
+            item_map = {}
+            def apply_filters(m_tree):
+                base = table_data
+                result = base[:]
 
+                # reiniciar el treeview con los datos filtrados
+                for chld in m_tree.get_children():
+                    m_tree.delete(chld)
+                item_map.clear()
 
+                #filtro por encabezado seleccionado
+                header_selected = getattr(filter_btn, "filter_value", None)
+                header_attr = main_headers.get(header_selected, header_selected) if header_selected else None
+                print("header_selected: ", header_selected)
+                #texto ingresado en el buscador
+                search_text = ""
+                try:
+                    search_text = search_var.get().strip()
+                    print("search_text: ", search_text)
+                except Exception:
+                    pass
+                if search_text:
+                    s=search_text.lower()
+                    if header_attr:
+                        result = [obj for obj in result if s in str(getattr(obj, header_attr, "")).lower()]
+                    else:
+                        tmp = []
+                        for obj in result:
+                            for h in headers:
+                                if s in str(getattr(obj, h, "")).lower():
+                                    tmp.append(obj)
+                                    break
+                        result = tmp
+                    print("result: ", result)
+                # filtrar por fecha (si aplica)
+                date_vals = getattr(date_btn, "date_value", None)
+                if date_vals and date_vals.get("year") and date_vals.get("month_num") and date_vals.get("day"):
+                    try:
+                        fy, fm, fd = int(date_vals["year"]), int(date_vals["month_num"]), int(date_vals["day"])
+                        filtered = []
+                        for obj in result:
+                            r=getattr(obj, "date", None)
+                            if r and r.year == fy and r.month == fm and r.day == fd:
+                                filtered.append(obj)
+                        result = filtered
+                    except Exception:
+                        pass
+                for idx, item in enumerate(result):
+                    all_vals = [str(getattr(item, t, "")) for t in headers]
+
+                    #revisar si es "sales" o "providers" para poner la sección de "vista"
+                    try:
+                        title_idx = headers.index("products")
+                        if kind in ("sales", "providers"):
+                            all_vals[title_idx] = "Ver ▾"
+                    except ValueError:
+                        title_idx = None
+
+                    # Añadir al tree_insert y al trace_map
+                    iid = f"r{idx}"
+                    m_tree.insert("", "end", iid=iid, values=all_vals)
+                    item_map[iid] = item
+                    search_btn.focus_set()
 
             # crea el frame y el espacio para los botoncitos
-            frame = ctk.CTkFrame(root, relief="ridge", corner_radius=12)
-            frame.pack(fill="both", expand=True, padx=8, pady=8)
+            if getattr(self, "searchbar_frame", None) and self.searchbar_frame.winfo_exists():
+                try:
+                    self.searchbar_frame.destroy()
+                except Exception:
+                    pass
+            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12)
+            self.searchbar_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
-            controls = ctk.CTkFrame(frame, relief="ridge", fg_color="transparent")
+            controls = ctk.CTkFrame(self.searchbar_frame,  fg_color="transparent")
             controls.pack(fill="x", padx=8, pady=(4,8))
 
             # inicializa los botoncitos para evitar error de llamada
@@ -850,48 +921,45 @@ class AdminUI(ctk.CTkFrame):
 
             if kind == "sales":
                 # Organiza los botoncitos específicamente para las ventas
-                filter_btn = ctk.CTkButton(controls, text = "Filtrar", width = 150, height = 36,  corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 36, corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 date_btn.pack(side="left", padx=6)
-                search_btn = ctk.CTkEntry(controls, text = "Buscar...", width = 400, height = 36, corner_radius = 18, fg_color = "white", text_color = "grey", font=("Open Sans", 13, "bold"))
+                search_var = ctk.StringVar()
+                search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Volver", width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
-                filter_btn = ctk.CTkButton(controls, text="Filtrar", width=150, height=36, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                search_btn = ctk.CTkEntry(controls, text="Buscar...", width=400, height=36, corner_radius=18, fg_color="white", text_color="grey", font=("Open Sans", 13, "bold"))
+                search_var = ctk.StringVar()
+                search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Volver", width=100, height=36, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
-            # Creación de la tablita visualizadora de opciones
-            tree = ttk.Treeview(root, show="headings")
-            tree.pack(fill="both", expand=True)
-            tree["columns"] = headers
-            for col in headers:
-                tree.heading(col, text=col)
-                tree.column(col, width=800 // len(headers))
-
-            def search_returner(s_entry):
-                return s_entry.trace_add("write", lambda *args: self.entry_upd(s_entry, *args))
-
-            def header_filter(filter_button, options, apply_function, initial = None, width = 150):
-                existing = getattr(filter_button, "options_popup", None)
-                if existing is not None and existing.winfo_exists():
-                    try: existing.lift()
+            print("search_var initial:", repr(search_var.get()))
+            def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
+                old = getattr(self, "_current_popup", None)
+                if old is not None and old.winfo_exists():
+                    try:
+                        old.destroy()
                     except Exception:
-                        try: existing.destroy()
-                        except: pass
+                        pass
 
                 # Configuración del topLevel pa que parezca un combobox
-                popup = tk.Toplevel(filter_button.winfo_toplevel())
-                filter_button.options_popup = popup # se guarda la referencia
+                popup = ctk.CTkToplevel(filter_button.winfo_toplevel())
+                filter_button.options_popup = popup
                 popup.wm_overrideredirect(True)
                 popup.transient(filter_button.winfo_toplevel())
                 popup.attributes("-topmost", True)
+                popup.update_idletasks()
+                popup.deiconify()
+                popup.lift()
+
+                print(getattr(filter_btn, "options_popup", None))
 
                 # poner debajo del botoncito
                 ax = filter_button.winfo_rootx()
@@ -899,68 +967,64 @@ class AdminUI(ctk.CTkFrame):
                 popup.geometry(f"+{ax}+{ay}")
 
                 # Contenedor
-                bframe = ctk.CTkFrame(popup, relief="ridge",corner_radius = 8, fg_color="transparent")
-                bframe.pack(padx = 4, paxy = 4)
-
-                # Título del botoncito
-                lbel = ctk.CTkLabel(frame, text = "Seleccionar...", font = ("Open Sans", 13, "bold"))
-                lbel.pack(anchor = "w", pady = (0, 4))
+                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="transparent")
+                bframe.pack(padx = 4, pady = 4)
 
                 # Creación de la combobox y colocar su valor inicial
-                cbox = ctk.CTkComboBox(frame, values = options, width = width, height = 32)
+                cbox = ctk.CTkComboBox(bframe, values = options, width = width, height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 if initial and initial in options:
                     cbox.set(initial)
                 elif options:
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
-
-                # Cancela la aplicación del filtro
-                def cancel():
-                    try:
-                        popup.destroy()
-                    except Exception: pass
-                    try:
-                        delattr(filter_button, "filter_value")
-                    except Exception: pass
-                    try:
-                        root.unbind_all("<Button-1>")
-                    except Exception: pass
+                print("cbox_var initial:", repr(getattr(cbox, 'get', lambda: None)()))
 
                 # Aplica el filtro obtenido. Si no funciona,
-                def apply():
-                    val = cbox.get()
+                def apply(value = None):
+                    val =  value if value else cbox.get()
+
                     filter_button.filter_value = val
+                    print("val is: ",val)
                     try:
-                        apply_function(val) # Aplica el filtro directamente
+                        popup.destroy()
                     except Exception as e:
                         print("error en la función: ",e)
-                    cancel()
+                    apply_filters(origin_tree)
 
-                cbox.bind("<Return>", apply)
+                cbox.configure(command = apply)
 
                 def offclick(event):
+                    if not popup.winfo_exists():
+                        return
                     #obtener coordenadas del "evento"
                     x, y = event.x_root, event.y_root
                     #obtener coordenadas y dimensiones del toplevel del combobox
-                    px, py = popup.winfo_rootx(), popup.winfo_rooty()
-                    pw, ph = popup.winfo_width(), popup.winfo_height()
-                    b_id = getattr(event, "click_bind_id", None)
+                    if popup.winfo_exists():
+                        px, py = popup.winfo_rootx(), popup.winfo_rooty()
+                        pw, ph = popup.winfo_width(), popup.winfo_height()
 
-                    if not (px <= x <= px + pw and py <= y <= py + ph):
-                        try: popup.destroy()
-                        except: pass
-                        try:
-                            delattr(filter_button, "options_popup")
-                        except: pass
-                        try: root.unbind_all("<Button-1>", b_id)
-                        except Exception: pass
+                        if not (px <= x <= px + pw and py <= y <= py + ph):
+                            try: popup.destroy()
+                            except: pass
+                            try:delattr(filter_button, "options_popup")
+                            except: pass
+                            try: root.unbind_all("<Button-1>", b_id)
+                            except Exception: pass
 
-                root.bind_all("<Button-1>", offclick, add = "+")
+                b_id = root.bind_all("<Button-1>", offclick, add = "+")
                 popup.focus_force()
+                popup.grab_set()
+                popup.wait_window()
                 return
 
             # esta es la configuración del filtro de fecha
-            def date_cb(date_button, change_function, callback = None, first_values = None, width = 150):
+            def date_cb(date_button, origin_tree, first_values = None):
+                old = getattr(self, "_current_popup", None)
+                if old is not None and old.winfo_exists():
+                    try:
+                        old.destroy()
+                    except Exception:
+                        pass
                 date_exists = getattr(root, "date_pop", None)
                 if date_exists is not None and date_exists.winfo_exists():
                     try:
@@ -973,36 +1037,40 @@ class AdminUI(ctk.CTkFrame):
                             pass
 
                 # crear y configurar un top level para que funcione más como un combobox con pequeñas comboboxes... y no como un toplevel
-                date_pop = tk.Toplevel(root)
-                root.date_pop = date_pop
+                date_pop = ctk.CTkToplevel(date_button.winfo_toplevel())
+                date_button.date_pop = date_pop
                 date_pop.wm_overrideredirect(True)
-                date_pop.transient(root)
+                date_pop.transient(date_button.winfo_toplevel())
                 date_pop.attributes("-topmost", True)
+                date_pop.update_idletasks()
+                date_pop.deiconify()
+                date_pop.lift()
 
                 # colocarlo debajo del botoncito de acción
+
                 ax = date_button.winfo_rootx()
                 ay = date_button.winfo_rooty() + date_button.winfo_height()
                 date_pop.geometry(f"+{ax}+{ay}")
 
                 # configuramos el contenedor interno para que quede chulo
-                popup_frame = ctk.CTkFrame(date_pop, relief="ridge", corner_radius=12, fg_color = "white")
+                popup_frame = ctk.CTkFrame(date_pop, corner_radius=12, fg_color = "white")
                 popup_frame.pack(padx=4, pady=4)
 
                 # le colocamos título
-                title = ctk.CTkLabel(popup_frame, text = "Seleccionar fecha", relief="ridge", fg_color="white")
+                title = ctk.CTkLabel(popup_frame, text = "Seleccionar fecha", fg_color="white")
                 title.pack(anchor = "w", pady = (0, 4))
 
-                selects = ctk.CTkFrame(popup_frame, relief="ridge", fg_color="transparent")
+                selects = ctk.CTkFrame(popup_frame, fg_color="transparent")
                 selects.pack(anchor = "w", pady = (0, 4))
 
                 # combobox año
-                cb_year = ctk.CTkComboBox(selects, values=years, width=100, height=18, fg_color="white")
+                cb_year = ctk.CTkComboBox(selects, values=years, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 cb_year.pack(anchor = "left", pady = (0, 4))
                 # combobox mes
-                cb_month = ctk.CTkComboBox(selects, values=months, width=100, height=18, fg_color="white")
+                cb_month = ctk.CTkComboBox(selects, values=months, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 cb_month.pack(anchor = "left", pady = (0, 4))
                 # combobox día (varía con el mes, por eso empieza vacío)
-                cb_day = ctk.CTkComboBox(selects, values = [], width=100, height=18, fg_color="white")
+                cb_day = ctk.CTkComboBox(selects, values = [], width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
                 cb_day.pack(anchor = "left", pady = (0, 4))
 
                 # Si hay valore iniciales (first_values), los establecemos
@@ -1015,7 +1083,7 @@ class AdminUI(ctk.CTkFrame):
                         cb_day.set(first_values.get("day"))
 
                 #actualizador de fecha
-                def upd_date(event = None):
+                def upd_date():
                     #revisa el mes e intenta obtener el año
                     s_month = cb_month.get()
                     try:s_year = int(cb_year.get())
@@ -1034,38 +1102,151 @@ class AdminUI(ctk.CTkFrame):
                     else:
                         cb_day.configure(values=[])
                         cb_day.set("")
+                def date_apply():
+                    # poner valores y guardarlos en el botoncito
+                    vals ={
+                        "year": cb_year.get() if cb_year.get() in years else "",
+                        "month": (f"{months.index(cb_month.get())+1:02d}" if cb_month.get() in months else ""),
+                        "day": cb_day.get() if cb_day.get() else ""
+                    }
+                    date_button.date_value = vals
+                    try:date_pop.destroy()
+                    except Exception:pass
+                    apply_filters(origin_tree)
 
-                # poner valores y guardarlos en el botoncito
-                vals ={
-                    "year": cb_year.get() if cb_year.get() in years else "",
-                    "month": cb_month.get() if cb_month.get() in months else "",
-                    "month_num": (f"{months.index(cb_month.get())+1:02d}" if cb_month.get() in months else ""),
-                    "day": cb_day.get() if cb_day.get() else ""
-                }
-                date_button.date_value = vals
+                def date_change(changed):
+                    if changed in ("year","month"):
+                        upd_date()
+                    date_apply()
 
-                try: change_function(vals)
-                except Exception as e: print("Error: ",e)
-
-                cb_year.bind("<<ComboboxSelected>>", upd_date)
-                cb_month.bind("<<ComboboxSelected>>", upd_date)
-                cb_day.bind("<<ComboboxSelected>>", upd_date)
+                cb_year.configure(command= lambda _: date_change("year"))
+                cb_month.configure(command = lambda _: date_change("month"))
+                cb_day.configure(command = lambda _: date_change("day"))
 
                 # cierra el toplevel si se hace click afuera del toplevel
                 def click_outside(event):
                     x, y= event.x_root, event.y_root
-                    px, py =popup_frame.winfo_rootx(), popup_frame.winfo_rooty()
-                    pw, ph = popup_frame.winfo_width(), popup_frame.winfo_height()
-                    e_id = getattr(event, "click_bind_id", None)
-                    if not (px <= x <= px + pw and py <= y <= py + ph):
-                        try: popup_frame.destroy()
-                        except Exception: pass
-                        try:delattr(date_button, "options_popup")
-                        except Exception: pass
-                        try: root.unbind_all("<Button-1>", e_id)
-                        except Exception: pass
+                    if popup_frame.winfo_exists():
+                        px, py =popup_frame.winfo_rootx(), popup_frame.winfo_rooty()
+                        pw, ph = popup_frame.winfo_width(), popup_frame.winfo_height()
+                        e_id = getattr(event, "click_bind_id", None)
+                        if not (px <= x <= px + pw and py <= y <= py + ph):
+                            try: popup_frame.destroy()
+                            except Exception: pass
+                            try:delattr(date_button, "options_popup")
+                            except Exception: pass
+                            try: root.unbind_all("<Button-1>", e_id)
+                            except Exception: pass
 
                 root.bind_all("<Button-1>", click_outside, add = "+")
                 popup_frame.focus_force()
                 upd_date()
+                popup_frame.grab_set()
+                popup_frame.wait_window()
                 return
+            try:
+                if kind == "sales" or kind == "providers":
+                    p_col_index = f'#{titles.index('productos')+1}'
+                elif kind == "clients":
+                    p_col_index = f'#{titles.index('compras')+1}'
+            except:
+                p_col_index = None
+
+            # Creación de la tablita visualizadora de opciones
+            tree = ttk.Treeview(self.searchbar_frame, show="headings")
+
+            #instanciamos JUSTO después del tree para que se vean bien las cosas
+            filter_btn.configure(command = lambda:header_filter(filter_btn, titles, tree))
+            if kind == "sales":
+                date_btn.configure(command = lambda: date_cb(date_btn, tree))
+            apply_filters(tree)
+            # empaquetamos el tree
+            tree.pack(fill="both", expand=True)
+            tree["columns"] = titles
+            for col in titles:
+                tree.heading(col, text=col)
+                tree.column(col, width=800 // len(titles), anchor="w")
+
+            # actualizador al escribir
+            def search_change(var_name=None, index=None, mode=None):
+                apply_filters(tree)
+
+            # se añade el actualizador cada vez que se escribe
+            try:
+                search_var.trace_add('write', search_change)
+            except Exception:
+                pass
+
+            #se traza el click si está en el treeview
+            def tree_click(event):
+                x, y = event.x, event.y
+                e_row = tree.identify_row(y)
+                e_col=tree.identify_column(x)
+                r_line = item_map.get(e_row, None)
+                if not e_row:
+                    return
+                if not r_line:
+                    return
+
+                if kind== "sales" or kind == "providers" or kind == "clients":
+                    if e_col == p_col_index:
+                        return  show_list(root, r_line)
+                return  row_menu(tree, event, r_line, e_row)
+            tree.bind("<Button-1>", tree_click)
+
+            def row_menu(origin, event, line, row):
+                menu = tk.Menu(tree, tearoff=0)
+                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
+                menu.add_command(label="eliminar") #command = lambda l=line, iid=row: del_event(l) -> comando para el popup de eliminación
+                menu.post(event.x_root, event.y_root)
+
+            def show_list(origin, r_line):
+                top = tk.Toplevel(origin)
+                top.geometry("300x220")
+                top.transient(origin)
+                top.grab_set()
+                top.wait_window()
+                list_frame = ttk.Frame(top)
+                list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
+                scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
+                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
+                scrollbar.config(command=lbox.yview)
+                scrollbar.pack(side="right", fill="y")
+                lbox.pack(side="left", fill="x", expand=True)
+
+                if kind == "sales":
+                    r_line.convert('subtotal')
+                    p_in = getattr(r_line, "products", False)
+                    if p_in is not False:
+                        for key, p in p_in:
+                            entrance = {
+                                "v1" : key,
+                                "v2" : p["subtotal"],
+                            }
+                            lbox.insert("end", " | ".join(entrance.values()))
+
+                if kind == "providers":
+                    r_line.prod_ordering()
+                    p_in = getattr(r_line, "products", False)
+                    if p_in is not False:
+                        for val in p_in:
+                            lbox.insert("end", val)
+
+                if kind == "clients":
+                    r_line.sale_sorter()
+                    p_in = getattr(r_line, "sales", False)
+                    if p_in and p_in is not False:
+                        r_prods = [prod for prod in self.db_info["products"] if prod.product_id in p_in]
+                        s_list = []
+                        for val in p_in:
+                            for p in r_prods:
+                                if p.product_id == val:
+                                    sale = [p.product_id, p.total]
+                                    s_list.append(sale)
+                        for val in s_list:
+                            lbox.insert("end", " | ".join(val))
+                    else:
+                        lbox.insert("end", "No hay compras asociadas")
+
+
+                ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
