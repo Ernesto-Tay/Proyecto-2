@@ -28,6 +28,7 @@ class AdminUI(ctk.CTkFrame):
         self.db_info = self.db_extract(classes)
         self.body = ctk.CTkFrame(self, fg_color="white")
         self.body.pack(expand=True, fill="both")
+        self.current_sale = None
 
         # Mensaje de bienvenida
         self.current_user = current_user
