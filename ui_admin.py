@@ -539,52 +539,56 @@ class AdminUI(ctk.CTkFrame):
     def save_sale_to_db(self):
         """
         Guarda la venta actual (diccionario) en la base de datos y actualiza existencias.
+        Verifica que haya stock suficiente antes de registrar la venta.
         """
 
         # Verifica que exista una venta activa
         if not hasattr(self, "current_sale") or not self.current_sale.get("products"):
-            mbox.showerror("Venta vacía", "Debe agregar al menos un producto antes de guardar.")
+            mbox.showerror("Venta vacía", "No hay productos agregados a la venta.")
             return
 
         if not self.current_sale.get("client"):
-            mbox.showerror("Cliente no seleccionado", "Debe seleccionar un cliente para la venta.")
+            mbox.showerror("Cliente no seleccionado", "Debe seleccionar un cliente antes de guardar la venta.")
             return
 
-        # Calcula total
-        total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
+        # Conexión a la base de datos
+        with get_conn() as conn:
+            # Valida el stock disponible antes de confirmar la venta
+            for product_id, data in self.current_sale["products"].items():
+                prod = conn.execute("SELECT name, stock FROM products WHERE product_id = ?", (product_id,)).fetchone()
+                if not prod:
+                    mbox.showerror("Error", f"Producto con ID {product_id} no encontrado en la base de datos.")
+                    return
+                if prod["stock"] < data["quantity"]:
+                    mbox.showerror("Stock insuficiente", f"No hay suficiente stock para '{prod['name']}'.\n Disponible: {prod['stock']} unidades.")
+                    return
 
-        # Crea ID único para la venta
-        sale_id = "SAL" + datetime.now().strftime("%d%m%H%M%S")
+            # Si está correcto, calcula el total
+            total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
 
-        # Fecha y hora actuales
-        now = datetime.now()
-        date_str = now.strftime("%d/%m/%Y")
-        time_str = now.strftime("%H:%M:%S")
+            # Crea ID único para la venta
+            sale_id = "SAL" + datetime.now().strftime("%d%m%H%M%S")
 
-        try:
-            # Guarda en la base de datos
-            with get_conn() as conn:
-                conn.execute("""
-                    INSERT INTO sales (sale_id, client_id, date, time, products, total)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                    (sale_id,self.current_sale["client"],date_str,time_str,json.dumps(self.current_sale["products"], ensure_ascii=False),total))
+            # Fecha y hora actuales
+            now = datetime.now()
+            date_str = now.strftime("%d/%m/%Y")
+            time_str = now.strftime("%H:%M:%S")
 
-                # Actualiza stock
-                for product_id, data in self.current_sale["products"].items():
-                    conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
-                conn.commit()
+            # Guardar la venta
+            conn.execute(
+                """INSERT INTO sales (sale_id, client_id, date, time, products, total)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (sale_id,self.current_sale["client"],date_str,time_str,json.dumps(self.current_sale["products"], ensure_ascii=False),total))
 
-            mbox.showinfo("Venta registrada", f"Venta guardada exitosamente con ID {sale_id}.\nTotal: Q{total:.2f}")
+            # Actualiza el stock de cada producto vendido
+            for product_id, data in self.current_sale["products"].items():
+                conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
+            conn.commit()
 
-            # Reinicia el carrito y vista
-            self.manage_sale("init")
-            self.refresh_cart_view()
-            self.ent_client_search.delete(0, "end")
-            self.ent_prod_search.delete(0, "end")
-
-        except Exception as e:
-            mbox.showerror("Error", f"Ocurrió un error inesperado:\n{e}")
+        # Reinicia la lista de productos después de guardar
+        self.manage_sale("init")
+        self.refresh_cart_view()
+        mbox.showinfo("Venta registrada", f"La venta {sale_id} fue guardada correctamente.")
 
     def view_create_sale(self):
         container = self._open_fullscreen_view()
