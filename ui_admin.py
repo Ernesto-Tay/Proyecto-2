@@ -1208,14 +1208,15 @@ class AdminUI(ctk.CTkFrame):
                 menu.post(event.x_root, event.y_root)
 
             def show_list(origin, r_line):
+                # Creamos y configuramos el TopLevel
                 top = tk.Toplevel(origin)
                 top.geometry("300x220")
                 top.transient(origin)
                 top.grab_set()
                 top.configure(bg = "white")
-
-
                 top.update_idletasks()
+
+                #Configuramos las dimensiones del TopLevel y lo colocamos en medio de la pantallita
                 w = 350
                 h = 250
                 root_x = origin.winfo_rootx()
@@ -1226,7 +1227,7 @@ class AdminUI(ctk.CTkFrame):
                 y = root_y + (root_h // 2) - (h // 2)
                 top.geometry(f"{w}x{h}+{x}+{y}")
 
-
+                #Creamos un frame y le añadimos tanto una scrollbar como una listbox
                 list_frame = ttk.Frame(top)
                 list_frame.pack(side="top", expand = True, fill = "both", padx = 5, pady = (10, 5))
                 scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
@@ -1235,16 +1236,22 @@ class AdminUI(ctk.CTkFrame):
                 scrollbar.pack(side="right", fill="y")
                 lbox.pack(side="left", fill="x", expand=True)
 
+                # Si son Ventas, entonces
                 if kind == "sales":
-                    r_line.convert('subtotal')
-                    p_in = getattr(r_line, "products", False)
-                    if p_in is not False:
-                        for key, p in p_in:
-                            entrance = {
-                                "v1" : key,
-                                "v2" : p["subtotal"],
-                            }
-                            lbox.insert("end", " | ".join(entrance.values()))
+                    p_dict = getattr(r_line, "products", "{}")
+                    if not p_dict:
+                        lbox.insert("end", "Venta sin productos.")
+                    else:
+                        prod_list = self.db_info.get("products", [])
+                        prod_look = {prod.product_id: prod.name for prod in prod_list}
+
+                        for prod_id, sale_info in p_dict.items():
+                            qty = sale_info.get("quantity", "?")
+                            subtotal = sale_info.get("subtotal", 0.0)
+                            prod_name = prod_look.get(prod_id, prod_id)
+
+                            line_text = f"{prod_name} | Cant: {qty} | Subtotal: Q{subtotal:.2f}"
+                            lbox.insert("end", line_text)
 
                 if kind == "providers":
                     r_line.prod_ordering()
