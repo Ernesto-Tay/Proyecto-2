@@ -781,6 +781,103 @@ class AdminUI(ctk.CTkFrame):
         self.manage_sale("add", product_id, cantidad, price)
         self.refresh_cart_view()
 
+    def view_edit_provider(self, provider_id):
+        """Formulario para editar un proveedor existente"""
+        container = self._open_fullscreen_view()
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
+        frame.pack(expand=True, fill="both")
+
+        title = ctk.CTkLabel(frame, text="Editar proveedor", font=("Open Sans", 50, "bold"), text_color="#111111")
+        title.pack(pady=(40, 20))
+
+        # Cargar datos del proveedor
+        provider = Provider.load(provider_id)
+        if not provider:
+            mbox.showerror("Error", f"No se encontró el proveedor con ID {provider_id}")
+            self._close_fullscreen_view()
+            return
+
+        # Muestra el ID del proveedor que no es editable, solo es lectura
+        row_id = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_id.pack(pady=10, ipadx=10, ipady=6)
+        row_id.grid_columnconfigure(0, minsize=160)
+        row_id.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_id, text="ID Proveedor", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        ent_id = ctk.CTkEntry(row_id, width=300, height=36, corner_radius=14, fg_color="#f2f2f2", text_color="gray",border_color="#cfcfcf")
+        ent_id.insert(0, provider.provider_id)
+        ent_id.configure(state="disabled")
+        ent_id.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Nombre editable
+        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name.pack(pady=10, ipadx=10, ipady=6)
+        row_name.grid_columnconfigure(0, minsize=160)
+        row_name.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.insert(0, provider.name)
+        self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Teléfono editable
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        row_tel.grid_columnconfigure(0, minsize=160)
+        row_tel.grid_columnconfigure(1, minsize=320)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
+        self.ent_tel.insert(0, provider.phone)
+        self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
+
+        # Lista de productos
+        ctk.CTkLabel(frame, text="Productos asociados:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,pady=(10, 0))
+        self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=100)
+        self.products_frame.pack(fill="x", padx=20, pady=5)
+
+        # Diccionario donde se guardan los checkbox (para saber cuales se están seleccionado)
+        self.product_checks = {}
+        with get_conn() as c:  # consulta todos los productos de la base de datos
+            rows = c.execute("SELECT product_id, name FROM products").fetchall()
+
+        for row in rows:   # Recorre los productos y crea un checkbox para cada uno
+            pid, name = row["product_id"], row["name"]
+            var = tk.IntVar(value=1 if pid in provider.products else 0)
+            chk = ctk.CTkCheckBox(self.products_frame, text=f"{name}", text_color="black", font=("Open Sans", 14),variable=var, onvalue=1, offvalue=0)
+            chk.var = var  # Guarda la variable para consultar luego su estado
+            chk.pack(anchor="w", padx=10, pady=4)
+            self.product_checks[pid] = chk # se agrega al diccionario para tener acceso
+
+        # Botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_provider_edit(provider)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+
+    def save_provider_edit(self, provider):
+        """Guarda los cambios realizados al proveedor."""
+        new_name = self.ent_nombre.get().strip()
+        new_phone = self.ent_tel.get().strip()
+
+        # ciclo para recolectar los productos seleccionados
+        selected_products = []
+        for pid, chk in self.product_checks.items():
+            if chk.var.get() == 1:
+                selected_products.append(pid)
+
+        if not new_name or not new_phone:
+            mbox.showerror("Error", "Debe llenar todos los campos.")
+            return
+
+        try:
+            provider.name = new_name
+            provider.phone = new_phone
+            provider.products = selected_products
+            provider.save()
+            mbox.showinfo("Proveedor actualizado", f"El proveedor '{new_name}' fue actualizado correctamente.")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"No se pudo actualizar el proveedor:\n{e}")
+
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:

@@ -124,8 +124,9 @@ class User:
 
     @name.setter
     def name(self, name):
-        if len(name) == 0 or not name.isalpha():
-            raise ValueError("El nombre debe ser solo letras")
+        name = name.strip()
+        if len(name) == 0 or not all(ch.isalpha() or ch.isspace() for ch in name): # Valida que no esté vacío y que solo tenga letras o espacios
+            raise ValueError("El nombre solo puede contener letras y espacios")
         self._name = name
 
     @property
