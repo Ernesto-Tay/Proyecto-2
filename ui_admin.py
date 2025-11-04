@@ -284,7 +284,7 @@ class AdminUI(ctk.CTkFrame):
         btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
-    # lógica para crear colaborador
+    # lógica para crear cliente
     def create_client(self):
         name = self.ent_nombre.get().strip()
         phone = self.ent_tel.get().strip()
@@ -301,7 +301,7 @@ class AdminUI(ctk.CTkFrame):
             usr.save()
             client = Client(name=name, phone=phone, user_id = usr.user_id) # crea al objeto
             client.save() # metodo importado para guardar
-            mbox.showinfo(f"Colaborador creado", f"Cliente '{name}' creado y guardado")
+            mbox.showinfo(f"Cliente creado", f"Cliente '{name}' creado y guardado")
             self._close_fullscreen_view() # cierra la ventana cuando se crea
         except Exception as e:
             mbox.showerror("Error", f"Error inesperado: {e}")
