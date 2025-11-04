@@ -227,7 +227,8 @@ class AdminUI(ctk.CTkFrame):
             return
 
         try:
-            collab = Collaborator(name=name, phone=phone, position=position) # crea al objeto
+            usr = User(name = name, phone = phone)
+            collab = Collaborator(name=name, phone=phone, position=position, user_id = usr.user_id) # crea al objeto
             collab.save() # metodo importado para guardar
             mbox.showinfo(f"Colaborador creado", f"Colaborador '{name}' creado y guardado")
             self._close_fullscreen_view()
@@ -280,7 +281,8 @@ class AdminUI(ctk.CTkFrame):
             return
 
         try:
-            client = Client(name=name, phone=phone) # crea al objeto
+            usr = User(name,phone)
+            client = Client(name=name, phone=phone, user_id = usr.user_id) # crea al objeto
             client.save() # metodo importado para guardar
             mbox.showinfo(f"Colaborador creado", f"Cliente '{name}' creado y guardado")
             self._close_fullscreen_view() # cierra la ventana cuando se crea
@@ -1071,13 +1073,13 @@ class AdminUI(ctk.CTkFrame):
 
                 # combobox año
                 cb_year = ctk.CTkComboBox(selects, values=years, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
-                cb_year.pack(anchor = "left", pady = (0, 4))
+                cb_year.pack(anchor = "w", pady = (0, 4))
                 # combobox mes
                 cb_month = ctk.CTkComboBox(selects, values=months, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
-                cb_month.pack(anchor = "left", pady = (0, 4))
+                cb_month.pack(anchor = "w", pady = (0, 4))
                 # combobox día (varía con el mes, por eso empieza vacío)
                 cb_day = ctk.CTkComboBox(selects, values = [], width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
-                cb_day.pack(anchor = "left", pady = (0, 4))
+                cb_day.pack(anchor = "w", pady = (0, 4))
 
                 # Si hay valore iniciales (first_values), los establecemos
                 if first_values:
@@ -1132,12 +1134,12 @@ class AdminUI(ctk.CTkFrame):
                 # cierra el toplevel si se hace click afuera del toplevel
                 def click_outside(event):
                     x, y= event.x_root, event.y_root
-                    if popup_frame.winfo_exists():
-                        px, py =popup_frame.winfo_rootx(), popup_frame.winfo_rooty()
-                        pw, ph = popup_frame.winfo_width(), popup_frame.winfo_height()
+                    if date_pop.winfo_exists():
+                        px, py =date_pop.winfo_rootx(), date_pop.winfo_rooty()
+                        pw, ph = date_pop.winfo_width(), date_pop.winfo_height()
                         e_id = getattr(event, "click_bind_id", None)
                         if not (px <= x <= px + pw and py <= y <= py + ph):
-                            try: popup_frame.destroy()
+                            try: date_pop.destroy()
                             except Exception: pass
                             try:delattr(date_button, "options_popup")
                             except Exception: pass
