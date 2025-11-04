@@ -64,24 +64,24 @@ class CollabUI(ctk.CTkFrame):
         self.body.pack(expand=True, fill="both")  # restaura el body
 
     def create_header(self):
-        self.header = ctk.CTkFrame(self, fg_color="#e0e0e0", height=60, corner_radius=0)
+        self.header = ctk.CTkFrame(self, fg_color="#004857", height=60, corner_radius=0)
         self.header.pack(side="top", fill="x")
 
         # frame izquierdo
         left = ctk.CTkFrame(self.header, fg_color="transparent")
         left.pack(side="left", padx=15, pady=10)
         # botones principales
-        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
         btn_sales.pack(side="left", padx=6)
 
-        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
         btn_clients.pack(side="left", padx=6)
 
         # frame derecho
         right = ctk.CTkFrame(self.header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
 
-        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=self.logout)
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18,fg_color="#ffd65a", hover_color="#da6a2a", text_color="black",font=("Open Sans", 13, "bold"), command=self.logout)
         btn_logout.pack(side="right", padx=6)
 
     def toggle_submenu(self, name, parent_button):  # configuración submenús
@@ -97,7 +97,7 @@ class CollabUI(ctk.CTkFrame):
         # submenu flotante (CTkToplevel)
         submenu = ctk.CTkToplevel(self)
         submenu.overrideredirect(True)
-        submenu.configure(fg_color="#f8f8f8")
+        submenu.configure(fg_color="#004857")
         submenu.attributes("-topmost", True)  # siempre al frente
 
         # posición justo debajo del botón
@@ -126,7 +126,7 @@ class CollabUI(ctk.CTkFrame):
         submenu.focus_force()
 
     def add_submenu_button(self, parent, text, command):
-        btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="#ffffff", hover_color="#e6e6e6",text_color="black", font=("Open Sans", 12),command=command)
+        btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="white", hover_color="#f86a20",text_color="black", font=("Open Sans", 12),command=command)
         btn.pack(padx=8, pady=4)
 
     def action(self, msg):
