@@ -909,9 +909,9 @@ class AdminUI(ctk.CTkFrame):
                         filtered = []
                         for obj in result:
                             r=getattr(obj, "date", None)
-                            if r is not None:
-                                r_tuned = datetime.strftime(r, "%d/%m/%Y")
-                                rd, rm, ry = map(int, r_tuned.split('/'))
+                            if r is not None and isinstance(r, str):
+                                r_tuned = datetime.strptime(r, "%d/%m/%Y").date()
+                                rd, rm, ry = r_tuned.day, r_tuned.month, r_tuned.year
 
                             if r and ry == fy and rm == fm and rd == fd:
                                 filtered.append(obj)
@@ -1124,7 +1124,7 @@ class AdminUI(ctk.CTkFrame):
                     except: s_year = None
 
                     #revisa si el mes es válido y si el año existe para establecer los días
-                    if s_month in months and s_year:
+                    if s_month in months and s_year is not None:
                         n_month = months.index(s_month) + 1
                         n_days = calendar.monthrange(s_year, n_month)[1]
                         days = [f"{d:02d}" for d in range(1,n_days+1)]
@@ -1132,10 +1132,13 @@ class AdminUI(ctk.CTkFrame):
                         cur_day = cb_day.get()
                         if cur_day not in days:
                             cb_day.set(days[0])
+                            print(f"Debug: Días actualizados: {days}")
                     # si no, los días quedan vacíos
                     else:
                         cb_day.configure(values=[])
                         cb_day.set("")
+                        print("Dias inválidos")
+
                 def date_apply():
                     # poner valores y guardarlos en el botoncito
                     vals ={
@@ -1146,16 +1149,19 @@ class AdminUI(ctk.CTkFrame):
                     date_button.date_value = vals
                     try:date_pop.destroy()
                     except Exception:pass
+                    print(f"Vals: {vals['year']}, {vals['month']}, {vals['day']}")
                     apply_filters(origin_tree)
 
                 def date_change(changed):
                     if changed in ("year","month"):
                         upd_date()
-                    date_apply()
 
                 cb_year.configure(command= lambda _: date_change("year"))
                 cb_month.configure(command = lambda _: date_change("month"))
                 cb_day.configure(command = lambda _: date_change("day"))
+
+                btn_apply = ctk.CTkButton(popup_frame, text="Aplicar", width=100, height=36, corner_radius=18,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 13, "bold"), command=date_apply)
+                btn_apply.pack(pady=(8, 0))
 
                 # cierra el toplevel si se hace click afuera del toplevel
                 def click_outside(event):
