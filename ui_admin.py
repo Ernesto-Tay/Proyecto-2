@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate, get_conn
+from main import User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate, get_conn
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import calendar
@@ -225,9 +225,13 @@ class AdminUI(ctk.CTkFrame):
         if not name or not phone or not position:
             mbox.showerror("Campos vacíos", "Se deben llenar todos los campos.")
             return
+        elif len(phone) != 8:
+            mbox.showerror("Teléfono inválido", "El número telefónico debe tener 8 dígitos numéricos")
+            return
 
         try:
             usr = User(name = name, phone = phone)
+            usr.save()
             collab = Collaborator(name=name, phone=phone, position=position, user_id = usr.user_id) # crea al objeto
             collab.save() # metodo importado para guardar
             mbox.showinfo(f"Colaborador creado", f"Colaborador '{name}' creado y guardado")
@@ -279,9 +283,13 @@ class AdminUI(ctk.CTkFrame):
         if not name or not phone:
             mbox.showerror("Campos vacíos", "Se deben llenar todos los campos.")
             return
+        elif len(phone) != 8:
+            mbox.showerror("Teléfono inválido", "El número telefónico debe tener 8 dígitos numéricos")
+            return
 
         try:
             usr = User(name,phone)
+            usr.save()
             client = Client(name=name, phone=phone, user_id = usr.user_id) # crea al objeto
             client.save() # metodo importado para guardar
             mbox.showinfo(f"Colaborador creado", f"Cliente '{name}' creado y guardado")
@@ -392,6 +400,13 @@ class AdminUI(ctk.CTkFrame):
             mbox.showerror("Error numerico","Deben de ingresar numeros")
             return
 
+        if stock <=0 or raw_price <= 0 or sale_price <= 0:
+            mbox.showerror("Error numérico", "Los valores numéricos deben ser positivos")
+            return
+
+        if sale_price <= raw_price:
+            mbox.showerror("Error de precios", "El precio de venta debe superar el precio costo")
+
         try:
             product = Product(name=name,types=type_,desc=desc,raw_p=raw_price,sale_p=sale_price,stock=stock)
             product.save()
@@ -484,12 +499,18 @@ class AdminUI(ctk.CTkFrame):
         if not name or not phone:
             mbox.showerror("Campos vacíos", "Debe llenar todos los campos.")
             return
+        elif len(phone) != 8:
+            mbox.showerror("Teléfono inválido", "El número telefónico debe tener 8 dígitos numéricos")
+            return
         if not selected_products:
             mbox.showwarning("Sin productos", "Debe seleccionar al menos un producto.")
             return
 
+
         try:
-            provider = Provider(name=name, phone=phone, products=selected_products)
+            usr = User(name=name, phone=phone)
+            usr.save()
+            provider = Provider(products=selected_products, user_id=usr.user_id, name=name, phone=phone)
             provider.save()
             mbox.showinfo("Proveedor creado", f"Proveedor '{name}' guardado correctamente.")
             self._close_fullscreen_view()
@@ -831,7 +852,7 @@ class AdminUI(ctk.CTkFrame):
                 return None
 
             # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
-            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_p", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
             titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "compras"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
             headers = cols[kind]
             titles = titles_dict[kind]
@@ -840,6 +861,7 @@ class AdminUI(ctk.CTkFrame):
             #extrae los datos de la db_info
             self.db_info = self.db_extract(classes)
             table_data = self.db_info[kind]
+            print(table_data)
 
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -887,7 +909,11 @@ class AdminUI(ctk.CTkFrame):
                         filtered = []
                         for obj in result:
                             r=getattr(obj, "date", None)
-                            if r and r.year == fy and r.month == fm and r.day == fd:
+                            if r is not None:
+                                r_tuned = datetime.strftime(r, "%d/%m/%Y")
+                                rd, rm, ry = map(int, r_tuned.split('/'))
+
+                            if r and ry == fy and rm == fm and rd == fd:
                                 filtered.append(obj)
                         result = filtered
                     except Exception:

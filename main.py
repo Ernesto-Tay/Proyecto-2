@@ -250,7 +250,7 @@ class Collaborator(User):
 #Clase de proveedores
 class Provider(User):
     def __init__(self, name:str, phone:int,products : List[str] = None,user_id:str = None, provider_id:str = None):
-        self.__provider_id = provider_id or id_generate("prd")
+        self.__provider_id = provider_id or id_generate("prv")
         self.products : List[str] = products or []
         self.type = "provider"
         User.__init__(self, name, phone, user_id)
@@ -284,12 +284,11 @@ class Provider(User):
     # Méthodo de guardado en la db
     def save(self):
         super().save()
-
-        product_strings = []
-        for p in self.products:
-            if p is not None:
-                product_strings.append(str(p))
-        products = "|".join(product_strings)
+        products = ""
+        if self.products:
+            products = "|".join(self.products)
+        if not self.__provider_id:
+            self.__provider_id = id_generate("prv")
 
         with get_conn() as c:
             exists = c.execute("SELECT provider_id FROM providers WHERE provider_id = ?",(self.provider_id,)).fetchone()
@@ -306,7 +305,7 @@ class Provider(User):
         with get_conn() as c:
             r = c.execute("SELECT * FROM providers WHERE provider_id = ?", (provider_id,)).fetchone()
             if r:
-                user = User.load(r["provider_id"])
+                user = User.load(r["user_id"])
                 if user:
                     products = r["products"].split("|")
                     return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
@@ -340,7 +339,12 @@ class Client(User):
     #Méthodo de guardado
     def save(self):
         super().save() # guarda el usuario en la tabla users primero
-        new_sales = "|".join(self.sales)
+        new_sales = ""
+        if self.sales:
+            new_sales = "|".join(self.sales)
+
+        if not self.__client_id:
+            self.__client_id = id_generate("clt")
         with get_conn() as c:
             exists = c.execute("SELECT client_id FROM clients WHERE client_id = ?", (self.client_id,)).fetchone()
             if exists:
@@ -355,7 +359,7 @@ class Client(User):
         with get_conn() as c:
             r = c.execute("SELECT * FROM clients WHERE client_id = ?", (client_id,)).fetchone()
             if r:
-                user = User.load(r["client_id"])
+                user = User.load(r["user_id"])
                 if user:
                     sales = r["sales"].split("|")
                     return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
