@@ -852,8 +852,8 @@ class AdminUI(ctk.CTkFrame):
                 return None
 
             # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
-            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_p", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
-            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "compras"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
+            cols = {"sales": ["sale_id", "time", "_client_id", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_p", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "compras"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "productos"]}
             headers = cols[kind]
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
@@ -903,9 +903,9 @@ class AdminUI(ctk.CTkFrame):
                     print("result: ", result)
                 # filtrar por fecha (si aplica)
                 date_vals = getattr(date_btn, "date_value", None)
-                if date_vals and date_vals.get("year") and date_vals.get("month_num") and date_vals.get("day"):
+                if date_vals and date_vals.get("year") and date_vals.get("month") and date_vals.get("day"):
                     try:
-                        fy, fm, fd = int(date_vals["year"]), int(date_vals["month_num"]), int(date_vals["day"])
+                        fy, fm, fd = int(date_vals["year"]), int(date_vals["month"]), int(date_vals["day"])
                         filtered = []
                         for obj in result:
                             r=getattr(obj, "date", None)
@@ -1127,7 +1127,7 @@ class AdminUI(ctk.CTkFrame):
                     if s_month in months and s_year:
                         n_month = months.index(s_month) + 1
                         n_days = calendar.monthrange(s_year, n_month)[1]
-                        days = [f"{d:02d}" for d in range(n_days)]
+                        days = [f"{d:02d}" for d in range(1,n_days+1)]
                         cb_day.configure(values = days)
                         cur_day = cb_day.get()
                         if cur_day not in days:
@@ -1226,7 +1226,7 @@ class AdminUI(ctk.CTkFrame):
                     if e_col == p_col_index:
                         return  show_list(root, r_line)
                 return  row_menu(tree, event, r_line, e_row)
-            tree.bind("<Button-1>", tree_click)
+            tree.bind("<ButtonRelease-1>", tree_click)
 
             #Menú adicional en caso sea venta, proveedor o producto
             def row_menu(origin, event, line, row):
@@ -1242,6 +1242,7 @@ class AdminUI(ctk.CTkFrame):
                 top.transient(origin)
                 top.grab_set()
                 top.configure(bg = "white")
+                top.title("Lista asociada")
                 top.update_idletasks()
 
                 #Configuramos las dimensiones del TopLevel y lo colocamos en medio de la pantallita
@@ -1288,12 +1289,14 @@ class AdminUI(ctk.CTkFrame):
                 if kind == "providers":
                     # Ordena los productos relacionados con el proveedor
                     r_line.prod_ordering()
-                    #Obtiene dichos productos
-                    p_in = getattr(r_line, "products", False)
-                    if p_in is not False:
+                    # Obtiene esos mismos productos
+                    p_in = getattr(r_line, "products", [])
+                    prod_list = self.db_info.get("products", [])  # Obtiene la lista de productos de la DB
+                    prod_look = {prod.product_id: prod.name for prod in prod_list}  # Mapeo ID : nombre
+                    if p_in:
                         for val in p_in:
-                            #los inserta uno por uno
-                            lbox.insert("end", val)
+                            prod_name = prod_look.get(val, val)  # Usa nombre si existe, sino el ID
+                            lbox.insert("end", prod_name)
                     else:
                         lbox.insert("end", "No hay productos asociados.")
 
@@ -1317,4 +1320,6 @@ class AdminUI(ctk.CTkFrame):
                             lbox.insert("end", " | ".join(val))
                     else:
                         lbox.insert("end", "No hay compras asociadas")
-                ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
+                ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold")).pack(pady = (5, 10))
+                top.lift()
+                top.focus_force()
