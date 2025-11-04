@@ -13,15 +13,21 @@ class LoginUI(ctk.CTkFrame):
 
         DataBase.create_tables()
 
-        title = ctk.CTkLabel(self,text="INICIAR\nSESIÓN",font=("Open Sans", 62, "bold"),text_color="#111111")
-        title.pack(pady=25)
+        img_frame = ctk.CTkFrame(self, width=280,height=35,fg_color="#6ba9ab",border_color="#cfcfcf")
+        img_frame.pack(side = "left", expand=True, fill="both")
+
+        form_frame = ctk.CTkFrame(self, width=230,height=35,fg_color="#f4f1ec",border_color="#cfcfcf")
+        form_frame.pack(side = "left", expand=True, fill="both")
+
+        title = ctk.CTkLabel(form_frame,text="INICIAR\nSESIÓN",font=("Open Sans", 62, "bold"),text_color="#111111")
+        title.pack(pady=(100, 25))
 
         # Frame Nombre
-        frame_nombre = ctk.CTkFrame(self, fg_color="#e0e0e0", corner_radius=20)
+        frame_nombre = ctk.CTkFrame(form_frame, fg_color="#e0e0e0", corner_radius=20)
         frame_nombre.pack(pady=5, ipadx=10, ipady=4)
 
         frame_nombre.grid_columnconfigure(0, minsize=150)
-        frame_nombre.grid_columnconfigure(1, minsize=300)
+        frame_nombre.grid_columnconfigure(1, minsize=250)
 
         label_nombre = ctk.CTkLabel(frame_nombre, text="Nombre", font=("Open Sans", 18))
         label_nombre.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
@@ -30,7 +36,7 @@ class LoginUI(ctk.CTkFrame):
         self.entry_nombre.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
 
         # frame ID
-        frame_id = ctk.CTkFrame(self, fg_color="#e0e0e0", corner_radius=20)
+        frame_id = ctk.CTkFrame(form_frame, fg_color="#e0e0e0", corner_radius=20)
         frame_id.pack(pady=5, ipadx=10, ipady=4)
 
         frame_id.grid_columnconfigure(0, minsize=150)
@@ -39,11 +45,11 @@ class LoginUI(ctk.CTkFrame):
         label_id = ctk.CTkLabel(frame_id, text="ID", font=("Open Sans", 18))
         label_id.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
-        self.entry_id = ctk.CTkEntry(frame_id,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12))
+        self.entry_id = ctk.CTkEntry(frame_id,width=280,height=35,corner_radius=10,fg_color="white",border_color="#cfcfcf",text_color="black",font=("Open Sans", 12), show = "●")
         self.entry_id.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
 
         # botón
-        btn_login = ctk.CTkButton(self,text="Iniciar sesión",width=200,height=50,corner_radius=30,fg_color="#e0e0e0",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 18, "bold", "underline"),command=self.login)
+        btn_login = ctk.CTkButton(form_frame,text="Iniciar sesión",width=200,height=50,corner_radius=30,fg_color="#e0e0e0",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 18, "bold", "underline"),command=self.login)
         btn_login.pack(pady=35)
 
     def validate_user(self, table, campo_id, id_usuario, nombre):

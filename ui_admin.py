@@ -1,8 +1,8 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate, get_conn
+from main import User, Admin, Collaborator, Provider, Client , Product, Sales, get_conn
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk
 import calendar
 import json
 from datetime import datetime
@@ -909,7 +909,6 @@ class AdminUI(ctk.CTkFrame):
                     fm = int(date_vals.get("month", "")) if date_vals.get("month") else None
                     fd = int(date_vals.get("day", "")) if date_vals.get("day") else None
                     if fy or fm or fd:  # Filtra si al menos uno está set
-                        print(f"Debug: Aplicando filtro fecha: Año={fy}, Mes={fm}, Día={fd}")
                         filtered = []
                         for obj in result:
                             r = getattr(obj, "date", None)
@@ -919,12 +918,9 @@ class AdminUI(ctk.CTkFrame):
                                     try:
                                         r = datetime.strptime(r, "%d/%m/%Y").date()
                                     except ValueError:
-                                        print(f"Debug: Fecha inválida en venta {obj.sale_id}: {r}")
                                         continue
                                 # Extrae componentes
                                 rd, rm, ry = r.day, r.month, r.year
-                                print(
-                                    f"Debug: Comparando venta {obj.sale_id}: {ry}-{rm:02d}-{rd:02d} vs {fy}-{fm:02d}-{fd:02d}")  # Depuración detallada
 
                                 # Filtrado progresivo: coincide lo que esté set
                                 match = True
@@ -937,9 +933,7 @@ class AdminUI(ctk.CTkFrame):
                                 if match:
                                     filtered.append(obj)
                         result = filtered
-                        print(f"Debug: Ventas filtradas: {len(filtered)} de {len(result)} totales")  # Depuración
                     else:
-                        print("Debug: No valores de fecha para filtrar")
                         pass
                 for idx, item in enumerate(result):
                     all_vals = [str(getattr(item, t, "")) for t in headers]
@@ -1154,9 +1148,7 @@ class AdminUI(ctk.CTkFrame):
                         cb_day.configure(values = days)
                         cur_day = cb_day.get()
                         if cur_day not in days:
-                            cb_day.set(days[0])
-                            print(f"Debug: Días actualizados: {days}")
-                    # si no, los días quedan vacíos
+                            cb_day.set(days[0])                    # si no, los días quedan vacíos
                     else:
                         cb_day.configure(values=[])
                         cb_day.set("")
@@ -1172,7 +1164,6 @@ class AdminUI(ctk.CTkFrame):
                     date_button.date_value = vals
                     try:date_pop.destroy()
                     except Exception:pass
-                    print(f"Vals: {vals['year']}, {vals['month']}, {vals['day']}")
                     apply_filters(origin_tree)
 
                 def date_change(changed):
