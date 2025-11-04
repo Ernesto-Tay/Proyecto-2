@@ -1236,45 +1236,57 @@ class AdminUI(ctk.CTkFrame):
                 scrollbar.pack(side="right", fill="y")
                 lbox.pack(side="left", fill="x", expand=True)
 
-                # Si son Ventas, entonces
+                # Si son Ventas, entonces se trabaja de la siguiente forma:
                 if kind == "sales":
+                    #Se obtiene el diccionario de productos en la venta
                     p_dict = getattr(r_line, "products", "{}")
                     if not p_dict:
                         lbox.insert("end", "Venta sin productos.")
                     else:
+                        #Se obtiene info de los productos en el diccionario principal y se mapean como id: nombre
                         prod_list = self.db_info.get("products", [])
                         prod_look = {prod.product_id: prod.name for prod in prod_list}
 
                         for prod_id, sale_info in p_dict.items():
                             qty = sale_info.get("quantity", "?")
                             subtotal = sale_info.get("subtotal", 0.0)
+                            #Se obtiene el nombre del producto del diccionario id:valor
                             prod_name = prod_look.get(prod_id, prod_id)
 
                             line_text = f"{prod_name} | Cant: {qty} | Subtotal: Q{subtotal:.2f}"
                             lbox.insert("end", line_text)
 
+                #Si son proveedores, se trabajan de la siguiente manera:
                 if kind == "providers":
+                    # Ordena los productos relacionados con el proveedor
                     r_line.prod_ordering()
+                    #Obtiene dichos productos
                     p_in = getattr(r_line, "products", False)
                     if p_in is not False:
                         for val in p_in:
+                            #los inserta uno por uno
                             lbox.insert("end", val)
+                    else:
+                        lbox.insert("end", "No hay productos asociados.")
 
+                #Si son clientes, lo trabajan así:
                 if kind == "clients":
+                    #Se ordenan las IDs relacionadas de las ventas
                     r_line.sale_sorter()
                     p_in = getattr(r_line, "sales", False)
                     if p_in and p_in is not False:
-                        r_prods = [prod for prod in self.db_info["products"] if prod.product_id in p_in]
+                        #Se obtienen todos los productos de la database si su ID está dentro de la lista de ventas relacionadas
+                        r_prods = [prod for prod in self.db_info["sales"] if prod.sale_id in p_in]
                         s_list = []
                         for val in p_in:
                             for p in r_prods:
-                                if p.product_id == val:
-                                    sale = [p.product_id, p.total]
+                                if p.sale_id == val:
+                                    #Se generaN tuplas de dos valores (id de la venta y el total de esta)
+                                    sale = [p.sale_id, p.total]
                                     s_list.append(sale)
                         for val in s_list:
+                            #Se añaden toditas las ventas a la lista
                             lbox.insert("end", " | ".join(val))
                     else:
                         lbox.insert("end", "No hay compras asociadas")
-
-
                 ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
