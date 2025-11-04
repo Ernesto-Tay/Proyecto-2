@@ -1069,6 +1069,139 @@ class AdminUI(ctk.CTkFrame):
         except Exception as e:
             mbox.showerror("Error", f"No se pudo actualizar el proveedor:\n{e}")
 
+    def view_edit_collab(self, collab_id):
+        """Formulario para editar un colaborador existente."""
+        container = self._open_fullscreen_view()
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
+        frame.pack(expand=True, fill="both")
+
+        title = ctk.CTkLabel(frame, text="Editar colaborador", font=("Open Sans", 50, "bold"), text_color="#111111")
+        title.pack(pady=(40, 20))
+
+        # Carga datos del colaborador
+        collab = Collaborator.load(collab_id)
+
+        # ID, solo lo muestra
+        row_id = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_id.pack(pady=10,ipadx=10,ipady=6)
+        ctk.CTkLabel(row_id,text="ID Colaborador",font=("Open Sans", 18)).pack(side="left",padx=14,pady=8)
+        ent_id = ctk.CTkEntry(row_id,width=300,height=36,corner_radius=14,fg_color="#f2f2f2",text_color="gray",border_color="#cfcfcf")
+        ent_id.insert(0, collab.collab_id)
+        ent_id.configure(state="disabled")
+        ent_id.pack(side="left", padx=10, pady=8)
+
+        # nombre
+        row_name = ctk.CTkFrame(frame,fg_color="#e0e0e0",corner_radius=20)
+        row_name.pack(pady=10,ipadx=10,ipady=6)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_nombre = ctk.CTkEntry(row_name,width=300,height=36,corner_radius=14,fg_color="white",text_color="black",border_color="#cfcfcf")
+        self.ent_nombre.insert(0, collab.name)
+        self.ent_nombre.pack(side="left", padx=10, pady=8)
+
+        # teléfono
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+
+        self.ent_tel = ctk.CTkEntry( row_tel,width=300,height=36,corner_radius=14,fg_color="white",text_color="black",border_color="#cfcfcf")
+        self.ent_tel.insert(0, collab.phone)
+        self.ent_tel.pack(side="left", padx=10, pady=8)
+
+        # puesto
+        row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_pos.pack(pady=10, ipadx=10, ipady=6)
+        ctk.CTkLabel(row_pos, text="Puesto", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_pos.insert(0, collab.position)
+        self.ent_pos.pack(side="left", padx=10, pady=8)
+
+        # botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+        ctk.CTkButton(btns,text="Guardar cambios",width=200,height=40,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_collaborator_edit(collab)).pack(pady=(0, 12))
+        ctk.CTkButton(btns,text="Volver",width=200,height=40,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+
+    def save_collaborator_edit(self, collab):
+        """Guarda los cambios realizados al colaborador."""
+        new_name = self.ent_nombre.get().strip()
+        new_phone = self.ent_tel.get().strip()
+        new_pos = self.ent_pos.get().strip()
+
+        if not new_name or not new_phone or not new_pos:
+            mbox.showerror("Error", "Debe llenar todos los campos.")
+            return
+
+        try:
+            collab.name = new_name
+            collab.phone = new_phone
+            collab.position = new_pos
+            collab.save()
+            mbox.showinfo("Colaborador actualizado", f"El colaborador '{new_name}' fue actualizado correctamente.")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"No se pudo actualizar el colaborador:\n{e}")
+
+    def view_edit_client(self, client_id):
+        """Formulario para editar un cliente existente"""
+        container = self._open_fullscreen_view()
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
+        frame.pack(expand=True, fill="both")
+
+        title = ctk.CTkLabel(frame, text="Editar cliente", font=("Open Sans", 50, "bold"), text_color="#111111")
+        title.pack(pady=(40, 20))
+
+        # Carga datos del cliente
+        client = Client.load(client_id)
+
+        # ID, solo lectura
+        row_id = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_id.pack(pady=10, ipadx=10, ipady=6)
+        ctk.CTkLabel(row_id, text="ID Cliente", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ent_id = ctk.CTkEntry(row_id, width=300, height=36, corner_radius=14, fg_color="#f2f2f2",text_color="gray", border_color="#cfcfcf")
+        ent_id.insert(0, client.client_id)
+        ent_id.configure(state="disabled")
+        ent_id.pack(side="left", padx=10, pady=8)
+
+        # nombre
+        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name.pack(pady=10, ipadx=10, ipady=6)
+        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.insert(0, client.name)
+        self.ent_nombre.pack(side="left", padx=10, pady=8)
+
+        # teléfono
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel.pack(pady=10, ipadx=10, ipady=6)
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_tel.insert(0, client.phone)
+        self.ent_tel.pack(side="left", padx=10, pady=8)
+
+        # botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_client_edit(client)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+
+    def save_client_edit(self, client):
+        """Guarda los cambios realizados al cliente."""
+        new_name = self.ent_nombre.get().strip()
+        new_phone = self.ent_tel.get().strip()
+
+        if not new_name or not new_phone:
+            mbox.showerror("Error", "Debe llenar todos los campos.")
+            return
+
+        try:
+            client.name = new_name
+            client.phone = new_phone
+            client.save()
+            mbox.showinfo("Cliente actualizado", f"El cliente '{new_name}' fue actualizado correctamente.")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"No se pudo actualizar el cliente:\n{e}")
+
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:
