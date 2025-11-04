@@ -55,7 +55,7 @@ class LoginUI(ctk.CTkFrame):
     def validate_user(self, table, campo_id, id_usuario, nombre):
         try:
             with get_conn() as conn:
-                query = f"""SELECT u.name, u.phone FROM {table} t JOIN users u ON t.user_id = u.user_id WHERE t.{campo_id} = ? AND u.name = ?"""
+                query = f"""SELECT u.user_id, u.name, u.phone FROM {table} t JOIN users u ON t.user_id = u.user_id WHERE t.{campo_id} = ? AND u.name = ?"""
                 result = conn.execute(query, (id_usuario, nombre)).fetchone()
                 return result
         except Exception as e:
