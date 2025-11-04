@@ -44,7 +44,7 @@ class AdminUI(ctk.CTkFrame):
             phone = "Sin teléfono"
 
         msg = f"Bienvenido, {name}"
-        welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#111111",justify="center")
+        welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#004857",justify="center")
         welcome_label.pack(expand=True)
 
     def _open_fullscreen_view(self):
@@ -73,26 +73,26 @@ class AdminUI(ctk.CTkFrame):
         left.pack(side="left", padx=15, pady=10)
 
         # botones principales
-        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("colab", btn_colab))
+        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#cd5618",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("colab", btn_colab))
         btn_colab.pack(side="left", padx=6)
 
-        btn_provider = ctk.CTkButton(left, text="Proveedores", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("provider", btn_provider))
+        btn_provider = ctk.CTkButton(left, text="Proveedores", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#cd5618",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("provider", btn_provider))
         btn_provider.pack(side="left", padx=6)
 
-        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#cd5618",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
         btn_sales.pack(side="left", padx=6)
 
-        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("products", btn_products))
+        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#cd5618",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("products", btn_products))
         btn_products.pack(side="left", padx=6)
 
-        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#cd5618",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
         btn_clients.pack(side="left", padx=6)
 
         # frame derecho
         right = ctk.CTkFrame(self.header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
 
-        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=self.logout)
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36,corner_radius=18, fg_color="#f86a20", hover_color="#da6a2a",text_color="white", font=("Open Sans", 13, "bold"),command=self.logout)
         btn_logout.pack(side="right", padx=6)
 
     def toggle_submenu(self, name, parent_button):
@@ -187,29 +187,29 @@ class AdminUI(ctk.CTkFrame):
         title.pack(pady=(60, 40))
 
         #fila de nombre (posición tipo matriz) donde nombre, aún no funcional
-        row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre = ctk.CTkFrame(frame, fg_color="#f86a20", corner_radius=20)
         row_nombre.pack(pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=160)
         row_nombre.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # telefono
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#f86a20", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # posición
-        row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_pos = ctk.CTkFrame(frame, fg_color="#f86a20", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
         row_pos.grid_columnconfigure(0, minsize=160)
         row_pos.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -1511,7 +1511,7 @@ class AdminUI(ctk.CTkFrame):
                     self.searchbar_frame.destroy()
                 except Exception:
                     pass
-            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12)
+            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12,fg_color="#004857")
             self.searchbar_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
             controls = ctk.CTkFrame(self.searchbar_frame,  fg_color="transparent")
@@ -1525,23 +1525,23 @@ class AdminUI(ctk.CTkFrame):
 
             if kind == "sales":
                 # Organiza los botoncitos específicamente para las ventas
-                filter_btn = ctk.CTkButton(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="#f4f1ec", hover_color="#f86a20", text_color="#004857", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
                 date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 date_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="white",hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="#f4f1ec",hover_color="#f2f2f2", text_color="#004857", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
-                filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="#f4f1ec", hover_color="#f86a20", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="#f4f1ec", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
             print("search_var initial:", repr(search_var.get()))
