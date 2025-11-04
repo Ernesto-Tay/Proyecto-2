@@ -187,29 +187,29 @@ class AdminUI(ctk.CTkFrame):
         title.pack(pady=(60, 40))
 
         #fila de nombre (posición tipo matriz) donde nombre, aún no funcional
-        row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_nombre.pack(pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=160)
         row_nombre.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_nombre, text="Nombre", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # telefono
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_tel, text="Teléfono", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # posición
-        row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_pos = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
         row_pos.grid_columnconfigure(0, minsize=160)
         row_pos.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_pos, text="Posición", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_pos, text="Posición",text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_pos.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -218,11 +218,11 @@ class AdminUI(ctk.CTkFrame):
         btns.pack(pady=25)
 
         # botón "Crear colaborador"
-        btn_crcolla = ctk.CTkButton(btns,text="Crear colaborador",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_collaborator)
+        btn_crcolla = ctk.CTkButton(btns,text="Crear colaborador",width=240,height=45,corner_radius=22,fg_color="#da6a2a",hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_collaborator)
         btn_crcolla.pack(pady=(0, 12))
 
         # botón "Volver"
-        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#da6a2a",hover_color="#cd5618",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
     # lógica para crear colaborador
@@ -255,20 +255,20 @@ class AdminUI(ctk.CTkFrame):
         title = ctk.CTkLabel(frame,text="Crear cliente",font=("Open Sans", 50, "bold"),text_color="#111111")
         title.pack(pady=(60, 40))
 
-        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_name.pack(pady=10, ipadx=10, ipady=6)
         row_name.grid_columnconfigure(0, minsize=160)
         row_name.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        ctk.CTkLabel(row_name, text="Nombre", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # telefono
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        ctk.CTkLabel(row_tel, text="Teléfono", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -277,11 +277,11 @@ class AdminUI(ctk.CTkFrame):
         btns.pack(pady=25)
 
         # Botón "Crear cliente"
-        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_client)
+        btn_crclient = ctk.CTkButton(btns,text="Crear cliente",width=240,height=45,corner_radius=22,fg_color="#da6a2a",hover_color="#cd5618",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_client)
         btn_crclient.pack(pady=(0, 12))
 
         # Botón "Volver"
-        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns,text="Volver",width=240,height=45,corner_radius=22,fg_color="#da6a2a",hover_color="#cd5618",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
     # lógica para crear cliente
@@ -319,60 +319,60 @@ class AdminUI(ctk.CTkFrame):
         row1 = ctk.CTkFrame(container, fg_color="transparent")
         row1.pack(pady=6)
         # nombre
-        row_nombre = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre = ctk.CTkFrame(row1, fg_color="#004959", corner_radius=20)
         row_nombre.pack(side= "left",padx= 20,pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=130)
         row_nombre.grid_columnconfigure(1, minsize=250)
-        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_nombre, text="Nombre", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Tipo
-        row_tipo = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_tipo = ctk.CTkFrame(row1, fg_color="#004959", corner_radius=20)
         row_tipo.pack(side= "right",padx= 20,pady=10, ipadx=10, ipady=6)
         row_tipo.grid_columnconfigure(0, minsize=130)
         row_tipo.grid_columnconfigure(1, minsize=250)
-        ctk.CTkLabel(row_tipo, text="Tipo", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_tipo, text="Tipo", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_tipo = ctk.CTkEntry(row_tipo, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tipo.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         row2 = ctk.CTkFrame(container, fg_color="transparent")
         row2.pack(pady=6)
         # Descripción
-        row_desc = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_desc = ctk.CTkFrame(row2, fg_color="#004959", corner_radius=20)
         row_desc.pack(side= "left",padx= 20,pady=10, ipadx=10, ipady=6)
         row_desc.grid_columnconfigure(0, minsize=130)
         row_desc.grid_columnconfigure(1, minsize=250)
-        ctk.CTkLabel(row_desc, text="Descripción", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_desc, text="Descripción", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_desc = ctk.CTkEntry(row_desc, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_desc.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Stock
-        row_stock = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_stock = ctk.CTkFrame(row2, fg_color="#004959", corner_radius=20)
         row_stock.pack(side= "right",padx= 20,pady=10, ipadx=10, ipady=6)
         row_stock.grid_columnconfigure(0, minsize=130)
         row_stock.grid_columnconfigure(1, minsize=250)
-        ctk.CTkLabel(row_stock, text="Stock", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_stock, text="Stock", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_stock = ctk.CTkEntry(row_stock, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_stock.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         row3 = ctk.CTkFrame(container, fg_color="transparent")
         row3.pack(pady=6)
         # Precio costo
-        row_costo = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_costo = ctk.CTkFrame(row3, fg_color="#004959", corner_radius=20)
         row_costo.pack(side= "left",padx= 20,pady=10, ipadx=10, ipady=6)
         row_costo.grid_columnconfigure(0, minsize=130)
         row_costo.grid_columnconfigure(1, minsize=250)
-        ctk.CTkLabel(row_costo, text="Precio costo", font=("Open Sans", 18)).grid( row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_costo, text="Precio costo", text_color = "white", font=("Open Sans", 18, "bold")).grid( row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_costo = ctk.CTkEntry(row_costo, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_costo.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Precio venta
-        row_venta = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_venta = ctk.CTkFrame(row3, fg_color="#004959", corner_radius=20)
         row_venta.pack(side= "right",padx= 20,pady=10, ipadx=10, ipady=6)
         row_venta.grid_columnconfigure(0, minsize=130)
         row_venta.grid_columnconfigure(1, minsize=250)
-        ctk.CTkLabel(row_venta, text="Precio venta", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_venta, text="Precio venta", text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_venta = ctk.CTkEntry(row_venta, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_venta.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -381,12 +381,12 @@ class AdminUI(ctk.CTkFrame):
         btns.pack(pady=25)
 
         # Botón "Crear producto"
-        btn_crclient = ctk.CTkButton(btns, text="Crear producto", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_product)
+        btn_crclient = ctk.CTkButton(btns, text="Crear producto", width=240, height=45, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_product)
         btn_crclient.pack(pady=(0, 12))
 
         # Botón "Volver"
-        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
-        btn_back.pack()
+        btn_back = ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22, fg_color="#da6a2a",hover_color="#cd5618", text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back.pack(pady=(0,12))
 
     def create_product(self):
         name = self.ent_nombre.get().strip()
@@ -437,20 +437,20 @@ class AdminUI(ctk.CTkFrame):
         title.pack(pady=(40, 20))
 
         # nombre
-        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_name.pack(pady=10, ipadx=10, ipady=6)
         row_name.grid_columnconfigure(0, minsize=160)
         row_name.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_name, text="Nombre",text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # teléfono
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
+        ctk.CTkLabel(row_tel, text="Teléfono",text_color = "white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8, sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36,corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
@@ -471,10 +471,10 @@ class AdminUI(ctk.CTkFrame):
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        btn_create = ctk.CTkButton(btns, text="Crear proveedor", width=200, height=40,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_provider)
+        btn_create = ctk.CTkButton(btns, text="Crear proveedor", width=200, height=40,corner_radius=22, fg_color="#da6a2a",hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self.create_provider)
         btn_create.pack(pady=(0, 12))
 
-        btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40,corner_radius=22, fg_color="#e0e0e0",hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40,corner_radius=22, fg_color="#da6a2a",hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
     def update_product_checklist(self, *_): # reconstruye dinámicamente la lista de productos
@@ -676,10 +676,10 @@ class AdminUI(ctk.CTkFrame):
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        btn_save = ctk.CTkButton(btns, text="Guardar venta", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self.save_sale_to_db)
+        btn_save = ctk.CTkButton(btns, text="Guardar venta", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self.save_sale_to_db)
         btn_save.pack(pady=(0, 12))
 
-        btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
+        btn_back = ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618",text_color="black", font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view)
         btn_back.pack()
 
         # Inicia vista del carrito vacía
@@ -866,8 +866,8 @@ class AdminUI(ctk.CTkFrame):
         # botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
-        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_sale_edit(sale_id)).pack(pady=(0, 12))
-        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_sale_edit(sale_id)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
 
         # muestra el diccionario actual
         self.refresh_cart_view_edit()
@@ -994,32 +994,32 @@ class AdminUI(ctk.CTkFrame):
             return
 
         # Muestra el ID del proveedor que no es editable, solo es lectura
-        row_id = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_id = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_id.pack(pady=10, ipadx=10, ipady=6)
         row_id.grid_columnconfigure(0, minsize=160)
         row_id.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_id, text="ID Proveedor", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        ctk.CTkLabel(row_id, text="ID Proveedor", text_color="white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
         ent_id = ctk.CTkEntry(row_id, width=300, height=36, corner_radius=14, fg_color="#f2f2f2", text_color="gray",border_color="#cfcfcf")
         ent_id.insert(0, provider.provider_id)
         ent_id.configure(state="disabled")
         ent_id.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Nombre editable
-        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_name.pack(pady=10, ipadx=10, ipady=6)
         row_name.grid_columnconfigure(0, minsize=160)
         row_name.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        ctk.CTkLabel(row_name, text="Nombre", text_color="white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
         self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_nombre.insert(0, provider.name)
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # Teléfono editable
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
+        ctk.CTkLabel(row_tel, text="Teléfono", text_color="white", font=("Open Sans", 18, "bold")).grid(row=0, column=0, padx=(14, 8), pady=8,sticky="nsew")
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14, fg_color="white",text_color="black", border_color="#cfcfcf")
         self.ent_tel.insert(0, provider.phone)
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
@@ -1046,8 +1046,8 @@ class AdminUI(ctk.CTkFrame):
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_provider_edit(provider)).pack(pady=(0, 12))
-        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_provider_edit(provider)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
 
     def save_provider_edit(self, provider):
         """Guarda los cambios realizados al proveedor."""
@@ -1087,35 +1087,35 @@ class AdminUI(ctk.CTkFrame):
         collab = Collaborator.load(collab_id)
 
         # ID, solo lo muestra
-        row_id = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_id = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_id.pack(pady=10,ipadx=10,ipady=6)
-        ctk.CTkLabel(row_id,text="ID Colaborador",font=("Open Sans", 18)).pack(side="left",padx=14,pady=8)
+        ctk.CTkLabel(row_id,text="ID Colaborador",text_color="white", font=("Open Sans", 18, "bold")).pack(side="left",padx=14,pady=8)
         ent_id = ctk.CTkEntry(row_id,width=300,height=36,corner_radius=14,fg_color="#f2f2f2",text_color="gray",border_color="#cfcfcf")
         ent_id.insert(0, collab.collab_id)
         ent_id.configure(state="disabled")
         ent_id.pack(side="left", padx=10, pady=8)
 
         # nombre
-        row_name = ctk.CTkFrame(frame,fg_color="#e0e0e0",corner_radius=20)
+        row_name = ctk.CTkFrame(frame,fg_color="#004959",corner_radius=20)
         row_name.pack(pady=10,ipadx=10,ipady=6)
-        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_name, text="Nombre", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_nombre = ctk.CTkEntry(row_name,width=300,height=36,corner_radius=14,fg_color="white",text_color="black",border_color="#cfcfcf")
         self.ent_nombre.insert(0, collab.name)
         self.ent_nombre.pack(side="left", padx=10, pady=8)
 
         # teléfono
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_tel, text="Teléfono", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
 
         self.ent_tel = ctk.CTkEntry( row_tel,width=300,height=36,corner_radius=14,fg_color="white",text_color="black",border_color="#cfcfcf")
         self.ent_tel.insert(0, collab.phone)
         self.ent_tel.pack(side="left", padx=10, pady=8)
 
         # puesto
-        row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_pos = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
-        ctk.CTkLabel(row_pos, text="Puesto", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_pos, text="Puesto", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_pos = ctk.CTkEntry(row_pos, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_pos.insert(0, collab.position)
         self.ent_pos.pack(side="left", padx=10, pady=8)
@@ -1123,8 +1123,8 @@ class AdminUI(ctk.CTkFrame):
         # botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
-        ctk.CTkButton(btns,text="Guardar cambios",width=200,height=40,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_collaborator_edit(collab)).pack(pady=(0, 12))
-        ctk.CTkButton(btns,text="Volver",width=200,height=40,corner_radius=22,fg_color="#e0e0e0",hover_color="#9e9e9e",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+        ctk.CTkButton(btns,text="Guardar cambios",width=200,height=40,corner_radius=22,fg_color="#da6a2a",hover_color="#cd5618",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_collaborator_edit(collab)).pack(pady=(0, 12))
+        ctk.CTkButton(btns,text="Volver",width=200,height=40,corner_radius=22,fg_color="#da6a2a",hover_color="#cd5618",text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
 
     def save_collaborator_edit(self, collab):
         """Guarda los cambios realizados al colaborador."""
@@ -1159,26 +1159,26 @@ class AdminUI(ctk.CTkFrame):
         client = Client.load(client_id)
 
         # ID, solo lectura
-        row_id = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_id = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_id.pack(pady=10, ipadx=10, ipady=6)
-        ctk.CTkLabel(row_id, text="ID Cliente", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_id, text="ID Cliente", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         ent_id = ctk.CTkEntry(row_id, width=300, height=36, corner_radius=14, fg_color="#f2f2f2",text_color="gray", border_color="#cfcfcf")
         ent_id.insert(0, client.client_id)
         ent_id.configure(state="disabled")
         ent_id.pack(side="left", padx=10, pady=8)
 
         # nombre
-        row_name = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_name = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_name.pack(pady=10, ipadx=10, ipady=6)
-        ctk.CTkLabel(row_name, text="Nombre", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_name, text="Nombre", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_nombre.insert(0, client.name)
         self.ent_nombre.pack(side="left", padx=10, pady=8)
 
         # teléfono
-        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#004959", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
-        ctk.CTkLabel(row_tel, text="Teléfono", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_tel, text="Teléfono", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_tel = ctk.CTkEntry(row_tel, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_tel.insert(0, client.phone)
         self.ent_tel.pack(side="left", padx=10, pady=8)
@@ -1186,8 +1186,8 @@ class AdminUI(ctk.CTkFrame):
         # botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
-        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_client_edit(client)).pack(pady=(0, 12))
-        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_client_edit(client)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
 
     def save_client_edit(self, client):
         """Guarda los cambios realizados al cliente."""
@@ -1221,9 +1221,9 @@ class AdminUI(ctk.CTkFrame):
         product = Product.load(product_id)
 
         # ID, solo lectura
-        row_id = ctk.CTkFrame(container, fg_color="#e0e0e0", corner_radius=20)
+        row_id = ctk.CTkFrame(container, fg_color="#004959", corner_radius=20)
         row_id.pack(pady=10, ipadx=10, ipady=6)
-        ctk.CTkLabel(row_id, text="ID Producto", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_id, text="ID Producto", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         ent_id = ctk.CTkEntry(row_id, width=300, height=36, corner_radius=14,fg_color="#f2f2f2", text_color="gray", border_color="#cfcfcf")
         ent_id.insert(0, product.product_id)
         ent_id.configure(state="disabled")
@@ -1233,17 +1233,17 @@ class AdminUI(ctk.CTkFrame):
         row1.pack(pady=6)
 
         # nombre
-        row_nombre = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre = ctk.CTkFrame(row1, fg_color="#004959", corner_radius=20)
         row_nombre.pack(side="left",ipadx=10, ipady=6)
-        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_nombre, text="Nombre", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_nombre.insert(0, product.name)
         self.ent_nombre.pack(side="left", padx=10, pady=8)
 
         # tipo
-        row_tipo = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_tipo = ctk.CTkFrame(row1, fg_color="#004959", corner_radius=20)
         row_tipo.pack(side="right",ipadx=10, ipady=6)
-        ctk.CTkLabel(row_tipo, text="Tipo", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_tipo, text="Tipo", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_tipo = ctk.CTkEntry(row_tipo, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_tipo.insert(0, product.type)
         self.ent_tipo.pack(side="left", padx=10, pady=8)
@@ -1252,17 +1252,17 @@ class AdminUI(ctk.CTkFrame):
         row2.pack(pady=6)
 
         # descripción
-        row_desc = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_desc = ctk.CTkFrame(row2, fg_color="#004959", corner_radius=20)
         row_desc.pack(side="left",ipadx=10, ipady=6)
-        ctk.CTkLabel(row_desc, text="Descripción", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_desc, text="Descripción", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_desc = ctk.CTkEntry(row_desc, width=400, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_desc.insert(0, product.description)
         self.ent_desc.pack(side="left", padx=10, pady=8)
 
         # stock
-        row_stock = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_stock = ctk.CTkFrame(row2, fg_color="#004959", corner_radius=20)
         row_stock.pack(side="right",ipadx=10, ipady=6)
-        ctk.CTkLabel(row_stock, text="Stock", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_stock, text="Stock", text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_stock = ctk.CTkEntry(row_stock, width=150, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_stock.insert(0, product.stock)
         self.ent_stock.pack(side="left", padx=10, pady=8)
@@ -1271,17 +1271,17 @@ class AdminUI(ctk.CTkFrame):
         row3.pack(pady=6)
 
         # precio costo
-        row_costo = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_costo = ctk.CTkFrame(row3, fg_color="#004959", corner_radius=20)
         row_costo.pack(side="left",ipadx=10, ipady=6)
-        ctk.CTkLabel(row_costo, text="Precio costo", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_costo, text="Precio costo",text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_costo = ctk.CTkEntry(row_costo, width=150, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_costo.insert(0, product.raw_p)
         self.ent_costo.pack(side="left", padx=10, pady=8)
 
         # precio venta
-        row_venta = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_venta = ctk.CTkFrame(row3, fg_color="#004959", corner_radius=20)
         row_venta.pack(side="right",ipadx=10, ipady=6)
-        ctk.CTkLabel(row_venta, text="Precio venta", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ctk.CTkLabel(row_venta, text="Precio venta",text_color="white", font=("Open Sans", 18, "bold")).pack(side="left", padx=14, pady=8)
         self.ent_venta = ctk.CTkEntry(row_venta, width=150, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_venta.insert(0, product.sale_p)
         self.ent_venta.pack(side="left", padx=10, pady=8)
@@ -1290,8 +1290,8 @@ class AdminUI(ctk.CTkFrame):
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
 
-        ctk.CTkButton(btns, text="Guardar cambios", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_product_edit(product)).pack(pady=(0, 12))
-        ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+        ctk.CTkButton(btns, text="Guardar cambios", width=240, height=45, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_product_edit(product)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
 
     def save_product_edit(self, product):
         """Guarda los cambios realizados al producto."""
@@ -1569,7 +1569,7 @@ class AdminUI(ctk.CTkFrame):
                 popup.geometry(f"+{ax}+{ay}")
 
                 # Contenedor
-                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="transparent")
+                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="#004959")
                 bframe.pack(padx = 4, pady = 4)
 
                 # Creación de la combobox y colocar su valor inicial
@@ -1653,7 +1653,7 @@ class AdminUI(ctk.CTkFrame):
                 date_pop.geometry(f"+{ax}+{ay}")
 
                 # configuramos el contenedor interno para que quede chulo
-                popup_frame = ctk.CTkFrame(date_pop, corner_radius=12, fg_color = "white")
+                popup_frame = ctk.CTkFrame(date_pop, corner_radius=12, fg_color = "#004959")
                 popup_frame.pack(padx=4, pady=4)
 
                 # le colocamos título

@@ -913,15 +913,13 @@ class CollabUI(ctk.CTkFrame):
                 popup.deiconify()
                 popup.lift()
 
-                print(getattr(filter_btn, "options_popup", None))
-
                 # poner debajo del botoncito
                 ax = filter_button.winfo_rootx()
                 ay = filter_button.winfo_rooty() + filter_button.winfo_height()
                 popup.geometry(f"+{ax}+{ay}")
 
                 # Contenedor
-                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="transparent")
+                bframe = ctk.CTkFrame(popup,corner_radius = 8, fg_color="#004959")
                 bframe.pack(padx = 4, pady = 4)
 
                 # Creación de la combobox y colocar su valor inicial
