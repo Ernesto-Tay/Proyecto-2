@@ -3,9 +3,9 @@ import tkinter.messagebox as mbox
 from main import User, Admin, Collaborator, Provider, Client , Product, Sales, get_conn
 import tkinter as tk
 from tkinter import ttk
-import calendar
 import json
 from datetime import datetime
+from datetime import date
 DB_NAME = "bawiz.db"
 classes = {"users": User, "admins": Admin, "collaborators": Collaborator, "providers": Provider, "clients": Client, "sales": Sales, "products": Product}
 
@@ -17,6 +17,7 @@ class CollabUI(ctk.CTkFrame):
         self.pack(expand=True, fill="both")
         self.db_info = self.db_extract(classes)
         self.searchbar_frame = None
+        self.curr_id = None
 
         # elementos principales
         self.header = None
@@ -36,6 +37,7 @@ class CollabUI(ctk.CTkFrame):
         if self.current_user:
             name = self.current_user.get("name", "Usuario")
             phone = self.current_user.get("phone", "Sin teléfono")
+            self.curr_id = self.current_user.get("id", None)
         else:
             name= "Usuario"
             phone ="Sin teléfono"
@@ -128,15 +130,22 @@ class CollabUI(ctk.CTkFrame):
         btn.pack(padx=8, pady=4)
 
     def action(self, msg):
+        # Cierra el submenú si está abierto
         if self.active_submenu:
             self.active_submenu.destroy()
             self.active_submenu = None
 
         match msg:
             case "Agregar cliente":
+                self.close_searchbar()
                 self.view_create_client()
-            case "Agregar venta":
+            case "Agregar ventas":
+                self.close_searchbar()
                 self.view_create_sale()
+            case "Ver clientes":
+                self.menu_visualizer(self.master, "clients")
+            case "Ver ventas":
+                self.menu_visualizer(self.master, "sales")
 
     # formulario agregar cliente
     def view_create_client(self):
@@ -959,15 +968,82 @@ class CollabUI(ctk.CTkFrame):
                 popup.grab_set()
                 popup.wait_window()
                 return
+
+            def del_event(line, origin_tree, iid=None):
+                # Crear pop-up personalizado para confirmación con input de ID
+                confirm_popup = ctk.CTkToplevel(root)
+                confirm_popup.title("Confirmar Eliminación")
+                confirm_popup.geometry("300x200")
+                confirm_popup.transient(root)
+                confirm_popup.grab_set()  # Bloquea interacciones con otras ventanas
+                confirm_popup.lift()  # Trae al frente
+
+                # Centrar el pop-up
+                root_x = root.winfo_rootx()
+                root_y = root.winfo_rooty()
+                root_w = root.winfo_width()
+                root_h = root.winfo_height()
+                w, h = 300, 200
+                x = root_x + (root_w // 2) - (w // 2)
+                y = root_y + (root_h // 2) - (h // 2)
+                confirm_popup.geometry(f"{w}x{h}+{x}+{y}")
+
+                # Etiqueta con mensaje
+                msg = f"Para eliminar esta instancia (ID: {getattr(line, 'provider_id', getattr(line, 'client_id', getattr(line, 'sale_id', 'N/A')))}), ingresa tu ID de admin:"
+                ctk.CTkLabel(confirm_popup, text=msg, wraplength=280, font=("Open Sans", 14)).pack(pady=20)
+
+                # Campo de entrada para ID
+                ent_id = ctk.CTkEntry(confirm_popup, width=200, height=36, corner_radius=14, fg_color="white",
+                                      text_color="black", border_color="#cfcfcf", placeholder_text="Ingresa tu ID...",
+                                      show="●")
+                ent_id.pack(pady=10)
+
+                # Frame para botones
+                btn_frame = ctk.CTkFrame(confirm_popup, fg_color="transparent")
+                btn_frame.pack(pady=10)
+                print(self.curr_id)
+
+                def confirm_action():
+                    input_id = ent_id.get().strip()
+                    # Verifica contra la ID actual
+                    if input_id == self.curr_id:
+                        try:
+                            line.delete()  # Elimina la instancia
+                            self.db_info = self.db_extract(classes)  # Actualiza la DB
+                            origin_tree.delete(iid)
+                            mbox.showinfo("Éxito", "Instancia eliminada correctamente.")
+                            confirm_popup.destroy()
+                            apply_filters(origin_tree)  # Refresca el Treeview
+                            import sqlite3
+                        except Exception as e:
+                            mbox.showerror("Error", f"No se pudo eliminar: {e}")
+                    else:
+                        mbox.showerror("Error", "ID incorrecta. Acción cancelada.")
+                        confirm_popup.destroy()  # Cierra el pop-up sin eliminar
+
+                # Botón Confirmar
+                ctk.CTkButton(btn_frame, text="Confirmar", width=120, height=36, corner_radius=18, fg_color="#e0e0e0",
+                              hover_color="#9e9e9e", text_color="black", font=("Open Sans", 13, "bold"),
+                              command=confirm_action).pack(side="left", padx=10)
+
+                # Botón Cancelar
+                ctk.CTkButton(btn_frame, text="Cancelar", width=120, height=36, corner_radius=18, fg_color="#e0e0e0",
+                              hover_color="#9e9e9e", text_color="black", font=("Open Sans", 13, "bold"),
+                              command=confirm_popup.destroy).pack(side="right", padx=10)
+
             try:
-                p_col_index = f'#{titles.index('productos')+1}'
+                if kind == "sales" or kind == "providers":
+                    p_col_index = f'#{titles.index('productos') + 1}'
+                elif kind == "clients":
+                    p_col_index = f'#{titles.index('compras') + 1}'
             except:
                 p_col_index = None
+
             # Creación de la tablita visualizadora de opciones
             tree = ttk.Treeview(self.searchbar_frame, show="headings")
 
-            #instanciamos JUSTO después del tree para que se vean bien las cosas
-            filter_btn.configure(command = lambda:header_filter(filter_btn, titles, tree))
+            # instanciamos JUSTO después del tree para que se vean bien las cosas
+            filter_btn.configure(command=lambda: header_filter(filter_btn, titles, tree))
             apply_filters(tree)
             # empaquetamos el tree
             tree.pack(fill="both", expand=True)
@@ -986,53 +1062,119 @@ class CollabUI(ctk.CTkFrame):
             except Exception:
                 pass
 
+            # se traza el click si está en el treeview
             def tree_click(event):
                 x, y = event.x, event.y
                 e_row = tree.identify_row(y)
-                e_col=tree.identify_column(x)
+                e_col = tree.identify_column(x)
                 r_line = item_map.get(e_row, None)
                 if not e_row:
                     return
-                inst = item_map.get(e_row, None)
                 if not r_line:
                     return
 
-                if kind== "sales" or kind == "providers":
+                if kind == "sales" or kind == "providers" or kind == "clients":
                     if e_col == p_col_index:
-                        return  show_list(root, r_line)
-                return  row_menu(tree, event, r_line, e_row)
-            tree.bind("<Button-1>", tree_click)
+                        return show_list(root, r_line)
+                return row_menu(tree, event, r_line, e_row)
 
+            tree.bind("<ButtonRelease-1>", tree_click)
+
+            # Menú adicional en caso sea venta, proveedor o producto
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
-                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
-                menu.add_command(label="eliminar") #command = lambda l=line, iid=row: del_event(l) -> comando para el popup de eliminación
+                menu.add_command(
+                    label="editar")  # command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
+                menu.add_command(label="eliminar", command=lambda l=line, iid=row: del_event(l, tree, iid))
                 menu.post(event.x_root, event.y_root)
 
             def show_list(origin, r_line):
+                # Creamos y configuramos el TopLevel
                 top = tk.Toplevel(origin)
                 top.geometry("300x220")
+                top.transient(origin)
+                top.grab_set()
+                top.configure(bg="white")
+                top.title("Lista asociada")
+                top.update_idletasks()
+
+                # Configuramos las dimensiones del TopLevel y lo colocamos en medio de la pantallita
+                w = 350
+                h = 250
+                root_x = origin.winfo_rootx()
+                root_y = origin.winfo_rooty()
+                root_w = origin.winfo_width()
+                root_h = origin.winfo_height()
+                x = root_x + (root_w // 2) - (w // 2)
+                y = root_y + (root_h // 2) - (h // 2)
+                top.geometry(f"{w}x{h}+{x}+{y}")
+
+                # Creamos un frame y le añadimos tanto una scrollbar como una listbox
                 list_frame = ttk.Frame(top)
-                list_frame.pack(side="top", expand = True, padx = 5, pady = 5)
-                scrollbar = ttk.Scrollbar(list_frame, orient = "vertical")
-                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle = "none", exportselection = False)
+                list_frame.pack(side="top", expand=True, fill="both", padx=5, pady=(10, 5))
+                scrollbar = ttk.Scrollbar(list_frame, orient="vertical")
+                lbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, activestyle="none", exportselection=False,
+                                  bg="white", font=("Open Sans", 12))
                 scrollbar.config(command=lbox.yview)
                 scrollbar.pack(side="right", fill="y")
                 lbox.pack(side="left", fill="x", expand=True)
 
+                # Si son Ventas, entonces se trabaja de la siguiente forma:
                 if kind == "sales":
-                    p_in = getattr(r_line, "products", False)
-                    if p_in is not False:
-                        for key, p in p_in:
-                            entrance = {
-                                "v1" : key,
-                                "v2" : p["subtotal"],
-                            }
-                            lbox.insert("end", " | ".join(entrance.values()))
+                    # Se obtiene el diccionario de productos en la venta
+                    p_dict = getattr(r_line, "products", "{}")
+                    if not p_dict:
+                        lbox.insert("end", "Venta sin productos.")
+                    else:
+                        # Se obtiene info de los productos en el diccionario principal y se mapean como id: nombre
+                        prod_list = self.db_info.get("products", [])
+                        prod_look = {prod.product_id: prod.name for prod in prod_list}
 
+                        for prod_id, sale_info in p_dict.items():
+                            qty = sale_info.get("quantity", "?")
+                            subtotal = sale_info.get("subtotal", 0.0)
+                            # Se obtiene el nombre del producto del diccionario id:valor
+                            prod_name = prod_look.get(prod_id, prod_id)
+
+                            line_text = f"{prod_name} | Cant: {qty} | Subtotal: Q{subtotal:.2f}"
+                            lbox.insert("end", line_text)
+
+                # Si son proveedores, se trabajan de la siguiente manera:
                 if kind == "providers":
-                    p_in = getattr(r_line, "products", False)
-                    if p_in is not False:
+                    # Ordena los productos relacionados con el proveedor
+                    r_line.prod_ordering()
+                    # Obtiene esos mismos productos
+                    p_in = getattr(r_line, "products", [])
+                    prod_list = self.db_info.get("products", [])  # Obtiene la lista de productos de la DB
+                    prod_look = {prod.product_id: prod.name for prod in prod_list}  # Mapeo ID : nombre
+                    if p_in:
                         for val in p_in:
-                            lbox.insert("end", val)
-                ctk.CTkButton(top, text = "Cerrar", command = top.destroy(), width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold"))
+                            prod_name = prod_look.get(val, val)  # Usa nombre si existe, sino el ID
+                            lbox.insert("end", prod_name)
+                    else:
+                        lbox.insert("end", "No hay productos asociados.")
+
+                # Si son clientes, lo trabajan así:
+                if kind == "clients":
+                    # Se ordenan las IDs relacionadas de las ventas
+                    r_line.sale_sorter()
+                    p_in = getattr(r_line, "sales", False)
+                    if p_in and p_in is not False:
+                        # Se obtienen todos los productos de la database si su ID está dentro de la lista de ventas relacionadas
+                        r_prods = [prod for prod in self.db_info["sales"] if prod.sale_id in p_in]
+                        s_list = []
+                        for val in p_in:
+                            for p in r_prods:
+                                if p.sale_id == val:
+                                    # Se generaN tuplas de dos valores (id de la venta y el total de esta)
+                                    sale = [p.sale_id, p.total]
+                                    s_list.append(sale)
+                        for val in s_list:
+                            # Se añaden toditas las ventas a la lista
+                            lbox.insert("end", " | ".join(val))
+                    else:
+                        lbox.insert("end", "No hay compras asociadas")
+                ctk.CTkButton(top, text="Cerrar", command=top.destroy, width=100, height=36, corner_radius=18,
+                              fg_color="white", text_color="black", font=("Open Sans", 13, "bold")).pack(pady=(5, 10))
+                top.lift()
+                top.focus_force()

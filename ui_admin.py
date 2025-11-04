@@ -971,6 +971,7 @@ class AdminUI(ctk.CTkFrame):
                 """, (new_client, json.dumps(new_products, ensure_ascii=False), new_total, sale_id))
                 conn.commit()
 
+
             mbox.showinfo("Venta actualizada", f"Se actualizó la venta {sale_id} correctamente.")
             self._close_fullscreen_view()
         except Exception as e:
@@ -1852,10 +1853,52 @@ class AdminUI(ctk.CTkFrame):
                 return  row_menu(tree, event, r_line, e_row)
             tree.bind("<ButtonRelease-1>", tree_click)
 
+            def edit_event(line):
+                try:
+                    if kind == "products":
+                        prod_id = getattr(line, "product_id", None)
+                        if prod_id:
+                            self.close_searchbar()
+                            self.view_edit_product(prod_id)
+                        else:
+                            mbox.showerror("Error", "No se encontró product_id en este registro.")
+                    elif kind == "providers":
+                        pid = getattr(line, "provider_id", None)
+                        if pid:
+                            self.close_searchbar()
+                            self.view_edit_provider(pid)
+                        else:
+                            mbox.showerror("Error", "No se encontró provider_id en este registro.")
+                    elif kind == "collaborators":
+                        cid = getattr(line, "collab_id", None)
+                        if cid:
+                            self.close_searchbar()
+                            self.view_edit_collab(cid)
+                        else:
+                            mbox.showerror("Error", "No se encontró collab_id en este registro.")
+                    elif kind == "clients":
+                        clid = getattr(line, "client_id", None)
+                        if clid:
+                            self.close_searchbar()
+                            self.view_edit_client(clid)
+                        else:
+                            mbox.showerror("Error", "No se encontró client_id en este registro.")
+                    elif kind == "sales":
+                        sid = getattr(line, "sale_id", None)
+                        if sid:
+                            self.close_searchbar()
+                            self.view_edit_sale(sid)
+                        else:
+                            mbox.showerror("Error", "No se encontró sale_id en este registro.")
+                    else:
+                        mbox.showwarning("Editar", f"No hay formulario de edición implementado para: {kind}")
+                except Exception as e:
+                    mbox.showerror("Error", f"No se pudo abrir el editor: {e}")
+
             #Menú adicional en caso sea venta, proveedor o producto
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
-                menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
+                menu.add_command(label="editar", command = lambda l=line: edit_event(l))
                 menu.add_command(label="eliminar", command = lambda l=line, iid=row: del_event(l, tree, iid))
                 menu.post(event.x_root, event.y_root)
 
