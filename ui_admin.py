@@ -43,7 +43,7 @@ class AdminUI(ctk.CTkFrame):
             name = "Usuario"
             phone = "Sin teléfono"
 
-        msg = f"Bienvenido, {name}\nTeléfono: {phone}"
+        msg = f"Bienvenido, {name}"
         welcome_label = ctk.CTkLabel(self.body,text=msg,font=("Open Sans", 28, "bold"),text_color="#111111",justify="center")
         welcome_label.pack(expand=True)
 
