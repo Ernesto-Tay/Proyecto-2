@@ -158,6 +158,11 @@ class User:
             if r:
                 return User(r["name"], r["phone"], user_id=r["user_id"])
             return None
+    def delete(self):
+        with get_conn() as c:
+            cursor = c.cursor()
+            cursor.execute("DELETE FROM users WHERE user_id = ?", (self.user_id,))
+            c.commit()
 
 # Clase tipo admin
 class Admin(User):
@@ -246,7 +251,7 @@ class Collaborator(User):
     def delete(self):
         with get_conn() as c:
             cursor = c.cursor()
-            cursor.execute("DELETE FROM collaborators WHERE collab_id = ?",(self.collab_id,))
+            cursor.execute("DELETE FROM users WHERE user_id = ?", (self.user_id,))
             c.commit()
 
 #Clase de proveedores
@@ -316,7 +321,7 @@ class Provider(User):
     def delete(self):
         with get_conn() as c:
             cursor = c.cursor()
-            cursor.execute("DELETE FROM providers WHERE provider_id = ?",(self.provider_id,))
+            cursor.execute("DELETE FROM users WHERE user_id = ?",(self.user_id,))
             c.commit()
 
 # Clase de clientes
@@ -365,15 +370,14 @@ class Client(User):
                 user = User.load(r["user_id"])
                 if user:
                     sales = r["sales"].split("|")
-                    return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
+                    return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales, user_id = user.user_id)
             return None
     #Méthodo de eliminación
     def delete(self):
         with get_conn() as c:
             cursor = c.cursor()
-            cursor.execute("DELETE FROM clients WHERE client_id = ?",(self.client_id,))
+            cursor.execute("DELETE FROM users WHERE user_id = ?",(self.user_id,))
             c.commit()
-
     # Clase de productos
 class Product:
     def __init__(self, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[List[str]] = None,prod_id:str = None):
@@ -483,13 +487,13 @@ class Product:
             r = c.execute("SELECT * FROM products WHERE product_id = ?", (product_id,)).fetchone()
             if r:
                 providers = r["providers"].split("|")
-                return Product(name = r["name"], types = r["type"], desc = r["description"], raw_p = r["raw_price"], sale_p = r["sale_price"], stock = r["stock"],providers = providers)
+                return Product(prod_id = r["product_id"], name = r["name"], types = r["type"], desc = r["description"], raw_p = r["raw_price"], sale_p = r["sale_price"], stock = r["stock"],providers = providers)
             return None
     #Eliminación (si amerita)
     def delete(self):
         with get_conn() as c:
             cursor = c.cursor()
-            cursor.execute("DELETE FROM products WHERE product_id = ?",(self.product_id,))
+            cursor.execute("DELETE FROM products WHERE product_id = ?",(self.__product_id,))
             c.commit()
 
 # Clase de ventas
@@ -571,5 +575,5 @@ class Sales:
     def delete(self):
         with get_conn() as c:
             cursor = c.cursor()
-            cursor.execute("DELETE FROM sales WHERE sales_id = ?",(self.sale_id,))
+            cursor.execute("DELETE FROM sales WHERE sale_id = ?",(self.__sale_id,))
             c.commit()
