@@ -1133,6 +1133,7 @@ class AdminUI(ctk.CTkFrame):
         t e x t o
         """
         with get_conn() as c:
+
             #extrae la información de una tabla en la base de datos, buscándola con el nombre "kind" (argumento ingresado)
             cur = c.cursor()
             cur.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ? LIMIT 1;", (kind,))
@@ -1168,12 +1169,10 @@ class AdminUI(ctk.CTkFrame):
                 #filtro por encabezado seleccionado
                 header_selected = getattr(filter_btn, "filter_value", None)
                 header_attr = main_headers.get(header_selected, header_selected) if header_selected else None
-                print("header_selected: ", header_selected)
                 #texto ingresado en el buscador
                 search_text = ""
                 try:
                     search_text = search_var.get().strip()
-                    print("search_text: ", search_text)
                 except Exception:
                     pass
                 if search_text:
@@ -1188,7 +1187,6 @@ class AdminUI(ctk.CTkFrame):
                                     tmp.append(obj)
                                     break
                         result = tmp
-                    print("result: ", result)
                 # filtrar por fecha (si aplica)
                 date_vals = getattr(date_btn, "date_value", None)
                 if date_vals is not None:
@@ -1298,8 +1296,6 @@ class AdminUI(ctk.CTkFrame):
                 popup.deiconify()
                 popup.lift()
 
-                print(getattr(filter_btn, "options_popup", None))
-
                 # poner debajo del botoncito
                 ax = filter_button.winfo_rootx()
                 ay = filter_button.winfo_rooty() + filter_button.winfo_height()
@@ -1316,14 +1312,12 @@ class AdminUI(ctk.CTkFrame):
                 elif options:
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
-                print("cbox_var initial:", repr(getattr(cbox, 'get', lambda: None)()))
 
                 # Aplica el filtro obtenido. Si no funciona,
                 def apply(value = None):
                     val =  value if value else cbox.get()
 
                     filter_button.filter_value = val
-                    print("val is: ",val)
                     try:
                         popup.destroy()
                     except Exception as e:
@@ -1487,7 +1481,7 @@ class AdminUI(ctk.CTkFrame):
                 popup_frame.wait_window()
                 return
 
-            def del_event(line, origin_tree):
+            def del_event(line, origin_tree, iid = None):
                 # Crear pop-up personalizado para confirmación con input de ID
                 confirm_popup = ctk.CTkToplevel(root)
                 confirm_popup.title("Confirmar Eliminación")
@@ -1511,7 +1505,7 @@ class AdminUI(ctk.CTkFrame):
                 ctk.CTkLabel(confirm_popup, text=msg, wraplength=280, font=("Open Sans", 14)).pack(pady=20)
 
                 # Campo de entrada para ID
-                ent_id = ctk.CTkEntry(confirm_popup, width=200, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf", placeholder_text="Ingresa tu ID...")
+                ent_id = ctk.CTkEntry(confirm_popup, width=200, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf", placeholder_text="Ingresa tu ID...", show = "●")
                 ent_id.pack(pady=10)
 
                 # Frame para botones
@@ -1524,9 +1518,12 @@ class AdminUI(ctk.CTkFrame):
                     if input_id == self.curr_id:
                         try:
                             line.delete()  # Elimina la instancia
+                            self.db_info = self.db_extract(classes) #Actualiza la DB
+                            origin_tree.delete(iid)
                             mbox.showinfo("Éxito", "Instancia eliminada correctamente.")
                             confirm_popup.destroy()
                             apply_filters(origin_tree)  # Refresca el Treeview
+                            import sqlite3
                         except Exception as e:
                             mbox.showerror("Error", f"No se pudo eliminar: {e}")
                     else:
@@ -1593,7 +1590,7 @@ class AdminUI(ctk.CTkFrame):
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
                 menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
-                menu.add_command(label="eliminar", command = lambda l=line, iid=row: del_event(l, tree))
+                menu.add_command(label="eliminar", command = lambda l=line, iid=row: del_event(l, tree, iid))
                 menu.post(event.x_root, event.y_root)
 
             def show_list(origin, r_line):
