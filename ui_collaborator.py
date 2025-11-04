@@ -3,7 +3,6 @@ import tkinter.messagebox as mbox
 from tkinter import ttk
 import tkinter as tk
 from main import get_conn, User, Admin, Collaborator, Provider, Client , Product, Sales, id_generate
-import datetime
 from datetime import date
 DB_NAME = "bawiz.db"
 classes = {"users": User, "admins": Admin, "collaborators": Collaborator, "providers": Provider, "clients": Client, "sales": Sales, "products": Product}
@@ -127,6 +126,24 @@ class CollabUI(ctk.CTkFrame):
         btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="#ffffff", hover_color="#e6e6e6",text_color="black", font=("Open Sans", 12),command=command)
         btn.pack(padx=8, pady=4)
 
+    def action(self, msg):
+        # Cierra el submenú si está abierto
+        if self.active_submenu:
+            self.active_submenu.destroy()
+            self.active_submenu = None
+
+        match msg:
+            case "Agregar cliente":
+                self.close_searchbar()
+                self.view_create_client()
+            case "Agregar ventas":
+                self.close_searchbar()
+                self.view_create_sale()
+            case "Ver clientes":
+                self.menu_visualizer(self.master, "clients")
+            case "Ver ventas":
+                self.menu_visualizer(self.master, "sales")
+
     # formulario agregar cliente
     def view_create_client(self):
         frame = self._open_fullscreen_view()  # abre pantalla completa
@@ -180,15 +197,6 @@ class CollabUI(ctk.CTkFrame):
             self._close_fullscreen_view() # cierra la ventana cuando se crea
         except Exception as e:
             mbox.showerror("Error", f"Error inesperado: {e}")
-
-    def action(self, msg):
-        if self.active_submenu:
-            self.active_submenu.destroy()
-            self.active_submenu = None
-
-        match msg:
-            case "Agregar cliente":
-                self.view_create_client()
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
