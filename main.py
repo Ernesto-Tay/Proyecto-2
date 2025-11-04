@@ -245,7 +245,8 @@ class Collaborator(User):
     #Méthodo de eliminación
     def delete(self):
         with get_conn() as c:
-            c.execute("DELETE FROM collaborators WHERE collab_id = ?",(self.collab_id,))
+            cursor = c.cursor()
+            cursor.execute("DELETE FROM collaborators WHERE collab_id = ?",(self.collab_id,))
             c.commit()
 
 #Clase de proveedores
@@ -314,7 +315,8 @@ class Provider(User):
     # Méthodo de eliminación de la db
     def delete(self):
         with get_conn() as c:
-            c.execute("DELETE FROM providers WHERE provider_id = ?",(self.provider_id,))
+            cursor = c.cursor()
+            cursor.execute("DELETE FROM providers WHERE provider_id = ?",(self.provider_id,))
             c.commit()
 
 # Clase de clientes
@@ -368,7 +370,8 @@ class Client(User):
     #Méthodo de eliminación
     def delete(self):
         with get_conn() as c:
-            c.execute("DELETE FROM clients WHERE client_id = ?",(self.client_id,))
+            cursor = c.cursor()
+            cursor.execute("DELETE FROM clients WHERE client_id = ?",(self.client_id,))
             c.commit()
 
     # Clase de productos
@@ -485,7 +488,8 @@ class Product:
     #Eliminación (si amerita)
     def delete(self):
         with get_conn() as c:
-            c.execute("DELETE FROM products WHERE product_id = ?",(self.product_id,))
+            cursor = c.cursor()
+            cursor.execute("DELETE FROM products WHERE product_id = ?",(self.product_id,))
             c.commit()
 
 # Clase de ventas
@@ -566,5 +570,6 @@ class Sales:
     #Eliminación en la DB
     def delete(self):
         with get_conn() as c:
-            c.execute("DELETE FROM sales WHERE sales_id = ?",(self.sale_id,))
+            cursor = c.cursor()
+            cursor.execute("DELETE FROM sales WHERE sales_id = ?",(self.sale_id,))
             c.commit()

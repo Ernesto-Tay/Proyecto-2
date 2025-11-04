@@ -23,7 +23,7 @@ class LoginUI(ctk.CTkFrame):
         title.pack(pady=(100, 25))
 
         # Frame Nombre
-        frame_nombre = ctk.CTkFrame(form_frame, fg_color="#e0e0e0", corner_radius=20)
+        frame_nombre = ctk.CTkFrame(form_frame, fg_color="#ffd65a", corner_radius=20)
         frame_nombre.pack(pady=5, ipadx=10, ipady=4)
 
         frame_nombre.grid_columnconfigure(0, minsize=150)
@@ -36,7 +36,7 @@ class LoginUI(ctk.CTkFrame):
         self.entry_nombre.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
 
         # frame ID
-        frame_id = ctk.CTkFrame(form_frame, fg_color="#e0e0e0", corner_radius=20)
+        frame_id = ctk.CTkFrame(form_frame, fg_color="#ffd65a", corner_radius=20)
         frame_id.pack(pady=5, ipadx=10, ipady=4)
 
         frame_id.grid_columnconfigure(0, minsize=150)
@@ -49,7 +49,7 @@ class LoginUI(ctk.CTkFrame):
         self.entry_id.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="w")
 
         # botón
-        btn_login = ctk.CTkButton(form_frame,text="Iniciar sesión",width=200,height=50,corner_radius=30,fg_color="#e0e0e0",hover_color="#a9a9a9",text_color="black",font=("Open Sans", 18, "bold", "underline"),command=self.login)
+        btn_login = ctk.CTkButton(form_frame,text="Iniciar sesión",width=200,height=50,corner_radius=30,fg_color="#ffd65a",hover_color="#f4f1ec",text_color="black",font=("Open Sans", 18, "bold", "underline"),command=self.login)
         btn_login.pack(pady=35)
 
     def validate_user(self, table, campo_id, id_usuario, nombre):
@@ -75,7 +75,7 @@ class LoginUI(ctk.CTkFrame):
             user_data = self.validate_user("admins", "admin_id", user_id, name)
             if user_data:
                 self.pack_forget()
-                AdminUI(self.master,current_user={"name": user_data["name"], "phone": user_data["phone"]})
+                AdminUI(self.master,current_user={"name": user_data["name"], "phone": user_data["phone"], "id": user_id})
                 return
             else:
                 messagebox.showerror("Error", "Credenciales de administrador incorrectas o no registradas.")
@@ -85,7 +85,7 @@ class LoginUI(ctk.CTkFrame):
 
             if user_data:
                 self.pack_forget()
-                CollabUI(self.master,current_user={"name": user_data["name"], "phone": user_data["phone"]})
+                CollabUI(self.master,current_user={"name": user_data["name"], "phone": user_data["phone"], "id": user_id})
                 return
 
             messagebox.showerror("Error", "Credenciales de colaborador incorrectas o no registradas.")
