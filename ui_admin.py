@@ -15,6 +15,8 @@ class AdminUI(ctk.CTkFrame):
         super().__init__(master, fg_color="white")
         self.master = master
         self.pack(expand=True, fill="both")
+        #Datos del usuario actual (para validaciones futuras)
+        self.curr_id = None
         # elementos principales
         self.header = None
         self.body = None
@@ -35,6 +37,8 @@ class AdminUI(ctk.CTkFrame):
         if self.current_user:
             name = self.current_user.get("name", "Usuario")
             phone = self.current_user.get("phone", "Sin teléfono")
+            self.curr_id = self.current_user.get("id", None)
+
         else:
             name = "Usuario"
             phone = "Sin teléfono"
@@ -61,7 +65,7 @@ class AdminUI(ctk.CTkFrame):
         self.body.pack(expand=True, fill="both")
 
     def create_header(self):
-        self.header = ctk.CTkFrame(self, fg_color="#e0e0e0", height=60, corner_radius=0)
+        self.header = ctk.CTkFrame(self, fg_color="#6ba9ab", height=60, corner_radius=0)
         self.header.pack(side="top", fill="x")
 
         # frame izquierdo
@@ -69,26 +73,26 @@ class AdminUI(ctk.CTkFrame):
         left.pack(side="left", padx=15, pady=10)
 
         # botones principales
-        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("colab", btn_colab))
+        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("colab", btn_colab))
         btn_colab.pack(side="left", padx=6)
 
-        btn_provider = ctk.CTkButton(left, text="Proveedores", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("provider", btn_provider))
+        btn_provider = ctk.CTkButton(left, text="Proveedores", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("provider", btn_provider))
         btn_provider.pack(side="left", padx=6)
 
-        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
         btn_sales.pack(side="left", padx=6)
 
-        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("products", btn_products))
+        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("products", btn_products))
         btn_products.pack(side="left", padx=6)
 
-        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
         btn_clients.pack(side="left", padx=6)
 
         # frame derecho
         right = ctk.CTkFrame(self.header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
 
-        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36,corner_radius=18, fg_color="white", hover_color="#f2f2f2",text_color="black", font=("Open Sans", 13, "bold"),command=self.logout)
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=self.logout)
         btn_logout.pack(side="right", padx=6)
 
     def toggle_submenu(self, name, parent_button):
@@ -150,14 +154,19 @@ class AdminUI(ctk.CTkFrame):
 
         match msg:
             case "Agregar colaborador":
+                self.close_searchbar()
                 self.view_create_collab()
             case "Agregar cliente":
+                self.close_searchbar()
                 self.view_create_client()
             case "Agregar productos":
+                self.close_searchbar()
                 self.view_create_product()
             case "Agregar proveedor":
+                self.close_searchbar()
                 self.view_create_provider()
             case "Agregar ventas":
+                self.close_searchbar()
                 self.view_create_sale()
             case "Ver colaboradores":
                 self.menu_visualizer(self.master, "collaborators")
@@ -1549,6 +1558,59 @@ class AdminUI(ctk.CTkFrame):
                 popup_frame.grab_set()
                 popup_frame.wait_window()
                 return
+
+            def del_event(line, origin_tree):
+                # Crear pop-up personalizado para confirmación con input de ID
+                confirm_popup = ctk.CTkToplevel(root)
+                confirm_popup.title("Confirmar Eliminación")
+                confirm_popup.geometry("300x200")
+                confirm_popup.transient(root)
+                confirm_popup.grab_set()  # Bloquea interacciones con otras ventanas
+                confirm_popup.lift()  # Trae al frente
+
+                # Centrar el pop-up
+                root_x = root.winfo_rootx()
+                root_y = root.winfo_rooty()
+                root_w = root.winfo_width()
+                root_h = root.winfo_height()
+                w, h = 300, 200
+                x = root_x + (root_w // 2) - (w // 2)
+                y = root_y + (root_h // 2) - (h // 2)
+                confirm_popup.geometry(f"{w}x{h}+{x}+{y}")
+
+                # Etiqueta con mensaje
+                msg = f"Para eliminar esta instancia (ID: {getattr(line, 'provider_id', getattr(line, 'client_id', getattr(line, 'sale_id', 'N/A')))}), ingresa tu ID de admin:"
+                ctk.CTkLabel(confirm_popup, text=msg, wraplength=280, font=("Open Sans", 14)).pack(pady=20)
+
+                # Campo de entrada para ID
+                ent_id = ctk.CTkEntry(confirm_popup, width=200, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf", placeholder_text="Ingresa tu ID...")
+                ent_id.pack(pady=10)
+
+                # Frame para botones
+                btn_frame = ctk.CTkFrame(confirm_popup, fg_color="transparent")
+                btn_frame.pack(pady=10)
+                print(self.curr_id)
+                def confirm_action():
+                    input_id = ent_id.get().strip()
+                   # Verifica contra la ID actual
+                    if input_id == self.curr_id:
+                        try:
+                            line.delete()  # Elimina la instancia
+                            mbox.showinfo("Éxito", "Instancia eliminada correctamente.")
+                            confirm_popup.destroy()
+                            apply_filters(origin_tree)  # Refresca el Treeview
+                        except Exception as e:
+                            mbox.showerror("Error", f"No se pudo eliminar: {e}")
+                    else:
+                        mbox.showerror("Error", "ID incorrecta. Acción cancelada.")
+                        confirm_popup.destroy()  # Cierra el pop-up sin eliminar
+
+                # Botón Confirmar
+                ctk.CTkButton(btn_frame, text="Confirmar", width=120, height=36, corner_radius=18, fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black", font=("Open Sans", 13, "bold"), command=confirm_action).pack(side="left", padx=10)
+
+                # Botón Cancelar
+                ctk.CTkButton(btn_frame, text="Cancelar", width=120, height=36, corner_radius=18, fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black", font=("Open Sans", 13, "bold"), command=confirm_popup.destroy).pack(side="right", padx=10)
+
             try:
                 if kind == "sales" or kind == "providers":
                     p_col_index = f'#{titles.index('productos')+1}'
@@ -1586,7 +1648,7 @@ class AdminUI(ctk.CTkFrame):
             def tree_click(event):
                 x, y = event.x, event.y
                 e_row = tree.identify_row(y)
-                e_col=tree.identify_column(x)
+                e_col = tree.identify_column(x)
                 r_line = item_map.get(e_row, None)
                 if not e_row:
                     return
@@ -1603,7 +1665,7 @@ class AdminUI(ctk.CTkFrame):
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
                 menu.add_command(label="editar") #command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
-                menu.add_command(label="eliminar") #command = lambda l=line, iid=row: del_event(l) -> comando para el popup de eliminación
+                menu.add_command(label="eliminar", command = lambda l=line, iid=row: del_event(l, tree))
                 menu.post(event.x_root, event.y_root)
 
             def show_list(origin, r_line):
