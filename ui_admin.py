@@ -65,7 +65,7 @@ class AdminUI(ctk.CTkFrame):
         self.body.pack(expand=True, fill="both")
 
     def create_header(self):
-        self.header = ctk.CTkFrame(self, fg_color="#6ba9ab", height=60, corner_radius=0)
+        self.header = ctk.CTkFrame(self, fg_color="#004857", height=60, corner_radius=0)
         self.header.pack(side="top", fill="x")
 
         # frame izquierdo
@@ -73,19 +73,19 @@ class AdminUI(ctk.CTkFrame):
         left.pack(side="left", padx=15, pady=10)
 
         # botones principales
-        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("colab", btn_colab))
+        btn_colab = ctk.CTkButton(left, text="Colaboradores", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("colab", btn_colab))
         btn_colab.pack(side="left", padx=6)
 
-        btn_provider = ctk.CTkButton(left, text="Proveedores", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("provider", btn_provider))
+        btn_provider = ctk.CTkButton(left, text="Proveedores", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("provider", btn_provider))
         btn_provider.pack(side="left", padx=6)
 
-        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
         btn_sales.pack(side="left", padx=6)
 
-        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("products", btn_products))
+        btn_products = ctk.CTkButton(left, text="Productos", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("products", btn_products))
         btn_products.pack(side="left", padx=6)
 
-        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#ffd65a", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
         btn_clients.pack(side="left", padx=6)
 
         # frame derecho
@@ -110,7 +110,7 @@ class AdminUI(ctk.CTkFrame):
 
         submenu = ctk.CTkToplevel(self) # Se crea el submenú como ventana flotante (independiente)
         submenu.overrideredirect(True)
-        submenu.configure(fg_color="#f8f8f8")
+        submenu.configure(fg_color="#004857")
         submenu.attributes("-topmost", True)  # se mantiene al frente
 
         ax = parent_button.winfo_rootx()
@@ -143,7 +143,7 @@ class AdminUI(ctk.CTkFrame):
         submenu.focus_force()
 
     def add_submenu_button(self, parent, text, command):
-        btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="#ffffff", hover_color="#e6e6e6",text_color="black", font=("Open Sans", 12),command=command)
+        btn = ctk.CTkButton(parent, text=text, width=180, height=30,fg_color="#ffffff", hover_color="#f86a20",text_color="black", font=("Open Sans", 12),command=command)
         btn.pack(padx=8, pady=4)
 
     def action(self, msg):
