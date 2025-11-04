@@ -7,7 +7,7 @@ from typing import Optional, Dict, Any, List
 
 DB_NAME = "bawiz.db"
 
-
+# Se crea un generador de ID aleatorio (tipo de valor + número aleatorio del 0 al 999 999)
 def id_generate(id_type):
     val1 = str(random.randint(1, 999))
     val2 = str(random.randint(1, 999))
@@ -28,16 +28,16 @@ def id_generate(id_type):
         new_id = "VNT" + val1 + val2
     return new_id
 
-
+# Se inicia la conexión
 def get_conn():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
-
+# Se crea la base de datos
 class DataBase:
-
+    #*Todos los hijos de "User" tienen "ON DELETE CASCADE" para eliminar su instancia de user si se elimina la instancia principal
     @staticmethod
     def create_tables():
         with get_conn() as conn:
@@ -102,13 +102,14 @@ class DataBase:
             );
             
             """)
-
+# Clase padre (de usuarios) User
 class User:
     def __init__(self, name: str, phone: int, user_id=None):
         self.__user_id = user_id or id_generate("usr")
         self._name = name
         self._phone = phone
 
+    #Getters y setters de cada sistema
     @property
     def user_id(self):
         return self.__user_id
@@ -136,9 +137,7 @@ class User:
             raise ValueError("El número telefónico es inválido")
         self._phone = phone
 
-    def mostrar_datos(self):
-        pass
-
+    # Méthod de guardado
     def save(self):
         with get_conn() as c:
             existing = c.execute("SELECT user_id FROM users WHERE user_id = ?", (self.user_id,)).fetchone()
@@ -149,6 +148,7 @@ class User:
                           (self.user_id, self.name, self.phone))
             c.commit()
 
+    # Méthod de carga (estático para que pueda llamarse desde el principio)
     @staticmethod
     def load(user_id: str) -> Optional["User"]:
         with get_conn() as c:
@@ -158,7 +158,7 @@ class User:
                 return User(r["name"], r["phone"], user_id=r["user_id"])
             return None
 
-
+# Clase tipo admin
 class Admin(User):
     def __init__(self, name: str, phone: int, position: str, user_id=None, admin_id: str = None):
         self.__admin_id = admin_id or id_generate("adm")
@@ -166,35 +166,21 @@ class Admin(User):
         self.type = "admin"
         User.__init__(self, name, phone, user_id)
 
+    #Getter y setter de los sistemas privados
     @property
     def admin_id(self):
         return self.__admin_id
-
     @admin_id.setter
     def admin_id(self, new_id):
         pass
-
     @property
     def position(self):
         return self.__position
-
     @position.setter
     def position(self, new_position):
         pass
 
-    def products(self, root):
-        pass
-    def sales(self, root):
-        pass
-    def clients(self, root):
-        pass
-    def collaborators(self, root):
-        pass
-    def providers(self, root):
-        pass
-    def show_sales(self, root):
-        pass
-
+    #Méthodo para guardar en la db
     def save(self):
         with get_conn() as c:
             super().save()
@@ -207,10 +193,11 @@ class Admin(User):
                           (self.admin_id,self.user_id, self.position, self.type))
             c.commit()
 
+        #Méthodo estático de carga
     @staticmethod
     def load(admin_id: str) -> Optional["Admin"]:
         with get_conn() as c:
-            #debe crear una instancia de User antes de  crear una de Admin
+            #debe crear una instancia de User antes de crear una de Admin
             r = c.execute("SELECT * FROM admins WHERE admin_id = ?", (admin_id,)).fetchone()
             if r:
                 user = User.load(r["user_id"])
@@ -218,29 +205,23 @@ class Admin(User):
                     return Admin(name=user.name, phone=user.phone, position=r["position"], user_id=user.user_id)
             return None
 
-
+# Clase de Colaboradores (subordinados de Admin)
 class Collaborator(User):
     def __init__(self, name: str, phone: int, position: str, user_id: str = None, collab_id: str = None):
         self.__collab_id = collab_id or id_generate("col")
         self.position = position
         self.type = "collaborator"
         User.__init__(self, name, phone, user_id)
+
+    #Getter y setter de la ID
     @property
     def collab_id(self):
         return self.__collab_id
     @collab_id.setter
     def collab_id(self,new_id):
         pass
-    def mostrar_datos(self):
-        pass
 
-    def sales(self, root):
-        pass
-    def clients(self, root):
-        pass
-    def show_sales(self, root):
-        pass
-
+    #methodo de guardado
     def save(self):
         with get_conn() as c:
             super().save()
@@ -250,6 +231,7 @@ class Collaborator(User):
             else:
                 c.execute("INSERT INTO collaborators (collab_id, user_id, position, type) VALUES (?,?,?,?)",(self.collab_id, self.user_id, self.position, self.type))
             c.commit()
+    #Méthodo de carga (llamable al momento de crear una instancia que está en la db)
     @staticmethod
     def load(collab_id:str) ->Optional["Collaborator"]:
         with get_conn() as c:
@@ -259,11 +241,13 @@ class Collaborator(User):
                 if user:
                     return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
             return None
+    #Méthodo de eliminación
     def delete(self):
         with get_conn() as c:
             c.execute("DELETE FROM sales WHERE sales_id = ?",(self.collab_id,))
             c.commit()
 
+#Clase de proveedores
 class Provider(User):
     def __init__(self, name:str, phone:int,products : List[str] = None,user_id:str = None, provider_id:str = None):
         self.__provider_id = provider_id or id_generate("prd")
@@ -276,9 +260,6 @@ class Provider(User):
     @provider_id.setter
     def provider_id(self,new_id):
         pass
-    def mostrar_datos(self):
-        pass
-
     def add_product(self, product):
         if product not in self.products:
             self.products.append(product)
@@ -291,6 +272,16 @@ class Provider(User):
         else:
             raise ValueError("El producto no fué encontrado")
 
+    #Méhod de ordenamiento de los productos (selection sort)
+    def prod_ordering(self):
+        for i in range(len(self.products)):
+            min_index = i
+            for j in range(i + 1, len(self.products)):
+                if self.products[j] < self.products[min_index]:
+                    min_index = j
+            self.products[i], self.products[min_index] = self.products[min_index], self.products[i]
+
+    # Méthodo de guardado en la db
     def save(self):
         super().save()
 
@@ -309,6 +300,7 @@ class Provider(User):
 
             c.commit()
 
+    # Méthodo de carga
     @staticmethod
     def load(provider_id:str) ->Optional["Provider"]:
         with get_conn() as c:
@@ -319,11 +311,13 @@ class Provider(User):
                     products = r["products"].split("|")
                     return Provider(name = user.name, phone = user.phone, user_id = user.user_id, provider_id = provider_id, products = products)
             return None
+    # Méthodo de eliminación de la db
     def delete(self):
         with get_conn() as c:
             c.execute("DELETE FROM sales WHERE sales_id = ?",(self.provider_id,))
             c.commit()
 
+# Clase de clientes
 class Client(User):
     def __init__(self, name:str, phone:int,user_id:str = None, client_id:str = None, sales: List[str] = None):
         self.__client_id = client_id or id_generate("clt")
@@ -336,18 +330,14 @@ class Client(User):
     @client_id.setter
     def client_id(self,new_id):
         pass
-    def mostrar_datos(self):
-        pass
-    def add_sale(self, sale):
-        if sale not in self.sales:
-            self.sales.append(sale)
-        else:
-            raise ValueError("La venta ya está en la lista")
-    def del_sale(self, sale):
-        if sale in self.sales:
-            self.sales.remove(sale)
-        else:
-            raise ValueError("La venta no está en la lista")
+    # Ordenar la lista por medio de bubble sort
+    def sale_sorter(self):
+        for i in range(len(self.sales) - 1):
+            for j in range(len(self.sales) - 1 - i):
+                if self.sales[j] > self.sales[j + 1]:
+                    self.sales[j], self.sales[j + 1] = self.sales[j + 1], self.sales[j]
+
+    #Méthodo de guardado
     def save(self):
         super().save() # guarda el usuario en la tabla users primero
         new_sales = "|".join(self.sales)
@@ -359,6 +349,7 @@ class Client(User):
                 c.execute("INSERT INTO clients (client_id, user_id, sales, type) VALUES (?,?,?,?)",(self.client_id,self.user_id, new_sales, self.type))
             c.commit()
 
+    #Méthodo de carga
     @staticmethod
     def load(client_id:str) -> Optional["Client"]:
         with get_conn() as c:
@@ -369,12 +360,13 @@ class Client(User):
                     sales = r["sales"].split("|")
                     return Client(name = user.name, phone = user.phone, client_id = r["client_id"], sales = sales)
             return None
+    #Méthodo de eliminación
     def delete(self):
         with get_conn() as c:
             c.execute("DELETE FROM sales WHERE sales_id = ?",(self.client_id,))
             c.commit()
 
-
+    # Clase de productos
 class Product:
     def __init__(self, name:str, types:str,  desc:str, raw_p:float, sale_p:float,stock:int,providers: Optional[List[str]] = None,prod_id:str = None):
         self.__product_id = prod_id or id_generate("prd")
@@ -386,6 +378,7 @@ class Product:
         self._sale_p = sale_p
         self.stock = stock
 
+    #getters y setters de los productos
     @property
     def product_id(self):
         return self.__product_id
@@ -407,6 +400,7 @@ class Product:
             raise ValueError("El tipo debe ser solo letras")
         self._type = new_type
 
+    #Sistemas para actualizar los precios
     @property
     def raw_p(self):
         return self._raw_p
@@ -427,18 +421,43 @@ class Product:
         if new_p < 0 or new_p < self._raw_p:
             raise ValueError("El valor debe ser mayor a 0 y al precio de compra")
         self._sale_p = new_p
+    #Méthodo para añadir proveedores (si no están en la lista)
     def add_provider(self,provider):
         if provider not in self.providers:
             self.providers.append(provider)
         else:
             raise ValueError("El proveedor ya está en la lista")
-
+    #Méthodo para eliminar proveedores (de estar en la lista)
     def del_provider(self,provider):
         if provider in self.providers:
             self.providers.remove(provider)
         else:
             raise ValueError("Este producto no tiene a ese proveedor")
 
+
+    # Ordenamiento por bubble sort
+    def sale_sorter(self):
+        for i in range(len(self.providers) - 1):
+            for j in range(len(self.providers) - 1 - i):
+                if self.providers[j] > self.providers[j + 1]:
+                    self.providers[j], self.providers[j + 1] = self.providers[j + 1], self.providers[j]
+
+    #Búsqueda binaria para buscar proveedores
+    def binary_search(self, prov):
+        inicio = 0
+        fin = len(self.providers) - 1
+        while inicio <= fin:
+            medio = (inicio + fin) // 2
+            if self.providers[medio] == prov:
+                return medio
+            elif self.providers[medio] < prov:
+                inicio = medio + 1
+            else:
+                fin = medio - 1
+        return None
+
+
+    #Guardado en la db
     def save(self):
         providers = "|".join(str(p) for p in self.providers if p)
         with get_conn() as c:
@@ -449,6 +468,7 @@ class Product:
                 c.execute("""INSERT INTO products (product_id, name, type, providers, description, raw_price, sale_price, stock)VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (self.product_id,self.name,self.type,providers,self.description,self.raw_p,self.sale_p,self.stock))
             c.commit()
 
+    #Carga de la DB
     @staticmethod
     def load(product_id:str) -> Optional["Product"]:
         with get_conn() as c:
@@ -457,13 +477,13 @@ class Product:
                 providers = r["providers"].split("|")
                 return Product(name = r["name"], types = r["type"], desc = r["description"], raw_p = r["raw_price"], sale_p = r["sale_price"], stock = r["stock"],providers = providers)
             return None
-
+    #Eliminación (si amerita)
     def delete(self):
         with get_conn() as c:
             c.execute("DELETE FROM sales WHERE sales_id = ?",(self.product_id,))
             c.commit()
 
-
+# Clase de ventas
 class Sales:
     def __init__(self,client_id:str, products: Optional[Dict[str, Dict[str, Any]]] = None, sale_id = None, total:int = None, date_:str = None, time_:str = None):
         self.__sale_id = sale_id or id_generate("sal")
@@ -472,6 +492,8 @@ class Sales:
         self._client_id = client_id
         self.products : Dict[str, Dict[str, Any]] = products or {}
         self.total = total
+
+    #Getters y setters de los atributos privados
     @property
     def sale_id(self):
         return self.__sale_id
@@ -491,6 +513,25 @@ class Sales:
     def time(self,new_time):
         pass
 
+    # Convertir el diccionario a lista y pasarlo por quick_sort (funciona con valores dinámicos)
+    def convert(self, order_val):
+        if order_val not in ['cuantity','subtotal']:
+            return
+        p_list = list(self.products.items())
+        new_list = self.sort(p_list, order_val)
+        new_dict = dict(new_list)
+        self.products = new_dict
+
+    def sort(self,order_list, order_val):
+        if len(order_list) <= 1:
+            return order_list
+        pivot = order_list[len(order_list)//2]
+        bigger = [val for val in order_list if val[order_val] > pivot[order_val]]
+        middle = [val for val in order_list if val[order_val] == pivot[order_val]]
+        smaller = [val for val in order_list if val[order_val] < pivot[order_val]]
+        return self.sort(smaller, order_val) + middle + self.sort(bigger, order_val)
+
+    #Guardado en la DB
     def save(self):
         with get_conn() as c:
             prod_json = json.dumps(self.products, ensure_ascii=False)
@@ -500,6 +541,8 @@ class Sales:
             else:
                 c.execute("INSERT INTO sales (sale_id, date, time, client_id, products, total) VALUES(?, ?, ?, ?, ?, ?)",(self.sale_id,self.date, self.time, self._client_id, prod_json, self.total))
             c.commit()
+
+    #Carga en la DB
     @staticmethod
     def load(sale_id:str) -> Optional["Sales"]:
         with get_conn() as c:
@@ -515,6 +558,7 @@ class Sales:
             else:
                 return None
 
+    #Eliminación en la DB
     def delete(self):
         with get_conn() as c:
             c.execute("DELETE FROM sales WHERE sales_id = ?",(self.sale_id,))
