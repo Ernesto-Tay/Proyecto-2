@@ -404,17 +404,21 @@ class AdminUI(ctk.CTkFrame):
             stock = int(stock)
             raw_price = float(raw_price)
             sale_price = float(sale_price)
-
         except ValueError:
-            mbox.showerror("Error numerico","Deben de ingresar numeros")
+            mbox.showerror("Error numérico", "Debe ingresar valores válidos para precios y stock.")
             return
 
-        if stock <=0 or raw_price <= 0 or sale_price <= 0:
-            mbox.showerror("Error numérico", "Los valores numéricos deben ser positivos")
+        if stock <= 0:
+            mbox.showerror("Error de stock", "El stock no puede ser negativo.")
+            return
+
+        if raw_price <= 0 or sale_price <= 0:
+            mbox.showerror("Error de precios", "Los precios deben ser mayores que cero.")
             return
 
         if sale_price <= raw_price:
-            mbox.showerror("Error de precios", "El precio de venta debe superar el precio costo")
+            mbox.showerror("Error de precios", "El precio de venta debe ser mayor que el precio costo.")
+            return
 
         try:
             product = Product(name=name,types=type_,desc=desc,raw_p=raw_price,sale_p=sale_price,stock=stock)
@@ -1200,7 +1204,136 @@ class AdminUI(ctk.CTkFrame):
             mbox.showinfo("Cliente actualizado", f"El cliente '{new_name}' fue actualizado correctamente.")
             self._close_fullscreen_view()
         except Exception as e:
-            mbox.showerror("Error", f"No se pudo actualizar el cliente:\n{e}")
+            mbox.showerror("Error", f"Error inesperado: \n{e}")
+
+    def view_edit_product(self, product_id):
+        """Formulario para editar un producto existente (mismo estilo que 'Crear producto')."""
+        frame = self._open_fullscreen_view()
+
+        title = ctk.CTkLabel(frame, text="Editar producto", font=("Open Sans", 50, "bold"), text_color="#111111")
+        title.pack(pady=(60, 40))
+
+        container = ctk.CTkFrame(frame, fg_color="transparent")
+        container.pack(pady=10)
+
+        # Carga datos del producto
+        product = Product.load(product_id)
+
+        # ID, solo lectura
+        row_id = ctk.CTkFrame(container, fg_color="#e0e0e0", corner_radius=20)
+        row_id.pack(pady=10, ipadx=10, ipady=6)
+        ctk.CTkLabel(row_id, text="ID Producto", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        ent_id = ctk.CTkEntry(row_id, width=300, height=36, corner_radius=14,fg_color="#f2f2f2", text_color="gray", border_color="#cfcfcf")
+        ent_id.insert(0, product.product_id)
+        ent_id.configure(state="disabled")
+        ent_id.pack(side="left", padx=10, pady=8)
+        # fila 1
+        row1 = ctk.CTkFrame(container, fg_color="transparent")
+        row1.pack(pady=6)
+
+        # nombre
+        row_nombre = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_nombre.pack(side="left",ipadx=10, ipady=6)
+        ctk.CTkLabel(row_nombre, text="Nombre", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_nombre = ctk.CTkEntry(row_nombre, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_nombre.insert(0, product.name)
+        self.ent_nombre.pack(side="left", padx=10, pady=8)
+
+        # tipo
+        row_tipo = ctk.CTkFrame(row1, fg_color="#e0e0e0", corner_radius=20)
+        row_tipo.pack(side="right",ipadx=10, ipady=6)
+        ctk.CTkLabel(row_tipo, text="Tipo", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_tipo = ctk.CTkEntry(row_tipo, width=300, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_tipo.insert(0, product.type)
+        self.ent_tipo.pack(side="left", padx=10, pady=8)
+        # fila 2
+        row2 = ctk.CTkFrame(container, fg_color="transparent")
+        row2.pack(pady=6)
+
+        # descripción
+        row_desc = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_desc.pack(side="left",ipadx=10, ipady=6)
+        ctk.CTkLabel(row_desc, text="Descripción", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_desc = ctk.CTkEntry(row_desc, width=400, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_desc.insert(0, product.description)
+        self.ent_desc.pack(side="left", padx=10, pady=8)
+
+        # stock
+        row_stock = ctk.CTkFrame(row2, fg_color="#e0e0e0", corner_radius=20)
+        row_stock.pack(side="right",ipadx=10, ipady=6)
+        ctk.CTkLabel(row_stock, text="Stock", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_stock = ctk.CTkEntry(row_stock, width=150, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_stock.insert(0, product.stock)
+        self.ent_stock.pack(side="left", padx=10, pady=8)
+        # fila 3
+        row3 = ctk.CTkFrame(container, fg_color="transparent")
+        row3.pack(pady=6)
+
+        # precio costo
+        row_costo = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_costo.pack(side="left",ipadx=10, ipady=6)
+        ctk.CTkLabel(row_costo, text="Precio costo", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_costo = ctk.CTkEntry(row_costo, width=150, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_costo.insert(0, product.raw_p)
+        self.ent_costo.pack(side="left", padx=10, pady=8)
+
+        # precio venta
+        row_venta = ctk.CTkFrame(row3, fg_color="#e0e0e0", corner_radius=20)
+        row_venta.pack(side="right",ipadx=10, ipady=6)
+        ctk.CTkLabel(row_venta, text="Precio venta", font=("Open Sans", 18)).pack(side="left", padx=14, pady=8)
+        self.ent_venta = ctk.CTkEntry(row_venta, width=150, height=36, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_venta.insert(0, product.sale_p)
+        self.ent_venta.pack(side="left", padx=10, pady=8)
+
+        # botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+
+        ctk.CTkButton(btns, text="Guardar cambios", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_product_edit(product)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=240, height=45, corner_radius=22,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+
+    def save_product_edit(self, product):
+        """Guarda los cambios realizados al producto."""
+        new_name = self.ent_nombre.get().strip()
+        new_type = self.ent_tipo.get().strip()
+        new_desc = self.ent_desc.get().strip()
+
+        try:
+            new_stock = int(self.ent_stock.get())
+            new_raw = float(self.ent_costo.get())
+            new_sale = float(self.ent_venta.get())
+        except ValueError:
+            mbox.showerror("Error numérico", "Debe ingresar valores válidos para precios y stock.")
+            return
+
+        if not new_name or not new_type or not new_desc:
+            mbox.showerror("Campos vacíos", "Debe llenar todos los campos de texto.")
+            return
+
+        if new_stock < 0:
+            mbox.showerror("Error de stock", "El stock no puede ser negativo.")
+            return
+
+        if new_raw <= 0 or new_sale <= 0:
+            mbox.showerror("Error de precios", "Los precios deben ser mayores que cero.")
+            return
+
+        if new_sale <= new_raw:
+            mbox.showerror("Error de precios", "El precio de venta debe ser mayor que el costo.")
+            return
+
+        try:
+            product.name = new_name
+            product.type = new_type
+            product.description = new_desc
+            product.stock = new_stock
+            product.raw_p = str(new_raw)
+            product.sale_p = str(new_sale)
+            product.save()
+            mbox.showinfo("Producto actualizado", f"El producto '{new_name}' fue actualizado correctamente.")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"Error inesperado:\n{e}")
 
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")

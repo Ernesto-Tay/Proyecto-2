@@ -416,23 +416,34 @@ class Product:
     @property
     def raw_p(self):
         return self._raw_p
+
     @raw_p.setter
-    def raw_p(self,new_p):
-        if not new_p.isdigit():
+    def raw_p(self, new_p):
+        try:
+            value = float(new_p)
+        except (TypeError, ValueError):
             raise ValueError("Debe ingresar un número")
-        if new_p < 0 or new_p > self._sale_p:
-            raise ValueError("El valor debe ser mayor a 0 y menor al precio de venta")
-        self._raw_p = new_p
+        if value <= 0:
+            raise ValueError("El precio de costo debe ser mayor que 0")
+        if hasattr(self, "_sale_p") and value > self._sale_p:
+            raise ValueError("El costo no puede ser mayor que el precio de venta")
+        self._raw_p = value
+
     @property
     def sale_p(self):
         return self._sale_p
+
     @sale_p.setter
-    def sale_p(self,new_p):
-        if not new_p.isdigit():
+    def sale_p(self, new_p):
+        try:
+            value = float(new_p)
+        except (TypeError, ValueError):
             raise ValueError("Debe ingresar un número")
-        if new_p < 0 or new_p < self._raw_p:
-            raise ValueError("El valor debe ser mayor a 0 y al precio de compra")
-        self._sale_p = new_p
+        if value <= 0:
+            raise ValueError("El precio de venta debe ser mayor que 0")
+        if hasattr(self, "_raw_p") and value < self._raw_p:
+            raise ValueError("El precio de venta debe ser mayor que el costo")
+        self._sale_p = value
     #Méthodo para añadir proveedores (si no están en la lista)
     def add_provider(self,provider):
         if provider not in self.providers:
