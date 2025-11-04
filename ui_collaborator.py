@@ -71,17 +71,17 @@ class CollabUI(ctk.CTkFrame):
         left = ctk.CTkFrame(self.header, fg_color="transparent")
         left.pack(side="left", padx=15, pady=10)
         # botones principales
-        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
+        btn_sales = ctk.CTkButton(left, text="Ventas", width=130, height=36, corner_radius=18, fg_color="#f4f1ec",hover_color="#cd5618", text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("sales", btn_sales))
         btn_sales.pack(side="left", padx=6)
 
-        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36,corner_radius=18, fg_color="#f4f1ec", hover_color="#da6a2a",text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
+        btn_clients = ctk.CTkButton(left, text="Clientes", width=130, height=36, corner_radius=18, fg_color="#f4f1ec",hover_color="#cd5618", text_color="black", font=("Open Sans", 13, "bold"),command=lambda: self.toggle_submenu("clients", btn_clients))
         btn_clients.pack(side="left", padx=6)
 
         # frame derecho
         right = ctk.CTkFrame(self.header, fg_color="transparent")
         right.pack(side="right", padx=15, pady=10)
 
-        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18,fg_color="#ffd65a", hover_color="#da6a2a", text_color="black",font=("Open Sans", 13, "bold"), command=self.logout)
+        btn_logout = ctk.CTkButton(right, text="Cerrar Sesión", width=130, height=36, corner_radius=18,fg_color="#f86a20", hover_color="#da6a2a", text_color="white",font=("Open Sans", 13, "bold"), command=self.logout)
         btn_logout.pack(side="right", padx=6)
 
     def toggle_submenu(self, name, parent_button):  # configuración submenús
@@ -139,7 +139,7 @@ class CollabUI(ctk.CTkFrame):
             case "Agregar cliente":
                 self.close_searchbar()
                 self.view_create_client()
-            case "Agregar ventas":
+            case "Agregar venta":
                 self.close_searchbar()
                 self.view_create_sale()
             case "Ver clientes":
@@ -874,18 +874,18 @@ class CollabUI(ctk.CTkFrame):
                     self.searchbar_frame.destroy()
                 except Exception:
                     pass
-            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12)
+            self.searchbar_frame = ctk.CTkFrame(root, corner_radius=12,fg_color="#004857")
             self.searchbar_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
             controls = ctk.CTkFrame(self.searchbar_frame,  fg_color="transparent")
             controls.pack(fill="x", padx=8, pady=(4,8))
 
-            filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+            filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="#f4f1ec", hover_color="#f86a20", text_color="#004857", font=("Open Sans", 13, "bold"))
             filter_btn.pack(side="left", padx=6)
             search_var = ctk.StringVar()
             search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
             search_btn.pack(side="left", padx=6)
-            back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.searchbar_frame.destroy, width=100, height=10, corner_radius=18,fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+            back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.searchbar_frame.destroy, width=100, height=10, corner_radius=18,fg_color="#f86a20", hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"))
             back_btn.pack(side="right", padx=6)
 
             print("search_var initial:", repr(search_var.get()))

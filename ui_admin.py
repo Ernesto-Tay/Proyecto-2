@@ -187,7 +187,7 @@ class AdminUI(ctk.CTkFrame):
         title.pack(pady=(60, 40))
 
         #fila de nombre (posición tipo matriz) donde nombre, aún no funcional
-        row_nombre = ctk.CTkFrame(frame, fg_color="#f86a20", corner_radius=20)
+        row_nombre = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_nombre.pack(pady=10, ipadx=10, ipady=6)
         row_nombre.grid_columnconfigure(0, minsize=160)
         row_nombre.grid_columnconfigure(1, minsize=320)
@@ -196,7 +196,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # telefono
-        row_tel = ctk.CTkFrame(frame, fg_color="#f86a20", corner_radius=20)
+        row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
         row_tel.grid_columnconfigure(1, minsize=320)
@@ -205,7 +205,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_tel.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
         # posición
-        row_pos = ctk.CTkFrame(frame, fg_color="#f86a20", corner_radius=20)
+        row_pos = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_pos.pack(pady=10, ipadx=10, ipady=6)
         row_pos.grid_columnconfigure(0, minsize=160)
         row_pos.grid_columnconfigure(1, minsize=320)
@@ -263,7 +263,7 @@ class AdminUI(ctk.CTkFrame):
         self.ent_nombre = ctk.CTkEntry(row_name, width=300, height=36, corner_radius=14, fg_color="white", text_color="black", border_color="#cfcfcf")
         self.ent_nombre.grid(row=0, column=1, padx=(8, 14), pady=8, sticky="w")
 
-        # telefono, aún no funcional
+        # telefono
         row_tel = ctk.CTkFrame(frame, fg_color="#e0e0e0", corner_radius=20)
         row_tel.pack(pady=10, ipadx=10, ipady=6)
         row_tel.grid_columnconfigure(0, minsize=160)
@@ -1527,21 +1527,21 @@ class AdminUI(ctk.CTkFrame):
                 # Organiza los botoncitos específicamente para las ventas
                 filter_btn = ctk.CTkButton(controls, text="Filtrar", width = 150, height = 10, corner_radius=18, fg_color="#f4f1ec", hover_color="#f86a20", text_color="#004857", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
-                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="white", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                date_btn = ctk.CTkButton(controls, text = "Fecha", width = 150, height = 10, corner_radius=18, fg_color="#f4f1ec", hover_color="#f86a20", text_color="#004857", font=("Open Sans", 13, "bold"))
                 date_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
-                search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
+                search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",text_color="#004857",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="#f86a20",hover_color="#f2f2f2", text_color="#004857", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 10 , corner_radius=18, fg_color="#f86a20",hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
                 filter_btn = ctk.CTkButton(controls, width = 150, text = "Filtrar", height = 10, corner_radius=18, fg_color="#f4f1ec", hover_color="#f86a20", text_color="black", font=("Open Sans", 13, "bold"))
                 filter_btn.pack(side="left", padx=6)
                 search_var = ctk.StringVar()
-                search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
+                search_btn = ctk.CTkEntry(controls, placeholder_text="Buscar...",text_color="#004857",textvariable = search_var, width=400, height=36, corner_radius=18, fg_color="white", placeholder_text_color="grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="#f4f1ec", hover_color="#f2f2f2", text_color="black", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="#f86a20", hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
             print("search_var initial:", repr(search_var.get()))
@@ -1798,10 +1798,10 @@ class AdminUI(ctk.CTkFrame):
                         confirm_popup.destroy()  # Cierra el pop-up sin eliminar
 
                 # Botón Confirmar
-                ctk.CTkButton(btn_frame, text="Confirmar", width=120, height=36, corner_radius=18, fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black", font=("Open Sans", 13, "bold"), command=confirm_action).pack(side="left", padx=10)
+                ctk.CTkButton(btn_frame, text="Confirmar", width=120, height=36, corner_radius=18, fg_color="#f86a20", hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"), command=confirm_action).pack(side="left", padx=10)
 
                 # Botón Cancelar
-                ctk.CTkButton(btn_frame, text="Cancelar", width=120, height=36, corner_radius=18, fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black", font=("Open Sans", 13, "bold"), command=confirm_popup.destroy).pack(side="right", padx=10)
+                ctk.CTkButton(btn_frame, text="Cancelar", width=120, height=36, corner_radius=18, fg_color="#f86a20", hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"), command=confirm_popup.destroy).pack(side="right", padx=10)
 
             try:
                 if kind == "sales" or kind == "providers":
