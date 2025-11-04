@@ -245,7 +245,7 @@ class Collaborator(User):
             if r:
                 user = User.load(r["user_id"])
                 if user:
-                    return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"])
+                    return Collaborator(name = user.name, phone = user.phone, user_id = user.user_id, position = r["position"], collab_id=r["collab_id"])
             return None
     #Méthodo de eliminación
     def delete(self):

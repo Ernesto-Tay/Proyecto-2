@@ -790,8 +790,8 @@ class CollabUI(ctk.CTkFrame):
                 return None
 
             # Inicializadores: "cols" es para las referencias en la tabla, "titles_dict" es para los títulos de las columnas
-            cols = {"sales": ["sale_id", "time", "client", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sale_price", "stock"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
-            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "precio venta", "Stock"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
+            cols = {"sales": ["sale_id", "time", "_client_id", "products", "total"], "products": ["product_id", "name", "type", "description", "sale_price", "stock"], "clients": ["client_id", "name", "phone", "sales"], "collaborators": ["collab_id", "name", "phone", "position"], "providers":["provider_id", "name", "phone", "products"]}
+            titles_dict = {"sales": ["ID", "hora", "cliente asociado", "productos", "total"], "products": ["ID", "Nombre", "Tipo", "Descripción", "Precio", "Stock"], "clients": ["ID", "Nombre", "Teléfono", "compras"], "collaborators": ["ID", "Nombre", "Teléfono", "Posición"], "providers":["ID", "Nombre", "Teléfono", "Productos"]}
             headers = cols[kind]
             titles = titles_dict[kind]
             #Los junta en un dict que funcione como "ID": "sale_id", "hora":"time"... para que, al momento de mostrar filtros, se mire en español y afecte los filtros en inglés (como están en la db)
@@ -838,17 +838,19 @@ class CollabUI(ctk.CTkFrame):
                     print("result: ", result)
                 # filtrar por fecha (si aplica)
                 date_vals = today
-                if date_vals and date_vals.year and date_vals.month and date_vals.day:
-                    try:
-                        fy, fm, fd = int(date_vals.year), int(date_vals.month), int(date_vals.day)
-                        filtered = []
-                        for obj in result:
-                            r=getattr(obj, "date", None)
-                            if r and r.year == fy and r.month == fm and r.day == fd:
-                                filtered.append(obj)
-                        result = filtered
-                    except Exception:
-                        pass
+                if kind == "sales":
+                    if date_vals and date_vals.year and date_vals.month and date_vals.day:
+                        try:
+                            fy, fm, fd = int(date_vals.year), int(date_vals.month), int(date_vals.day)
+                            filtered = []
+                            for obj in result:
+                                r=getattr(obj, "date", None)
+                                if r and r.year == fy and r.month == fm and r.day == fd:
+                                    filtered.append(obj)
+                            result = filtered
+                        except Exception:
+                            pass
+
                 for idx, item in enumerate(result):
                     all_vals = [str(getattr(item, t, "")) for t in headers]
 
@@ -969,6 +971,28 @@ class CollabUI(ctk.CTkFrame):
                 popup.wait_window()
                 return
 
+            def edit_event(line):
+                try:
+                    if kind == "clients":
+                        clid = getattr(line, "client_id", None)
+                        if clid:
+                            self.close_searchbar()
+                            self.view_edit_client(clid)
+                        else:
+                            mbox.showerror("Error", "No se encontró client_id en este registro.")
+                    elif kind == "sales":
+                        sid = getattr(line, "sale_id", None)
+                        if sid:
+                            self.close_searchbar()
+                            self.view_edit_sale(sid)
+                        else:
+                            mbox.showerror("Error", "No se encontró sale_id en este registro.")
+                    else:
+                        mbox.showwarning("Editar", f"No hay formulario de edición implementado para: {kind}")
+                except Exception as e:
+                    mbox.showerror("Error", f"No se pudo abrir el editor: {e}")
+
+
             def del_event(line, origin_tree, iid=None):
                 # Crear pop-up personalizado para confirmación con input de ID
                 confirm_popup = ctk.CTkToplevel(root)
@@ -1083,8 +1107,7 @@ class CollabUI(ctk.CTkFrame):
             # Menú adicional en caso sea venta, proveedor o producto
             def row_menu(origin, event, line, row):
                 menu = tk.Menu(tree, tearoff=0)
-                menu.add_command(
-                    label="editar")  # command = lambda l=line: edit_event(l) -> comando para mostrar la ventana de "editar"
+                menu.add_command(label="editar", command = lambda l=line: edit_event(l))
                 menu.add_command(label="eliminar", command=lambda l=line, iid=row: del_event(l, tree, iid))
                 menu.post(event.x_root, event.y_root)
 
@@ -1138,21 +1161,6 @@ class CollabUI(ctk.CTkFrame):
 
                             line_text = f"{prod_name} | Cant: {qty} | Subtotal: Q{subtotal:.2f}"
                             lbox.insert("end", line_text)
-
-                # Si son proveedores, se trabajan de la siguiente manera:
-                if kind == "providers":
-                    # Ordena los productos relacionados con el proveedor
-                    r_line.prod_ordering()
-                    # Obtiene esos mismos productos
-                    p_in = getattr(r_line, "products", [])
-                    prod_list = self.db_info.get("products", [])  # Obtiene la lista de productos de la DB
-                    prod_look = {prod.product_id: prod.name for prod in prod_list}  # Mapeo ID : nombre
-                    if p_in:
-                        for val in p_in:
-                            prod_name = prod_look.get(val, val)  # Usa nombre si existe, sino el ID
-                            lbox.insert("end", prod_name)
-                    else:
-                        lbox.insert("end", "No hay productos asociados.")
 
                 # Si son clientes, lo trabajan así:
                 if kind == "clients":
