@@ -773,13 +773,195 @@ class AdminUI(ctk.CTkFrame):
         self.manage_sale("remove", product_id)
         self.refresh_cart_view()
 
-
     def add_product(self, product_id, price, qty_var, name):
         """Agrega producto al diccionario y refresca vista"""
         cantidad = qty_var.get()
         subtotal = round(cantidad * price, 2)
         self.manage_sale("add", product_id, cantidad, price)
         self.refresh_cart_view()
+
+    def view_edit_sale(self, sale_id):
+        """formulario para editar una venta existente (edita al cliente, productos y cantidades)"""
+        container = self._open_fullscreen_view()
+        frame = ctk.CTkScrollableFrame(container, fg_color="#fafafa")
+        frame.pack(expand=True, fill="both")
+
+        title = ctk.CTkLabel(frame, text=f"Editar Venta {sale_id}", font=("Open Sans", 42, "bold"),
+                             text_color="#111111")
+        title.pack(pady=(30, 20))
+
+        # obtiene los datos de la venta
+        with get_conn() as c:
+            sale = c.execute("SELECT * FROM sales WHERE sale_id = ?", (sale_id,)).fetchone()
+            if not sale:
+                mbox.showerror("Error", f"No se encontró la venta con ID {sale_id}")
+                self._close_fullscreen_view()
+                return
+            products_dict = json.loads(sale["products"])
+            client_id = sale["client_id"]
+            total_actual = sale["total"]
+
+        # inicializa el diccionario y la lista de productos existentes
+        self.manage_sale("init")
+        for pid, info in products_dict.items():
+            with get_conn() as c:
+                prod = c.execute("SELECT sale_price FROM products WHERE product_id = ?", (pid,)).fetchone()
+            if prod:
+                price = prod["sale_price"]
+                self.manage_sale("add", product_id=pid, quantity=info["quantity"], unit_price=price)
+
+        # se puede editar cliente
+        ctk.CTkLabel(frame, text="Cliente asignado:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,pady=(10, 0))
+        self.ent_client_search = ctk.CTkEntry(frame, width=350, height=34, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_client_search.pack(padx=20, pady=(4, 10), anchor="w")
+        self.ent_client_search.bind("<KeyRelease>", self.update_client_search)
+
+        self.client_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=80)
+        self.client_frame.pack(fill="x", padx=20, pady=5)
+
+        self.selected_client = client_id
+        with get_conn() as c:
+            client = c.execute("""
+                SELECT u.name 
+                FROM clients c
+                JOIN users u ON c.user_id = u.user_id
+                WHERE c.client_id = ?
+            """, (client_id,)).fetchone()
+
+        self.ent_client_search.insert(0, client["name"] if client else "Desconocido")
+
+        # busca y agrega productos nuevos
+        ctk.CTkLabel(frame, text="Agregar productos:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
+                                                                                            pady=(20, 0))
+        self.ent_prod_search = ctk.CTkEntry(frame, width=350, height=34, corner_radius=14,fg_color="white", text_color="black", border_color="#cfcfcf")
+        self.ent_prod_search.pack(padx=20, pady=(4, 10), anchor="w")
+        self.ent_prod_search.bind("<KeyRelease>", self.update_product_search_edit)
+
+        self.products_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=220)
+        self.products_frame.pack(fill="x", padx=20, pady=5)
+
+        # productos acutales
+        ctk.CTkLabel(frame, text="Productos actuales:", font=("Open Sans", 18, "bold")).pack(anchor="w", padx=20,
+                                                                                             pady=(20, 0))
+        self.cart_frame = ctk.CTkScrollableFrame(frame, fg_color="white", height=240)
+        self.cart_frame.pack(fill="x", padx=20, pady=5)
+
+        # muestra el total
+        self.lbl_total = ctk.CTkLabel(frame, text=f"Total actual: Q{total_actual:.2f}",font=("Open Sans", 20, "bold"), text_color="#333333")
+        self.lbl_total.pack(anchor="e", padx=30, pady=(10, 5))
+
+        # botones
+        btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
+        btns.pack(pady=25)
+        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_sale_edit(sale_id)).pack(pady=(0, 12))
+        ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#e0e0e0", hover_color="#9e9e9e", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
+
+        # muestra el diccionario actual
+        self.refresh_cart_view_edit()
+
+    def update_product_search_edit(self, *_):
+        """muestra productos disponibles (para agregar nuevos durante la edición)"""
+        term = self.ent_prod_search.get().lower().strip()
+        for widget in self.products_frame.winfo_children():
+            widget.destroy()
+
+        with get_conn() as c:
+            rows = c.execute("SELECT product_id, name, sale_price, stock FROM products").fetchall()
+
+        for row in rows:
+            if term in row["name"].lower():
+                pid, name, price, stock = row["product_id"], row["name"], row["sale_price"], row["stock"]
+
+                frame = ctk.CTkFrame(self.products_frame, fg_color="#f8f8f8", corner_radius=8)
+                frame.pack(fill="x", padx=10, pady=4)
+
+                ctk.CTkLabel(frame, text=f"{name} (Q{price}) | Stock: {stock}",text_color="black", anchor="w", font=("Open Sans", 14)).pack(side="left", padx=8)
+
+                qty_var = tk.IntVar(value=1)
+                ctk.CTkButton(frame, text="-", width=30, command=lambda v=qty_var: v.set(max(1, v.get() - 1))).pack(side="right", padx=2)
+                ctk.CTkEntry(frame, width=40, textvariable=qty_var, justify="center").pack(side="right", padx=2)
+                ctk.CTkButton(frame, text="+", width=30, command=lambda v=qty_var: v.set(v.get() + 1)).pack(side="right", padx=2)
+                ctk.CTkButton(frame, text="Agregar", width=100,command=lambda pid=pid, p=price, q=qty_var, n=name, s=stock: self.add_product_to_edit(pid,p,q,n,s)).pack(side="right", padx=8)
+
+    def add_product_to_edit(self, product_id, price, qty_var, name, stock):
+        """agrega un producto nuevo a la lista de edición (validando stock)"""
+        cantidad = qty_var.get()
+        if cantidad > stock:
+            mbox.showerror("Stock insuficiente", f"No hay suficiente stock para {name}.")
+            return
+        self.manage_sale("add", product_id, cantidad, price)
+        self.refresh_cart_view_edit()
+
+    def refresh_cart_view_edit(self):
+        """actualiza la vista de productos dentro de la venta (editable)"""
+        for widget in self.cart_frame.winfo_children():
+            widget.destroy()
+
+        if not hasattr(self, "current_sale") or not self.current_sale["products"]:
+            ctk.CTkLabel(self.cart_frame, text="No hay productos agregados.",text_color="gray", font=("Open Sans", 14, "italic")).pack(pady=10)
+            self.lbl_total.configure(text="Total actual: Q0.00")
+            return
+
+        for pid, info in self.current_sale["products"].items():
+            row = ctk.CTkFrame(self.cart_frame, fg_color="#f4f4f4", corner_radius=10)
+            row.pack(fill="x", padx=10, pady=4)
+
+            with get_conn() as c:
+                prod = c.execute("SELECT name, sale_price, stock FROM products WHERE product_id = ?", (pid,)).fetchone()
+                if not prod: continue
+                name, price, stock = prod["name"], prod["sale_price"], prod["stock"]
+
+            ctk.CTkLabel(row, text=f"{name}", anchor="w", font=("Open Sans", 14, "bold"), text_color="black").pack(side="left", padx=10)
+            qty_var = tk.IntVar(value=info["quantity"])
+
+            # Botones para editar cantidad
+            ctk.CTkButton(row,text="-",width=30, height=28,command=lambda v=qty_var: self.change_qty_edit(pid, v, price, -1)).pack(side="right", padx=2)
+            ctk.CTkEntry(row,width=40,textvariable=qty_var,justify="center").pack(side="right", padx=2)
+            ctk.CTkButton(row,text="+", width=30, height=28,command=lambda v=qty_var: self.change_qty_edit(pid, v, price, +1)).pack(side="right", padx=2)
+            ctk.CTkLabel(row, text=f"Subtotal: Q{info['subtotal']:.2f}", anchor="center",font=("Open Sans", 13), text_color="black").pack(side="left", padx=10)
+
+            # Botón eliminar
+            ctk.CTkButton(row,text="X",width=30,height=28,fg_color="#e57373",hover_color="#ef5350", text_color="white",command=lambda p=pid: self.remove_product_from_cart_edit(p)).pack(side="right", padx=10)
+
+        total = self.manage_sale("total")
+        self.lbl_total.configure(text=f"Total actual: Q{total:.2f}")
+
+    def change_qty_edit(self, product_id, qty_var, price, delta):
+        """cambia cantidad y recalcula subtotal, lo actualiza."""
+        new_qty = max(1, qty_var.get() + delta)
+        qty_var.set(new_qty)
+        self.manage_sale("add", product_id, 0, price)  # fuerza recalculo
+        self.current_sale["products"][product_id]["quantity"] = new_qty
+        self.current_sale["products"][product_id]["subtotal"] = round(new_qty * price, 2)
+        self.refresh_cart_view_edit()
+
+    def remove_product_from_cart_edit(self, product_id):
+        """elimina un producto del carrito en edición"""
+        self.manage_sale("remove", product_id)
+        self.refresh_cart_view_edit()
+
+    def save_sale_edit(self, sale_id):
+        """guarda los cambios realizados en la venta (cliente, productos y total)"""
+        try:
+            if not hasattr(self, "current_sale") or not self.current_sale["products"]:
+                mbox.showerror("Error", "No hay productos en la venta.")
+                return
+            new_client = self.selected_client
+            new_products = self.current_sale["products"]
+            new_total = round(sum(item["subtotal"] for item in new_products.values()), 2)
+
+            with get_conn() as conn:
+                conn.execute("""
+                    UPDATE sales 
+                    SET client_id = ?, products = ?, total = ?
+                    WHERE sale_id = ?
+                """, (new_client, json.dumps(new_products, ensure_ascii=False), new_total, sale_id))
+                conn.commit()
+
+            mbox.showinfo("Venta actualizada", f"Se actualizó la venta {sale_id} correctamente.")
+            self._close_fullscreen_view()
+        except Exception as e:
+            mbox.showerror("Error", f"No se pudo actualizar la venta:\n{e}")
 
     def view_edit_provider(self, provider_id):
         """Formulario para editar un proveedor existente"""
