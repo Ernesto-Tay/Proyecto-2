@@ -1532,7 +1532,7 @@ class AdminUI(ctk.CTkFrame):
                 search_var = ctk.StringVar()
                 search_btn = ctk.CTkEntry(controls, placeholder_text = "Buscar...",textvariable = search_var, width = 400, height = 36, corner_radius = 18, fg_color = "white", placeholder_text_color = "grey", font=("Open Sans", 13, "bold"))
                 search_btn.pack(side="left", padx=6)
-                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="#f4f1ec",hover_color="#f2f2f2", text_color="#004857", font=("Open Sans", 13, "bold"))
+                back_btn = ctk.CTkButton(controls, text = "Cerrar",command =self.close_searchbar, width = 100, height = 36 , corner_radius=18, fg_color="#f86a20",hover_color="#f2f2f2", text_color="#004857", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
             else:
                 # si es otro modo (proveedores, productos...), pone la configuración normal
