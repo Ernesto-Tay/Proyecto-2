@@ -903,20 +903,43 @@ class AdminUI(ctk.CTkFrame):
                     print("result: ", result)
                 # filtrar por fecha (si aplica)
                 date_vals = getattr(date_btn, "date_value", None)
-                if date_vals and date_vals.get("year") and date_vals.get("month") and date_vals.get("day"):
-                    try:
-                        fy, fm, fd = int(date_vals["year"]), int(date_vals["month"]), int(date_vals["day"])
+                if date_vals is not None:
+                    #Intenta obtener los atributos de cada uno
+                    fy = int(date_vals.get("year", "")) if date_vals.get("year") else None
+                    fm = int(date_vals.get("month", "")) if date_vals.get("month") else None
+                    fd = int(date_vals.get("day", "")) if date_vals.get("day") else None
+                    if fy or fm or fd:  # Filtra si al menos uno está set
+                        print(f"Debug: Aplicando filtro fecha: Año={fy}, Mes={fm}, Día={fd}")
                         filtered = []
                         for obj in result:
-                            r=getattr(obj, "date", None)
-                            if r is not None and isinstance(r, str):
-                                r_tuned = datetime.strptime(r, "%d/%m/%Y").date()
-                                rd, rm, ry = r_tuned.day, r_tuned.month, r_tuned.year
+                            r = getattr(obj, "date", None)
+                            if r:
+                                # Maneja si r es str (por seguridad)
+                                if isinstance(r, str):
+                                    try:
+                                        r = datetime.strptime(r, "%d/%m/%Y").date()
+                                    except ValueError:
+                                        print(f"Debug: Fecha inválida en venta {obj.sale_id}: {r}")
+                                        continue
+                                # Extrae componentes
+                                rd, rm, ry = r.day, r.month, r.year
+                                print(
+                                    f"Debug: Comparando venta {obj.sale_id}: {ry}-{rm:02d}-{rd:02d} vs {fy}-{fm:02d}-{fd:02d}")  # Depuración detallada
 
-                            if r and ry == fy and rm == fm and rd == fd:
-                                filtered.append(obj)
+                                # Filtrado progresivo: coincide lo que esté set
+                                match = True
+                                if fy is not None and ry != fy:
+                                    match = False
+                                if fm is not None and rm != fm:
+                                    match = False
+                                if fd is not None and rd != fd:
+                                    match = False
+                                if match:
+                                    filtered.append(obj)
                         result = filtered
-                    except Exception:
+                        print(f"Debug: Ventas filtradas: {len(filtered)} de {len(result)} totales")  # Depuración
+                    else:
+                        print("Debug: No valores de fecha para filtrar")
                         pass
                 for idx, item in enumerate(result):
                     all_vals = [str(getattr(item, t, "")) for t in headers]
