@@ -315,13 +315,6 @@ class CollabUI(ctk.CTkFrame):
             total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
             return total
 
-        if action == "print": # Muestra lo que contiene el diccionario
-            if not hasattr(self, "current_sale"):
-                return
-            # venta en el momento
-            print(json.dumps(self.current_sale, indent=4, ensure_ascii=False))
-            return
-
     def save_sale_to_db(self):
         """
         Guarda la venta actual (diccionario) en la base de datos y actualiza existencias.
@@ -370,6 +363,12 @@ class CollabUI(ctk.CTkFrame):
             for product_id, data in self.current_sale["products"].items():
                 conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
             conn.commit()
+        c_client = self.current_sale["client"]
+        client = Client.load(c_client)
+        if client and c_client not in client.sales:
+            client.sales.append(sale_id)
+            client.sale_sorter()
+            client.save()
 
         # Reinicia la lista de productos después de guardar
         self.manage_sale("init")
@@ -708,12 +707,27 @@ class CollabUI(ctk.CTkFrame):
             new_total = round(sum(item["subtotal"] for item in new_products.values()), 2)
 
             with get_conn() as conn:
+                exists = conn.execute("SELECT * FROM sales WHERE sale_id = ?", (sale_id,)).fetchone()
+                old_client_id = exists["client_id"] if exists else None
+
                 conn.execute("""
                     UPDATE sales 
                     SET client_id = ?, products = ?, total = ?
                     WHERE sale_id = ?
                 """, (new_client, json.dumps(new_products, ensure_ascii=False), new_total, sale_id))
                 conn.commit()
+            if old_client_id and old_client_id != new_client:
+                old_client = Client.load(old_client_id)
+                if old_client and sale_id in old_client.sales:
+                    old_client.sales.remove(sale_id)
+                    old_client.sale_sorter()
+                    old_client.save()
+
+            client = Client.load(new_client)
+            if client and new_client not in client.sales:
+                client.sales.append(sale_id)
+                client.sale_sorter()
+                client.save()
 
             mbox.showinfo("Venta actualizada", f"Se actualizó la venta {sale_id} correctamente.")
             self._close_fullscreen_view()
@@ -815,12 +829,10 @@ class CollabUI(ctk.CTkFrame):
                 #filtro por encabezado seleccionado
                 header_selected = getattr(filter_btn, "filter_value", None)
                 header_attr = main_headers.get(header_selected, header_selected) if header_selected else None
-                print("header_selected: ", header_selected)
                 #texto ingresado en el buscador
                 search_text = ""
                 try:
                     search_text = search_var.get().strip()
-                    print("search_text: ", search_text)
                 except Exception:
                     pass
                 if search_text:
@@ -835,7 +847,6 @@ class CollabUI(ctk.CTkFrame):
                                     tmp.append(obj)
                                     break
                         result = tmp
-                    print("result: ", result)
                 # filtrar por fecha (si aplica)
                 date_vals = today
                 if kind == "sales":
@@ -854,11 +865,13 @@ class CollabUI(ctk.CTkFrame):
                 for idx, item in enumerate(result):
                     all_vals = [str(getattr(item, t, "")) for t in headers]
 
-                    #revisar si es "sales" o "providers" para poner la sección de "vista"
+                    #revisar si es "sales" o "clients" para poner la sección de "vista"
                     try:
-                        title_idx = headers.index("products")
                         if kind == "sales":
-                            all_vals[title_idx] = "Ver ▾"
+                            title_idx = headers.index("products")
+                        elif kind == "clients":
+                            title_idx = headers.index("sales")
+                        all_vals[title_idx] = "Ver ▾"
                     except ValueError:
                         title_idx = None
 
@@ -887,8 +900,6 @@ class CollabUI(ctk.CTkFrame):
             search_btn.pack(side="left", padx=6)
             back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.searchbar_frame.destroy, width=100, height=10, corner_radius=18,fg_color="#f86a20", hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"))
             back_btn.pack(side="right", padx=6)
-
-            print("search_var initial:", repr(search_var.get()))
             def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
                 old = getattr(self, "_current_popup", None)
                 if old is not None and old.winfo_exists():
@@ -929,18 +940,16 @@ class CollabUI(ctk.CTkFrame):
                 elif options:
                     cbox.set(options[0])
                 cbox.pack(anchor = "w", pady = (0, 4))
-                print("cbox_var initial:", repr(getattr(cbox, 'get', lambda: None)()))
 
                 # Aplica el filtro obtenido. Si no funciona,
                 def apply(value = None):
                     val =  value if value else cbox.get()
 
                     filter_button.filter_value = val
-                    print("val is: ",val)
                     try:
                         popup.destroy()
-                    except Exception as e:
-                        print("error en la función: ",e)
+                    except Exception:
+                        pass
                     apply_filters(origin_tree)
 
                 cbox.configure(command = apply)
@@ -1023,8 +1032,6 @@ class CollabUI(ctk.CTkFrame):
                 # Frame para botones
                 btn_frame = ctk.CTkFrame(confirm_popup, fg_color="transparent")
                 btn_frame.pack(pady=10)
-                print(self.curr_id)
-
                 def confirm_action():
                     input_id = ent_id.get().strip()
                     # Verifica contra la ID actual
@@ -1177,7 +1184,7 @@ class CollabUI(ctk.CTkFrame):
                                     s_list.append(sale)
                         for val in s_list:
                             # Se añaden toditas las ventas a la lista
-                            lbox.insert("end", " | ".join(val))
+                            lbox.insert("end", f"ID: {val[0]} | Total: Q{val[1]})")
                     else:
                         lbox.insert("end", "No hay compras asociadas")
                 ctk.CTkButton(top, text="Cerrar", command=top.destroy, width=100, height=36, corner_radius=18,

@@ -31,9 +31,8 @@ class LoginUI(ctk.CTkFrame):
             # Texto debajo del logo (opcional)
             ctk.CTkLabel(img_frame,text="BaWiz System",font=("Open Sans", 24, "bold"),text_color="white").place(relx=0.5, rely=0.60, anchor="center")
 
-        except Exception as e:
-            print(f"No se pudo cargar la imagen: {e}")
-
+        except Exception:
+            pass
         form_frame = ctk.CTkFrame(self, width=230,height=35,fg_color="#f4f1ec",border_color="#cfcfcf")
         form_frame.pack(side = "left", expand=True, fill="both")
 

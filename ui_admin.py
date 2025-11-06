@@ -530,7 +530,7 @@ class AdminUI(ctk.CTkFrame):
         except Exception as e:
             mbox.showerror("Error", f"No se pudo crear el proveedor:\n{e}")
 
-    def manage_sale(self, action=None, product_id=None, quantity=0, unit_price=0.0):
+    def manage_sale(self, action=None, product_id=None,client_id = None, quantity=0, unit_price=0.0):
         """
         Función centralizada para manejar la lógica base del diccionario que guarda las ventas.
         Permite inicializar el carrito, agregar productos, eliminarlos,
@@ -539,7 +539,7 @@ class AdminUI(ctk.CTkFrame):
 
         if action == "init":  # Inicializa el diccionario
             self.current_sale = {
-                "client": None,  # Guarda al cliente seleccionado (su ID)
+                "client": client_id,  # Guarda al cliente seleccionado (su ID)
                 "products": {}  # {product_id: {"quantity": int, "subtotal": float}}
             }
             return
@@ -558,6 +558,7 @@ class AdminUI(ctk.CTkFrame):
                     "quantity": quantity,
                     "subtotal": round(quantity * unit_price, 2)
                 }
+            self.current_sale["client"] = client_id
             return
 
         if action == "remove":
@@ -570,13 +571,6 @@ class AdminUI(ctk.CTkFrame):
                 return 0
             total = round(sum(item["subtotal"] for item in self.current_sale["products"].values()), 2)
             return total
-
-        if action == "print": # Muestra lo que contiene el diccionario
-            if not hasattr(self, "current_sale"):
-                return
-            # venta en el momento
-            print(json.dumps(self.current_sale, indent=4, ensure_ascii=False))
-            return
 
     def save_sale_to_db(self):
         """
@@ -592,7 +586,6 @@ class AdminUI(ctk.CTkFrame):
         if not self.current_sale.get("client"):
             mbox.showerror("Cliente no seleccionado", "Debe seleccionar un cliente antes de guardar la venta.")
             return
-
         # Conexión a la base de datos
         with get_conn() as conn:
             # Valida el stock disponible antes de confirmar la venta
@@ -626,6 +619,12 @@ class AdminUI(ctk.CTkFrame):
             for product_id, data in self.current_sale["products"].items():
                 conn.execute("UPDATE products SET stock = stock - ? WHERE product_id = ?",(data["quantity"], product_id))
             conn.commit()
+        c_client = self.current_sale["client"]
+        client = Client.load(c_client)
+        if client and c_client not in client.sales:
+            client.sales.append(sale_id)
+            client.sale_sorter()
+            client.save()
 
         # Reinicia la lista de productos después de guardar
         self.manage_sale("init")
@@ -711,6 +710,7 @@ class AdminUI(ctk.CTkFrame):
         mbox.showinfo("Cliente seleccionado", f"Cliente: {name}\nID: {client_id}")
         self.ent_client_search.delete(0, "end")
         self.ent_client_search.insert(0, name)
+        self.manage_sale(client_id = client_id)
 
     def update_product_search(self, *_):
         """Muestra productos disponibles y permite agregarlos al carrito"""
@@ -866,7 +866,9 @@ class AdminUI(ctk.CTkFrame):
         # botones
         btns = ctk.CTkFrame(frame, fg_color="transparent", corner_radius=20)
         btns.pack(pady=25)
-        ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_sale_edit(sale_id)).pack(pady=(0, 12))
+        s_btn = ctk.CTkButton(btns, text="Guardar cambios", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=lambda: self.save_sale_edit(sale_id))
+        s_btn.pack(pady=(0, 12))
+
         ctk.CTkButton(btns, text="Volver", width=200, height=40, corner_radius=20,fg_color="#da6a2a", hover_color="#cd5618", text_color="black",font=("Open Sans", 15, "bold", "underline"),command=self._close_fullscreen_view).pack()
 
         # muestra el diccionario actual
@@ -964,13 +966,25 @@ class AdminUI(ctk.CTkFrame):
             new_total = round(sum(item["subtotal"] for item in new_products.values()), 2)
 
             with get_conn() as conn:
+                exists = conn.execute("SELECT * FROM sales WHERE sale_id = ?", (sale_id,)).fetchone()
+                old_client_id = exists["client_id"] if exists else None
                 conn.execute("""
                     UPDATE sales 
                     SET client_id = ?, products = ?, total = ?
                     WHERE sale_id = ?
                 """, (new_client, json.dumps(new_products, ensure_ascii=False), new_total, sale_id))
                 conn.commit()
-
+            if old_client_id and old_client_id != new_client:
+                old_client = Client.load(old_client_id)
+                if old_client and sale_id in old_client.sales:
+                    old_client.sales.remove(sale_id)
+                    old_client.sale_sorter()
+                    old_client.save()
+            client = Client.load(new_client)
+            if client and new_client not in client.sales:
+                client.sales.append(sale_id)
+                client.sale_sorter()
+                client.save()
 
             mbox.showinfo("Venta actualizada", f"Se actualizó la venta {sale_id} correctamente.")
             self._close_fullscreen_view()
@@ -1417,8 +1431,6 @@ class AdminUI(ctk.CTkFrame):
             #extrae los datos de la db_info
             self.db_info = self.db_extract(classes)
             table_data = self.db_info[kind]
-            print(table_data)
-
             # Aquí se guarda la info de los meses, años y días para los filtros de fecha si se miran las "ventas"
             months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             years = [str(y) for y in range (2025, 2030)]
@@ -1491,11 +1503,13 @@ class AdminUI(ctk.CTkFrame):
                 for idx, item in enumerate(result):
                     all_vals = [str(getattr(item, t, "")) for t in headers]
 
-                    #revisar si es "sales" o "providers" para poner la sección de "vista"
+                    #revisar si es "sales", "providers" o "clients" para poner la sección de "vista"
                     try:
-                        title_idx = headers.index("products")
                         if kind in ("sales", "providers"):
-                            all_vals[title_idx] = "Ver ▾"
+                            title_idx = headers.index("products")
+                        elif kind == "clients":
+                            title_idx = headers.index("sales")
+                        all_vals[title_idx] = "Ver ▾"
                     except ValueError:
                         title_idx = None
 
@@ -1544,7 +1558,6 @@ class AdminUI(ctk.CTkFrame):
                 back_btn = ctk.CTkButton(controls, text="Cerrar",command = self.close_searchbar, width=100, height=10, corner_radius=18,fg_color="#f86a20", hover_color="#cd5618", text_color="white", font=("Open Sans", 13, "bold"))
                 back_btn.pack(side="right", padx=6)
 
-            print("search_var initial:", repr(search_var.get()))
             def header_filter(filter_button, options,origin_tree, initial = None, width = 150):
                 old = getattr(self, "_current_popup", None)
                 if old is not None and old.winfo_exists():
@@ -1587,8 +1600,8 @@ class AdminUI(ctk.CTkFrame):
                     filter_button.filter_value = val
                     try:
                         popup.destroy()
-                    except Exception as e:
-                        print("error en la función: ",e)
+                    except Exception:
+                        pass
                     apply_filters(origin_tree)
 
                 cbox.configure(command = apply)
@@ -1701,8 +1714,6 @@ class AdminUI(ctk.CTkFrame):
                     else:
                         cb_day.configure(values=[])
                         cb_day.set("")
-                        print("Dias inválidos")
-
                 def date_apply():
                     # poner valores y guardarlos en el botoncito
                     vals ={
@@ -1778,7 +1789,6 @@ class AdminUI(ctk.CTkFrame):
                 # Frame para botones
                 btn_frame = ctk.CTkFrame(confirm_popup, fg_color="transparent")
                 btn_frame.pack(pady=10)
-                print(self.curr_id)
                 def confirm_action():
                     input_id = ent_id.get().strip()
                    # Verifica contra la ID actual
@@ -1984,7 +1994,7 @@ class AdminUI(ctk.CTkFrame):
                                     s_list.append(sale)
                         for val in s_list:
                             #Se añaden toditas las ventas a la lista
-                            lbox.insert("end", " | ".join(val))
+                            lbox.insert("end", f"ID: {val[0]} | Total: Q{val[1]}")
                     else:
                         lbox.insert("end", "No hay compras asociadas")
                 ctk.CTkButton(top, text = "Cerrar", command = top.destroy, width=100,  height=36, corner_radius=18, fg_color="white", text_color="black", font=("Open Sans", 13, "bold")).pack(pady = (5, 10))

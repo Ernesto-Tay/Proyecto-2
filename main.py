@@ -154,7 +154,6 @@ class User:
     def load(user_id: str) -> Optional["User"]:
         with get_conn() as c:
             r = c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
-            print("toy acá y r es: ",r)
             if r:
                 return User(r["name"], r["phone"], user_id=r["user_id"])
             return None
@@ -561,9 +560,22 @@ class Sales:
             prod_json = json.dumps(self.products, ensure_ascii=False)
             exists = c.execute("SELECT 1 FROM sales WHERE sale_id = ?", self.sale_id).fetchone()
             if exists:
+                #actualiza los clientes
+                old_client_id = exists["client_id"] if exists else None
+
+                if old_client_id and old_client_id != self._client_id:
+                    o_client = Client.load(old_client_id)
+                    if o_client and self.sale_id in o_client.sales:
+                        o_client.sales.remove(self.sale_id)
+                        o_client.save()
                 c.execute("UPDATE sales SET client_id = ?,date = ?, time = ?, products = ?, total = ? WHERE sale_id = ?",(self._client_id, self.date, self.time, prod_json, self.total, self.sale_id))
             else:
                 c.execute("INSERT INTO sales (sale_id, date, time, client_id, products, total) VALUES(?, ?, ?, ?, ?, ?)",(self.sale_id,self.date, self.time, self._client_id, prod_json, self.total))
+            n_client = Client.load(self._client_id)
+            if n_client and self.sale_id not in n_client.sales:
+                n_client.sales.append(self.sale_id)
+                n_client.sale_sorter()
+                n_client.save()
             c.commit()
 
     #Carga en la DB
