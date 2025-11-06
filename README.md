@@ -5,7 +5,7 @@ Su objetivo principal es facilitar el control y registro de las operaciones diar
 A través de una interfaz amigable y organizada, el sistema permite:
 - Registrar y visualizar ventas realizadas.
 - Administrar el inventario de productos, incluyendo sus precios de costo y venta, existencias y descripciones.
-- Gestionar la información de clientes frecuentes, proveedores y colaboradores del negocio.
+- Gestionar la información de clientes, proveedores y colaboradores del negocio.
 - Generar un control estructurado de las operaciones diarias mediante una base de datos local.
 
 ## Instalación
