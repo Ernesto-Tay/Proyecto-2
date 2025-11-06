@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import User, Admin, Collaborator, Provider, Client , Product, Sales, get_conn
+from database.main import User, Admin, Collaborator, Provider, Client , Product, Sales, get_conn
 import tkinter as tk
 from tkinter import ttk
 import json
@@ -737,7 +737,7 @@ class CollabUI(ctk.CTkFrame):
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:
-            from login import LoginUI
+            from ui.login import LoginUI
             self.pack_forget()
             LoginUI(self.master)
 

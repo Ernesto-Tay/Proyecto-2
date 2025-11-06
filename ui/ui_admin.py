@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as mbox
-from main import User, Admin, Collaborator, Provider, Client , Product, Sales, get_conn
+from database.main import User, Admin, Collaborator, Provider, Client , Product, Sales, get_conn
 import tkinter as tk
 from tkinter import ttk
 import calendar
@@ -1353,7 +1353,7 @@ class AdminUI(ctk.CTkFrame):
     def logout(self):
         confirm = mbox.askyesno("Cerrar sesión", "¿Deseas cerrar tu sesión actual?")
         if confirm:
-            from login import LoginUI
+            from ui.login import LoginUI
             self.close_searchbar()
             self.pack_forget()
             LoginUI(self.master)
@@ -1504,14 +1504,16 @@ class AdminUI(ctk.CTkFrame):
                     all_vals = [str(getattr(item, t, "")) for t in headers]
 
                     #revisar si es "sales", "providers" o "clients" para poner la sección de "vista"
+                    title_idx = None  # Inicializamos por seguridad
                     try:
                         if kind in ("sales", "providers"):
                             title_idx = headers.index("products")
                         elif kind == "clients":
                             title_idx = headers.index("sales")
-                        all_vals[title_idx] = "Ver ▾"
+                        if title_idx is not None:  # Solo si se encontró el índice
+                            all_vals[title_idx] = "Ver ▾"
                     except ValueError:
-                        title_idx = None
+                        pass # Si no existe la columna esperada, simplemente lo ignora
 
                     # Añadir al tree_insert y al trace_map
                     iid = f"r{idx}"

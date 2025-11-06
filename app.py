@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from login import LoginUI
+from ui.login import LoginUI
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("light")

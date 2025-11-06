@@ -1,9 +1,9 @@
 import customtkinter as ctk
 from customtkinter import CTkImage
 from tkinter import messagebox
-from main import get_conn, DataBase
-from ui_admin import AdminUI
-from ui_collaborator import CollabUI
+from database.main import get_conn, DataBase
+from ui.ui_admin import AdminUI
+from ui.ui_collaborator import CollabUI
 from PIL import Image
 
 class LoginUI(ctk.CTkFrame):
@@ -19,7 +19,7 @@ class LoginUI(ctk.CTkFrame):
         img_frame.pack(side = "left", expand=True, fill="both")
 
         try:
-            logo_path = "logo_bawiz.png"
+            logo_path = "ui/logo_bawiz.png"
 
             # Carga la imagen sin deformar
             logo_img = CTkImage(light_image=Image.open(logo_path), size=(230, 230))
